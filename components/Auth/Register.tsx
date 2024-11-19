@@ -27,7 +27,7 @@ export function Register({ className, ...props }: RegisterProps) {
     <>
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Create Your Account!</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground font-semibold">
           Create your account to connect, share and explore with your magic world
         </p>
       </div>
@@ -126,7 +126,7 @@ export function Register({ className, ...props }: RegisterProps) {
       </div>
       <p className="px-8 text-center text-sm text-muted-foreground">
         I don't have an account{" "}
-        <Link href="/auth/login" className="hover:text-primary">
+        <Link href="/auth/login" className="hover:text-primary font-semibold">
           Sign In
         </Link>
       </p>

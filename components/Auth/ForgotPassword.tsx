@@ -24,7 +24,7 @@ export function ForgotPassword({ className, ...props }: ForgotPasswordProps) {
     <>
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Forgot Password?</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground font-semibold">
           Reset your password effortlessly by requesting an email confirmation.
         </p>
       </div>

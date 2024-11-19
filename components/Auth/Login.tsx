@@ -45,7 +45,7 @@ export function Login({ className, ...props }: LoginProps) {
         password: values.password,
         login_type: "password",
         redirect: false,
-        callbackUrl: "/dashboard/home",
+        callbackUrl: "/dashboard/social",
       });
 
       if (!result) {
@@ -55,7 +55,7 @@ export function Login({ className, ...props }: LoginProps) {
       if (result.error) {
         toast.error(result.error);
       } else {
-        router.push("/dashboard/home");
+        router.push("/dashboard/social");
         toast.success("Logged in successfully");
       }
     } catch (error) {
@@ -71,7 +71,7 @@ export function Login({ className, ...props }: LoginProps) {
       setIsGoogleLoading(true);
       const result = await signIn("google", {
         redirect: false,
-        callbackUrl: "/dashboard/home",
+        callbackUrl: "/dashboard/social",
       });
 
       console.log("Google sign-in result:", result);
@@ -84,7 +84,7 @@ export function Login({ className, ...props }: LoginProps) {
           toast.error(result.error);
         }
       } else if (result?.ok) {
-        router.push("/dashboard/home");
+        router.push("/dashboard/social");
       }
     } catch (error) {
       console.error("Google sign-in error:", error);
@@ -101,7 +101,7 @@ export function Login({ className, ...props }: LoginProps) {
       if (result?.error) {
         toast.error(result.error);
       } else {
-        router.push("/dashboard/home");
+        router.push("/dashboard/social");
         toast.success("Logged in successfully");
       }
     } catch (error) {
@@ -115,7 +115,7 @@ export function Login({ className, ...props }: LoginProps) {
     <>
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Welcome Back!</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground font-semibold">
           Sign In to connect, share and explore with your magic world
         </p>
       </div>
@@ -179,7 +179,7 @@ export function Login({ className, ...props }: LoginProps) {
             </div>
             <p className="px-3 text-center text-sm text-muted-foreground">
               If you have forgot your password{" "}
-              <Link href="/auth/reset-password" className="hover:text-primary">
+              <Link href="/auth/reset-password" className="hover:text-primary font-semibold">
                 Recover it
               </Link>
             </p>
@@ -233,7 +233,7 @@ export function Login({ className, ...props }: LoginProps) {
       </div>
       <p className="px-8 text-center text-sm text-muted-foreground">
         I don't have an account{" "}
-        <Link href="/auth/register" className="hover:text-primary">
+        <Link href="/auth/register" className="hover:text-primary font-semibold">
           Register Now
         </Link>
       </p>

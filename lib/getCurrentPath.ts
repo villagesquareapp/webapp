@@ -1,8 +1,8 @@
 import { headers } from 'next/headers'
 import 'server-only'
 
-export const getCurrentPath = () => {
-    const headersList = headers()
+export const getCurrentPath = async () => {
+    const headersList = await headers()
     const referer = headersList.get('referer')
     if (referer) {
         try {
