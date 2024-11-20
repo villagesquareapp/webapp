@@ -43,7 +43,7 @@
         "app/*"
       ],
       "hooks/*": [
-        "app/hooks/*"
+        "hooks/*"
       ],
       "hoc/*": [
         "app/hoc/*"

@@ -129,7 +129,7 @@ export function Login({ className, ...props }: LoginProps) {
                 </div>
                 <Input
                   id="email_or_username"
-                  placeholder="name@example.com"
+                  placeholder="Username / Email Address"
                   type="email"
                   className="pl-8"
                   autoCapitalize="none"
@@ -146,7 +146,7 @@ export function Login({ className, ...props }: LoginProps) {
               </div>
               <div className="grid gap-1">
                 <div className="relative">
-                  <VSAuthPadLock className="size-5 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <VSAuthPadLock className="size-6 absolute left-2 top-[55%] -translate-y-1/2" />
                   <Input
                     id="password"
                     placeholder="Password"

@@ -45,3 +45,19 @@ interface IUser {
     is_blocked: boolean
     token: string
 }
+
+type IRegistrationType = 'google' | 'password' | 'apple' | 'facebook'
+interface ISignup {
+    username: string,
+    email: string,
+    name: string,
+    password?: string,
+    registration_type: IRegistrationType
+    provider?: IRegistrationType,
+    timezone?: string,
+    provider_id?: "114468729516638108730",
+    device_id?: string,
+    device?: string,
+    referrer_code?: string,
+    fcm_token?: string
+}

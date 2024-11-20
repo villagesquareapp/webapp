@@ -6,4 +6,14 @@ export const loginSchema = z.object({
     login_type: z.string().default("password")
 });
 
-export type LoginFormValues = z.infer<typeof loginSchema>; 
+
+export const registerSchema = z.object({
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    referrer: z.string().optional(),
+});
+
+export type RegisterFormValues = z.infer<typeof registerSchema>;
+export type LoginFormValues = z.infer<typeof loginSchema>;

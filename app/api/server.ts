@@ -1,3 +1,4 @@
+
 import { revalidatePath } from 'next/cache'
 import { getCurrentPath } from 'lib/getCurrentPath'
 
@@ -12,8 +13,8 @@ const serverErrorHandler = (data: any): ApiResponse => {
     }
 }
 
-const revalidate = () => {
-    const pathname = getCurrentPath()
+const revalidate = async () => {
+    const pathname = await getCurrentPath()
     revalidatePath(pathname)
 }
 
@@ -76,7 +77,6 @@ export const ApiPost = async <T>(route: string, body: any, token?: string): Prom
             return serverErrorHandler(data)
         }
     } catch (error: any) {
-        console.error('ApiPost error:', error)
         return {
             success: false,
             error: 'post_exception',
