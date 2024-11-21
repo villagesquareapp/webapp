@@ -7,5 +7,5 @@ export { default as VSWalletFill } from "./WalletFill";
 export { default as VSWalletOutline } from "./WalletOutline";
 export { default as VSMailFill } from "./MailFill";
 export { default as VSCameraFill } from "./CameraFill";
-
+export { default as VSSend } from "./Send";
 

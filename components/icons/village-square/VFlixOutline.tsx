@@ -28,7 +28,7 @@ const SvgVFlixOutline = (props: SVGProps<SVGSVGElement>) => {
         d="M8.13281 12.4644V11.3594C8.13281 9.94128 9.13652 9.36115 10.3612 10.0702L11.3189 10.6227L12.2766 11.1752C13.5013 11.8842 13.5013 13.0445 12.2766 13.7535L11.3189 14.306L10.3612 14.8585C9.13652 15.5676 8.13281 14.9874 8.13281 13.5694V12.4644Z"
         stroke="white"
         strokeWidth="1.7"
-        stroke-miterlimit="10"
+        strokeMiterlimit="10"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

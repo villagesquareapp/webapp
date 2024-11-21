@@ -1,5 +1,5 @@
 import { ThemeProvider } from "components/ui/theme-provider";
-import { Poppins } from "next/font/google";
+import { Poppins, Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./Providers";
 import CustomToaster from "components/ui/custom-toaster";
@@ -10,11 +10,17 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+const albertSans = Albert_Sans({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-albert-sans",
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${poppins.variable}`}>
+      <body className={`${poppins.variable} ${albertSans.variable}`}>
         <Providers>
           <ThemeProvider
             attribute="class"

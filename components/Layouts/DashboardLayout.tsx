@@ -7,7 +7,8 @@ import Image from "next/image";
 import React from "react";
 import { FaExternalLinkSquareAlt } from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
-import { AppSidebar } from "../Dashboard/AppSidebar";
+import { AppSidebar } from "./AppSidebar";
+import DashboardNavbar from "./DashboardNavbar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -15,26 +16,13 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
-    <main className="md:hidden lg:flex relative">
-      <div className="flex fixed w-full h-16 z-50 border-b bg-background">
-        <div className="flex items-center justify-center px-8">
-          <VsCustomLogo />
-
-          <div className="flex px-10 w-fit relative">
-            <input
-              type="search"
-              placeholder="Search"
-              className="bg-muted-foreground h-10 w-[500px] placeholder:text-foreground pl-4 pr-12 font-medium rounded-lg"
-            />
-            <IoSearch className="absolute right-14 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none" />
-          </div>
-        </div>
-      </div>
+    <main className="md:hidden lg:flex relative font-albert-sans">
+      <DashboardNavbar />
       <SidebarProvider>
         <AppSidebar />
         <div className="flex-1">
-          <div className="flex flex-row justify-between w-[800px] mx-auto  h-full pt-20">
-            <div className="flex w-[500px] border">{children}</div>
+          <div className="flex flex-row justify-between w-[800px] mx-auto h-full pt-20">
+            <div className="flex w-[500px] rounded-lg pb-8">{children}</div>
             <div className="flex flex-col gap-8">
               <div className="flex w-[280px] h-[150px]">
                 <div className="flex w-full flex-col gap-8">
@@ -69,7 +57,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                           <AvatarImage src="https://github.com/shadcn.png" />
                           <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
-                        <p className="truncate">bJoh dinsdhbdjdsbhfjs</p>
+                        <p className="truncate text-sm">bJoh dinsdhbdjdsbhfjs</p>
                       </div>
                       <Button className="text-foreground">Follow</Button>
                     </div>
