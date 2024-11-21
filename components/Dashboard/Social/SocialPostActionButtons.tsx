@@ -19,9 +19,7 @@ const SocialPostActionButtons = ({
           <PiHeartFill className="size-6" />
           <p className="text-sm">12</p>
         </div>
-        <div className="overflow-y-auto">
-          <SocialPostComment disableCommentButton={disableCommentButton} />
-        </div>
+        <SocialPostComment disableCommentButton={disableCommentButton} />
         <div className="flex flex-row gap-x-1 items-center">
           <IoMdShareAlt className="size-8" />
           <p className="text-sm">23</p>

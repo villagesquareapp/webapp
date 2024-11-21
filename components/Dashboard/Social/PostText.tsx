@@ -1,5 +1,4 @@
 export const PostText = ({ text }: { text: string }) => {
-    
   const renderTextWithHashtags = (text: string) => {
     const words = text.split(" ");
     return words.map((word, index) => {
@@ -14,9 +13,7 @@ export const PostText = ({ text }: { text: string }) => {
     });
   };
 
-  return (
-    <div className=" px-4 whitespace-pre-line">{renderTextWithHashtags(text)}</div>
-  );
+  return <div className=" px-4 whitespace-pre-line">{renderTextWithHashtags(text)}</div>;
 };
 
 export default PostText;

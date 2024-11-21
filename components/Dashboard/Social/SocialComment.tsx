@@ -21,6 +21,7 @@ const SocialComment = ({
           </div>
         ))}
       </div>
+      <div className="flex-1 h-80"></div>
     </div>
   );
 };

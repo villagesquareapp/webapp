@@ -185,6 +185,7 @@ export function Login({ className, ...props }: LoginProps) {
             </p>
             <Button
               type="submit"
+              className="text-foreground"
               disabled={isEmailOrUsernameLoading || isAppleLoading || isGoogleLoading}
             >
               {isEmailOrUsernameLoading && (
