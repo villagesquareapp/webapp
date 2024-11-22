@@ -84,3 +84,16 @@
 .reactEasyCrop_CropArea {
   border: 2px solid #fff;
 }
+
+.ReactCrop__crop-selection {
+  border: 2px solid white !important;
+}
+
+.ReactCrop__drag-handle {
+  border: 2px solid white !important;
+  background-color: white !important;
+}
+
+.ReactCrop__drag-handle::after {
+  background-color: white !important;
+}

@@ -12,7 +12,7 @@ import {
 import { Label } from "components/ui/label";
 import { RadioGroup, RadioGroupItem } from "components/ui/radio-group";
 import Image from "next/image";
-import { useState, useCallback, useRef } from "react";
+import { useState, useRef } from "react";
 import { HiLocationMarker } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
@@ -51,8 +51,6 @@ const SocialPostFilterDialog = () => {
   });
   const [completedCrop, setCompletedCrop] = useState<CropArea>();
   const imgRef = useRef<HTMLImageElement>(null);
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
   const handleChangePostImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,10 +139,6 @@ const SocialPostFilterDialog = () => {
     }
   };
 
-  const onCropComplete = useCallback((croppedArea: CropArea, croppedAreaPixels: CropArea) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
   const handleNext = () => {
     setImageProgress({ previewing: false, editing: false });
   };
@@ -170,13 +164,18 @@ const SocialPostFilterDialog = () => {
 
         {imageProgress.editing && postImage && (
           <>
-            <div className="flex-1 overflow-hidden relative bg-black">
+            <div className="flex-1 overflow-hidden relative bg-black pb-16">
               <ReactCrop
                 crop={crop}
                 onChange={(c) => setCrop(c)}
                 onComplete={(c) => setCompletedCrop(c)}
                 aspect={1}
                 className="h-full flex items-center justify-center"
+                style={
+                  {
+                    "--ReactCrop__crop-border": "2px solid white",
+                  } as React.CSSProperties
+                }
               >
                 <img
                   ref={imgRef}
