@@ -8,4 +8,9 @@ export { default as VSWalletOutline } from "./WalletOutline";
 export { default as VSMailFill } from "./MailFill";
 export { default as VSCameraFill } from "./CameraFill";
 export { default as VSSend } from "./Send";
-
+export { default as VSChat } from "./Chat";
+export { default as VSPeople } from "./People";
+export { default as VSSmallCoin } from "./SmallCoin";
+export { default as VSExternalLink } from "./ExternalLink";
+export { default as VSChatAsk } from "./ChatAsk";
+export { default as VSAddPerson } from "./AddPerson";

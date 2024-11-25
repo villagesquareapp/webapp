@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar";
+import CustomAvatar from "components/ui/custom/custom-avatar";
 import { ScrollArea, ScrollBar } from "components/ui/scroll-area";
 import { AiOutlinePlus } from "react-icons/ai";
 
@@ -12,10 +12,11 @@ const SocialFlash = () => {
               <div className="size-5 bg-primary text-foreground items-center flex absolute bottom-0.5 z-10 rounded-full place-content-center right-0">
                 <AiOutlinePlus />
               </div>
-              <Avatar className="size-16">
-                <AvatarImage src="https://github.com/shadcn.png" alt={`User ${index + 1}`} />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
+              <CustomAvatar
+                src="https://github.com/shadcn.png"
+                name="CN"
+                className="size-16 border-none"
+              />
             </div>
             <figcaption className="pt-2 text-xs text-muted-foreground">
               <p className="font-semibold text-foreground w-20 truncate text-center">

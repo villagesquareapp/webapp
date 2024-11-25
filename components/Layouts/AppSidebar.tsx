@@ -44,7 +44,7 @@ const items = [
   },
   {
     title: "Live Streams",
-    url: "#",
+    url: "/dashboard/live-streams",
     icon: HiOutlineVideoCamera,
     activeIcon: VSCameraFill,
   },
@@ -89,7 +89,7 @@ export function AppSidebar() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
-    <Sidebar className="w-[280px] ">
+    <Sidebar className="w-[280px] bg-yellow-500">
       <SidebarContent className="bg-background">
         <SidebarGroup>
           <SidebarGroupContent className="pt-20 px-5 ">
@@ -108,7 +108,11 @@ export function AppSidebar() {
                       <Popover>
                         <PopoverTrigger asChild>
                           <SidebarMenuButton
-                            className="text-foreground"
+                            className={`w-full flex items-center px-3 py-2 rounded-md transition-colors ${
+                              isActive || isHovered
+                                ? "bg-foreground text-background"
+                                : "text-foreground"
+                            }`}
                             onMouseEnter={() => setHoveredItem(item.title)}
                             onMouseLeave={() => setHoveredItem(null)}
                           >
@@ -122,7 +126,7 @@ export function AppSidebar() {
                               <Link
                                 key={moreItem.title}
                                 href={moreItem.url}
-                                className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
+                                className="flex flex-row  items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
                               >
                                 <moreItem.icon className="size-5" />
                                 <span>{moreItem.title}</span>
@@ -139,11 +143,15 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title} className="px-2">
                     <SidebarMenuButton
                       asChild
-                      className="text-foreground"
+                      className={`w-full rounded-md transition-colors ${
+                        isActive || isHovered
+                          ? "bg-foreground text-background"
+                          : "text-foreground"
+                      }`}
                       onMouseEnter={() => setHoveredItem(item.title)}
                       onMouseLeave={() => setHoveredItem(null)}
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} className="flex items-center px-3 py-2">
                         <Icon className="size-6" />
                         <span className="font-semibold">{item.title}</span>
                       </Link>

@@ -144,16 +144,14 @@ export function Register({ className, ...props }: RegisterProps) {
   return (
     <>
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Create Your Account!</h1>
-        <p className="text-sm text-muted-foreground font-semibold">
-          Create your account to connect, share and explore with your magic world
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight">Create Your Account!</h1>
+        <p>Create your account to connect, share and explore with your magic world</p>
       </div>
       <div className={cn("grid gap-6", className)} {...props}>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-            <div className="grid gap-2">
-              <div className="grid grid-cols-2 gap-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="username"
@@ -167,7 +165,7 @@ export function Register({ className, ...props }: RegisterProps) {
                           <Input
                             placeholder="Username"
                             type="text"
-                            className="pl-8"
+                            className="auth_input"
                             autoCapitalize="none"
                             autoComplete="username"
                             autoCorrect="off"
@@ -197,7 +195,7 @@ export function Register({ className, ...props }: RegisterProps) {
                           <Input
                             placeholder="Full Name"
                             type="text"
-                            className="pl-8"
+                            className="auth_input"
                             autoCapitalize="none"
                             autoComplete="name"
                             autoCorrect="off"
@@ -215,7 +213,7 @@ export function Register({ className, ...props }: RegisterProps) {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="email"
@@ -227,7 +225,7 @@ export function Register({ className, ...props }: RegisterProps) {
                           <Input
                             placeholder="Email"
                             type="email"
-                            className="pl-8"
+                            className="auth_input"
                             autoCapitalize="none"
                             autoComplete="email"
                             autoCorrect="off"
@@ -254,7 +252,7 @@ export function Register({ className, ...props }: RegisterProps) {
                           <VSAuthPadLock className="size-6 absolute left-2 top-[55%] -translate-y-1/2" />
                           <Input
                             placeholder="Password"
-                            className="px-8"
+                            className="auth_input px-8"
                             type={showPassword ? "text" : "password"}
                             autoCapitalize="none"
                             autoComplete="new-password"
@@ -297,7 +295,7 @@ export function Register({ className, ...props }: RegisterProps) {
                       <Input
                         placeholder="Referreral Code (Optional)"
                         type="text"
-                        className="pl-8"
+                        className="auth_input"
                         autoCapitalize="none"
                         autoComplete="off"
                         autoCorrect="off"
@@ -314,9 +312,10 @@ export function Register({ className, ...props }: RegisterProps) {
             />
             <Button
               type="submit"
+              className="auth_button"
               disabled={isPasswordAuthLoading || isGoogleAuthLoading || isAppleAuthLoading}
             >
-              {isPasswordAuthLoading && <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPasswordAuthLoading && <ImSpinner8 className="h-4 w-4 animate-spin" />}
               Sign Up
             </Button>
           </form>
@@ -325,40 +324,42 @@ export function Register({ className, ...props }: RegisterProps) {
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">or sign up with</span>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-background px-2">or sign up with</span>
           </div>
         </div>
+
         <Button
           variant="outline"
-          type="button"
+          className="social_auth_button"
           disabled={isPasswordAuthLoading || isGoogleAuthLoading || isAppleAuthLoading}
           onClick={() => handleSocialSignup("google")}
         >
           {isGoogleAuthLoading ? (
-            <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
+            <ImSpinner8 className="h-4 w-4 animate-spin" />
           ) : (
-            <FcGoogle className="mr-2 h-4 w-4" />
+            <FcGoogle className="!size-7" />
           )}{" "}
-          Google
+          <span className="-ml-1 font-semibold text-accent/70">Google</span>
         </Button>
         <Button
           variant="outline"
           type="button"
+          className="social_auth_button"
           disabled={isPasswordAuthLoading || isGoogleAuthLoading || isAppleAuthLoading}
           onClick={() => handleSocialSignup("apple")}
         >
           {isAppleAuthLoading ? (
-            <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
+            <ImSpinner8 className="h-4 w-4 animate-spin" />
           ) : (
-            <FaApple className="mr-2 h-4 w-4" />
+            <FaApple className="!size-6 text-black" />
           )}{" "}
-          Apple
+          <span className="-ml-1.5 font-semibold text-accent/70">Apple</span>
         </Button>
       </div>
-      <p className="px-8 text-center text-sm text-muted-foreground">
+      <p className="px-8 text-center text-sm">
         I don't have an account{" "}
-        <Link href="/auth/login" className="hover:text-primary font-semibold">
+        <Link href="/auth/login" className="font-semibold">
           Sign In
         </Link>
       </p>

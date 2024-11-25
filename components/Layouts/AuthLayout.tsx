@@ -1,9 +1,10 @@
-import CustomToaster from "components/ui/custom-toaster";
+import CustomToaster from "components/ui/custom/custom-toaster";
 import Image from "next/image";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] relative">
+      {/* @Todo Add arrow back button to the top left of forgot password and the other one*/}
       <div className="absolute top-0 left-0 w-full h-full">
         <Image
           src="/images/login_bg_clip.png"
@@ -23,7 +24,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
         <div className="lg:p-8">
-          <div className="mx-auto flex w-full flex-col justify-center space-y-5 lg:w-[400px] sm:w-[350px]">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 lg:w-[400px] sm:w-[350px]">
             {children}
           </div>
         </div>

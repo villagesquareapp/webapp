@@ -1,7 +1,7 @@
 import { VSSend } from "components/icons/village-square";
-import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar";
 import ReplyTextArea from "./ReplyTextArea";
 
+import CustomAvatar from "components/ui/custom/custom-avatar";
 const CommentInput = ({
   replyingTo,
   content,
@@ -29,10 +29,11 @@ const CommentInput = ({
         ))}
       </div>
       <div className="flex flex-row h-fit gap-x-2 items-center">
-        <Avatar className="size-12 border-foreground border">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
+        <CustomAvatar
+          src="https://github.com/shadcn.png"
+          name="CN"
+          className="size-12 border-foreground border"
+        />
         <ReplyTextArea
           replyingTo={replyingTo || ""}
           content={content}

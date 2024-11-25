@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import type { PluginAPI } from 'tailwindcss/types/config';
 
 export default {
 	darkMode: ["class"],
@@ -97,13 +98,37 @@ export default {
 					'75%': { height: '4px' },
 					'100%': { height: '8px' },
 				},
+				'slide-in-from-bottom': {
+					'0%': { transform: 'translateY(100%)' },
+					'100%': { transform: 'translateY(0)' },
+				},
 			},
 			animation: {
 				'wave-1': 'wave-1 1s ease-in-out infinite',
 				'wave-2': 'wave-2 1s ease-in-out infinite',
 				'wave-3': 'wave-3 1s ease-in-out infinite',
+				'slide-in-from-bottom': 'slide-in-from-bottom 0.3s ease-out',
+			},
+			borderColor: {
+				DEFAULT: 'hsl(var(--border))',
 			},
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function ({ addUtilities }: PluginAPI) {
+			addUtilities({
+				'.no-scrollbar': {
+					/* IE and Edge */
+					'-ms-overflow-style': 'none',
+					/* Firefox */
+					'scrollbar-width': 'none',
+					/* Safari and Chrome */
+					'&::-webkit-scrollbar': {
+						display: 'none'
+					}
+				}
+			})
+		}
+	],
 } satisfies Config;

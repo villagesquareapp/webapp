@@ -74,7 +74,7 @@ const PostDetails = () => {
               {postType === "image" && (
                 <div className="relative w-full aspect-square">
                   <Image
-                    src="/images/beautiful-image.jpg"
+                    src="/images/beautiful-image.webp"
                     alt="beautiful-image"
                     fill
                     className="object-contain"

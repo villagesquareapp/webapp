@@ -27,87 +27,58 @@ export const authOptions: NextAuthOptions = {
                 if (!credentials?.email || !credentials?.password) {
                     throw new Error("Please provide both email and password");
                 }
-                const { email, password, login_type } = credentials
+
                 try {
-                    const authRequest = await fetch(`${process.env.API_URL}/auth/login`, {
+                    const authResponse = await fetch(`${process.env.API_URL}/auth/login`, {
                         method: "POST",
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            email_or_username: email,
-                            password: password,
-                            login_type: login_type
+                            email_or_username: credentials.email,
+                            password: credentials.password,
+                            login_type: credentials.login_type
                         }),
                     });
 
-                    const authResponse = await authRequest.json();
+                    const authData = await authResponse.json();
 
-                    if (!authRequest.ok) {
-                        throw new Error(authResponse?.message || "Authentication failed");
+                    if (!authResponse.ok) {
+                        throw new Error(authData?.message || "Invalid credentials");
                     }
 
-                    const userRequest = await fetch(`${process.env.API_URL}/users/me`, {
-                        headers: { 'Authorization': `Bearer ${authResponse?.access_token}` }
+                    const userResponse = await fetch(`${process.env.API_URL}/users/me`, {
+                        headers: { 'Authorization': `Bearer ${authData.access_token}` }
                     });
 
-                    const user = await userRequest.json();
+                    const userData = await userResponse.json();
 
-                    if (!userRequest.ok || !user?.data) {
+                    if (!userResponse.ok || !userData?.data) {
                         throw new Error("Failed to fetch user data");
                     }
 
-                    return { ...user.data, token: authResponse.access_token };
-                } catch (error) {
+                    return {
+                        ...userData.data,
+                        token: authData.access_token
+                    };
+                } catch (error: any) {
                     console.error("Authorization error:", error);
-                    throw error;
+                    throw new Error(error.message || "Authentication failed");
                 }
             }
         })
     ],
     callbacks: {
-        async signIn({ user, account }) {
-            if (account?.provider === 'google') {
-                try {
-                    console.log("Starting Google sign in process...");
-
-                    const response = await fetch(`${process.env.API_URL}/auth/login`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email_or_username: user.email,
-                            login_type: 'google',
-                            provider: 'google',
-                            provider_id: user.id,
-                        }),
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok || data.status === false) {
-                        // Return false with the error message
-                        throw new Error(data.message || 'Authentication failed');
-                    }
-
-                    user.token = data.access_token;
-                    return true;
-                } catch (error: any) {
-                    console.error('Google sign in error:', error);
-                    // Return the error message to be handled by the client
-                    return `/auth/login?error=${encodeURIComponent(error.message)}`;
-                }
-            }
-            return true;
-        },
         async jwt({ token, user }) {
             if (user) {
                 token.token = user.token;
+                token.id = user.id;
+                token.email = user.email;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user = { ...session.user, token: token.token };
+                session.user.token = token.token as string;
+                session.user.id = token.id as string;
             }
             return session;
         },
@@ -119,6 +90,5 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: 'jwt',
         maxAge: 24 * 60 * 60,
-        updateAge: 24 * 60 * 60,
     },
 }

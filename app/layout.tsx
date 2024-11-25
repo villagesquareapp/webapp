@@ -2,7 +2,7 @@ import { ThemeProvider } from "components/ui/theme-provider";
 import { Poppins, Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./Providers";
-import CustomToaster from "components/ui/custom-toaster";
+import CustomToaster from "components/ui/custom/custom-toaster";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <div className="min-h-[100dvh] overflow-x-hidden">{children}</div>
             <CustomToaster />
           </ThemeProvider>
         </Providers>

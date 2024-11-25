@@ -17,12 +17,12 @@ import { ImSpinner8 } from "react-icons/im";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { toast } from "sonner";
 import { VSAuthPadLock } from "components/icons/village-square";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
 
 interface LoginProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Login({ className, ...props }: LoginProps) {
-  const [isEmailOrUsernameLoading, setIsEmailOrUsernameLoading] =
-    React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isAppleLoading, setIsAppleLoading] = React.useState<boolean>(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
   const [showPassword, setShowPassword] = React.useState(false);
@@ -37,7 +37,7 @@ export function Login({ className, ...props }: LoginProps) {
   });
 
   async function onSubmit(values: LoginFormValues) {
-    setIsEmailOrUsernameLoading(true);
+    setIsLoading(true);
 
     try {
       const result = await signIn("credentials", {
@@ -49,7 +49,7 @@ export function Login({ className, ...props }: LoginProps) {
       });
 
       if (!result) {
-        throw new Error("No result from signIn");
+        throw new Error("Authentication failed");
       }
 
       if (result.error) {
@@ -60,9 +60,9 @@ export function Login({ className, ...props }: LoginProps) {
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(typeof error === "string" ? error : "Something went wrong");
+      toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
-      setIsEmailOrUsernameLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -113,128 +113,138 @@ export function Login({ className, ...props }: LoginProps) {
 
   return (
     <>
-      <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome Back!</h1>
-        <p className="text-sm text-muted-foreground font-semibold">
-          Sign In to connect, share and explore with your magic world
-        </p>
+      <div className="flex flex-col space-y-4 text-center">
+        <h1 className="text-3xl font-semibold tracking-tight">Welcome Back!</h1>
+        <p>Sign In to connect, share and explore with your magic world</p>
       </div>
       <div className={cn("grid gap-6", className)} {...props}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-y-6">
-            <div className="grid gap-y-3">
-              <div className="grid gap-1 relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <RiUserLine className="size-4" />
-                </div>
-                <Input
-                  id="email_or_username"
-                  placeholder="Username / Email Address"
-                  type="email"
-                  className="pl-8"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  autoCorrect="off"
-                  disabled={isEmailOrUsernameLoading}
-                  {...form.register("email_or_username")}
-                />
-                {form.formState.errors.email_or_username && (
-                  <p className="text-sm text-red-500">
-                    {form.formState.errors.email_or_username.message}
-                  </p>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-6">
+            <div className="grid gap-y-4">
+              <FormField
+                control={form.control}
+                name="email_or_username"
+                render={({ field }) => (
+                  <FormItem className="grid gap-1">
+                    <div className="relative">
+                      <RiUserLine className="size-4 absolute left-2 top-[49%] -translate-y-1/2" />
+                      <FormControl>
+                        <Input
+                          placeholder="Username / Email Address"
+                          type="email"
+                          className="auth_input"
+                          autoCapitalize="none"
+                          autoComplete="email"
+                          autoCorrect="off"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="text-sm text-red-500" />
+                  </FormItem>
                 )}
-              </div>
-              <div className="grid gap-1">
-                <div className="relative">
-                  <VSAuthPadLock className="size-6 absolute left-2 top-[55%] -translate-y-1/2" />
-                  <Input
-                    id="password"
-                    placeholder="Password"
-                    type={showPassword ? "text" : "password"}
-                    autoCapitalize="none"
-                    className="px-8"
-                    autoComplete="current-password"
-                    disabled={isEmailOrUsernameLoading}
-                    {...form.register("password")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? (
-                      <IoEyeOffOutline className="h-4 w-4" />
-                    ) : (
-                      <IoEyeOutline className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-                {form.formState.errors.password && (
-                  <p className="text-sm text-red-500">
-                    {form.formState.errors.password.message}
-                  </p>
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="grid gap-1">
+                    <div className="relative">
+                      <VSAuthPadLock className="size-6 absolute left-2 top-[55%] -translate-y-1/2" />
+                      <FormControl>
+                        <Input
+                          placeholder="Password"
+                          type={showPassword ? "text" : "password"}
+                          autoCapitalize="none"
+                          className="auth_input px-8"
+                          autoComplete="current-password"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <IoEyeOffOutline className="h-4 w-4" />
+                        ) : (
+                          <IoEyeOutline className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <FormMessage className="text-sm text-red-500" />
+                  </FormItem>
                 )}
-              </div>
+              />
             </div>
-            <p className="px-3 text-center text-sm text-muted-foreground">
+
+            <p className="px-3 text-center text-sm">
               If you have forgot your password{" "}
-              <Link href="/auth/reset-password" className="hover:text-primary font-semibold">
+              <Link
+                href="/auth/forgot-password"
+                className="hover:text-foreground font-semibold"
+              >
                 Recover it
               </Link>
             </p>
+
             <Button
               type="submit"
-              className="text-foreground"
-              disabled={isEmailOrUsernameLoading || isAppleLoading || isGoogleLoading}
+              size={"lg"}
+              className="auth_button"
+              disabled={isLoading || isAppleLoading || isGoogleLoading}
             >
-              {isEmailOrUsernameLoading && (
-                <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isLoading && <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">or sign in with</span>
+          <div className="relative flex justify-center text-sn">
+            <span className="bg-background px-2">or sign in with</span>
           </div>
         </div>
         <Button
           variant="outline"
           type="button"
-          className="bg-foreground text-background"
-          disabled={isAppleLoading || isGoogleLoading || isEmailOrUsernameLoading}
+          className="social_auth_button"
+          disabled={isAppleLoading || isGoogleLoading || isLoading}
           onClick={handleGoogleLogin}
         >
           {isGoogleLoading ? (
             <ImSpinner8 className="h-4 w-4 animate-spin" />
           ) : (
-            <FcGoogle className=" size-5" />
+            <FcGoogle className="!size-7" />
           )}{" "}
-          Google
+          <span className="-ml-1 font-semibold text-accent/70">Google</span>
         </Button>
         <Button
           variant="outline"
           type="button"
-          className="bg-foreground text-background"
-          disabled={isAppleLoading || isGoogleLoading || isEmailOrUsernameLoading}
+          className="social_auth_button"
+          disabled={isAppleLoading || isGoogleLoading || isLoading}
           onClick={handleAppleLogin}
         >
           {isAppleLoading ? (
             <ImSpinner8 className="h-4 w-4 animate-spin" />
           ) : (
-            <FaApple className="size-6" />
+            <FaApple className="!size-6 text-black" />
           )}{" "}
-          Apple
+          <span className="-ml-1.5 font-semibold text-accent/70">Apple</span>
         </Button>
       </div>
-      <p className="px-8 text-center text-sm text-muted-foreground">
+      <p className="px-8 text-center text-sm">
         I don't have an account{" "}
-        <Link href="/auth/register" className="hover:text-primary font-semibold">
+        <Link href="/auth/register" className="hover:text-foreground font-semibold">
           Register Now
         </Link>
       </p>

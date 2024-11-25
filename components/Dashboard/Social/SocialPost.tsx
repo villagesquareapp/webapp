@@ -14,15 +14,15 @@ const SocialPost = () => {
 
   let postType = "video";
 
-  console.log("MapKEY:", process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!);
-
   return (
     <div className="flex flex-col gap-y-4">
       <div className="border-b-[1.5px] flex justify-between">
         <div className="flex flex-row">
           {/* @Todo Font is bold and primary border when selected */}
-          <span className="py-3 px-5 text-lg border-b-4 border-primary">For You</span>
-          <span className="py-3 px-5 text-lg">Following</span>
+          <span className="py-3 px-5 text-lg border-b-4 border-primary font-semibold">
+            For You
+          </span>
+          <span className="py-3 px-5 text-lg text-muted-foreground">Following</span>
         </div>
         <SocialPostFilterDialog />
       </div>
@@ -37,7 +37,7 @@ const SocialPost = () => {
                 <div className="w-full  aspect-[4/5] relative rounded-xl overflow-hidden">
                   <Image
                     className="object-cover"
-                    src="/images/beautiful-image.jpg"
+                    src="/images/beautiful-image.webp"
                     alt="post"
                     fill
                     sizes="500px"

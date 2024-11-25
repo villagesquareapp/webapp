@@ -1,7 +1,7 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar";
 import { Button } from "components/ui/button";
+import CustomAvatar from "components/ui/custom/custom-avatar";
 import {
   Dialog,
   DialogContent,
@@ -11,17 +11,17 @@ import {
 } from "components/ui/dialog";
 import { Label } from "components/ui/label";
 import { RadioGroup, RadioGroupItem } from "components/ui/radio-group";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { HiLocationMarker } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { LiaGlobeAmericasSolid } from "react-icons/lia";
 import { TbPlus } from "react-icons/tb";
-import Map from "../Reusable/Map";
-import dynamic from "next/dynamic";
-import "react-image-crop/dist/ReactCrop.css";
 import { Crop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import Map from "../Reusable/Map";
 
 const ReactCrop = dynamic(() => import("react-image-crop"), { ssr: false });
 
@@ -210,8 +210,7 @@ const SocialPostFilterDialog = () => {
                 <Image
                   src={croppedImage || URL.createObjectURL(postImage)}
                   alt="post-image"
-                  objectFit="cover"
-                  className="rounded-lg object-contain"
+                  className="rounded-lg object-cover"
                   fill
                 />
               </div>
@@ -236,10 +235,12 @@ const SocialPostFilterDialog = () => {
             <div className="flex-1 overflow-y-auto">
               <div className="flex flex-col gap-y-4 p-4">
                 <div className=" p-3 pb-6 flex gap-x-3 items-start h-32 bg-accent rounded-lg">
-                  <Avatar className="size-10 border border-foreground">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
+                  <CustomAvatar
+                    src="https://github.com/shadcn.png"
+                    name="CN"
+                    className="size-10 border border-foreground"
+                  />
+
                   <div className="mt-2.5 w-full h-full">
                     <textarea
                       className="!border-none bg-accent !outline-none text-foreground h-full !ring-0 text-sm w-full resize-none"
@@ -275,8 +276,7 @@ const SocialPostFilterDialog = () => {
                         onClick={handlePreviewImage}
                         src={croppedImage || URL.createObjectURL(postImage)}
                         alt="post-image"
-                        objectFit="cover"
-                        className="rounded-lg"
+                        className="rounded-lg object-cover"
                         fill
                       />
                     </div>

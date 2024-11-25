@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar";
+import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Separator } from "components/ui/separator";
 import { IoCameraOutline, IoVideocamOutline } from "react-icons/io5";
 
@@ -6,10 +6,11 @@ const NewSocialField = () => {
   return (
     <div className="border rounded-xl flex flex-col">
       <div className=" p-3 flex gap-x-3 items-center">
-        <Avatar className="size-12 border-foreground border ">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
+        <CustomAvatar
+          src="https://github.com/shadcn.png"
+          name="CN"
+          className="size-12 border-foreground border"
+        />
         <p className="text-sm text-muted-foreground">Write something here...</p>
       </div>
       <Separator />
