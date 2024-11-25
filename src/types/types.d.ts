@@ -46,6 +46,7 @@ interface IUser {
     token: string
 }
 
+
 type IRegistrationType = 'google' | 'password' | 'apple' | 'facebook'
 interface ISignup {
     username: string,
@@ -60,4 +61,50 @@ interface ISignup {
     device?: string,
     referrer_code?: string,
     fcm_token?: string
+}
+
+interface IPostMedia {
+    uuid: string
+    post_id: string
+    media_filename: string
+    media_url: string
+    transcoded_media_url: string | null
+    media_type: 'image' | 'video'
+    media_size: string
+    media_thumbnail: string
+    is_transcode_complete: boolean
+    media_duration: number | null
+    created_at: string
+    updated_at: string
+    deleted_at: string | null
+}
+
+interface IPostUser {
+    uuid: string
+    name: string | null
+    username: string | null
+    email: string
+    verified_status: number
+    profile_picture: string | null
+    online: boolean
+}
+
+interface IPost {
+    uuid: string
+    user_id: string
+    caption: string
+    address: string
+    latitude: string
+    longitude: string
+    privacy: 'everyone' | 'followers' | 'private'
+    status: 'active' | 'inactive'
+    views_count: string
+    shares_count: string
+    likes_count: string
+    comments_count: string
+    additional_metadata: any
+    user: IPostUser
+    media: IPostMedia[]
+    is_saved: boolean
+    is_liked: boolean
 }

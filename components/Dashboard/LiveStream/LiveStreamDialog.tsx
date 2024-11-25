@@ -18,6 +18,7 @@ const LiveStreamDialog = ({
   trigger,
   contentClassName,
   leftAndRightButton,
+  backIcon,
   removeFooterBorder = false,
 }: {
   removeFooterBorder?: boolean;
@@ -25,6 +26,7 @@ const LiveStreamDialog = ({
   footer?: React.ReactNode | null;
   leftAndRightButton?: React.ReactNode | null;
   children: React.ReactNode;
+  backIcon?: React.ReactNode | null;
   trigger: React.ReactNode;
   contentClassName?: HTMLAttributes<HTMLDivElement>["className"];
 }) => {
@@ -46,6 +48,7 @@ const LiveStreamDialog = ({
           <DialogHeader className="sticky top-0 bg-background border-b z-50">
             {title && (
               <div className="flex items-center justify-between px-6 py-3">
+                {backIcon && <div>{backIcon}</div>}
                 <DialogTitle className="text-center flex-1">{title}</DialogTitle>
                 <Button
                   variant="ghost"

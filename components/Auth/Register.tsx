@@ -17,6 +17,11 @@ import { MdOutlineMail } from "react-icons/md";
 import { RiUserLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
+import { register } from "app/api/auth";
+import { socialRegister } from "app/api/auth";
+import { messageHandler } from "lib/messageHandler";
+import { signIn } from "next-auth/react";
+import { redirect, useRouter } from "next/navigation";
 
 interface RegisterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -37,9 +42,8 @@ interface ISignup {
   fcm_token?: string;
 }
 
-const API_URL = process.env.API_URL;
-
 export function Register({ className, ...props }: RegisterProps) {
+  const router = useRouter();
   const [isPasswordAuthLoading, setIsPasswordAuthLoading] = React.useState<boolean>(false);
   const [isGoogleAuthLoading, setIsGoogleAuthLoading] = React.useState<boolean>(false);
   const [isAppleAuthLoading, setIsAppleAuthLoading] = React.useState<boolean>(false);
@@ -59,32 +63,41 @@ export function Register({ className, ...props }: RegisterProps) {
   async function onSubmit(values: RegisterFormValues) {
     setIsPasswordAuthLoading(true);
 
-    const signupData: ISignup = {
-      username: values.username,
-      email: values.email,
-      name: values.name,
-      password: values.password,
-      registration_type: "password",
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      referrer_code: values.referrer,
-    };
-
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(signupData),
+      const response = await register({
+        username: values.username,
+        email: values.email,
+        name: values.name,
+        password: values.password,
+        referrer_code: values.referrer || undefined,
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.message);
+      console.log("Signup RESPONSE:", response);
+
+      if (!response?.status) {
+        toast.error(messageHandler(response?.message));
       }
 
-      console.log("The response:", data);
-      toast.success("Registration successful!");
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        login_type: "password",
+        redirect: false,
+      });
+
+      console.log("Signin RESPONSE:", result);
+      if (!result) {
+        redirect("/auth/login");
+      }
+
+      if (result.error) {
+        redirect("/auth/login");
+      } else {
+        toast.success(response.message || "Registration successful!");
+        setTimeout(() => {
+          router.push("/auth/account-verification");
+        }, 1000);
+      }
     } catch (err) {
       console.error("Registration error:", err);
       toast.error(err instanceof Error ? err.message : "Registration failed");
@@ -100,38 +113,22 @@ export function Register({ className, ...props }: RegisterProps) {
       setIsAppleAuthLoading(true);
     }
 
-    const signupData: ISignup = {
-      username: "", // This would typically come from the OAuth provider
-      email: "", // This would typically come from the OAuth provider
-      name: "", // This would typically come from the OAuth provider
-      registration_type: provider,
-      provider: provider,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      provider_id: "114468729516638108730", // This is just an example, it should come from the OAuth provider
-      device_id: "browser", // You might want to generate a unique ID
-      device: "web",
-    };
-
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(signupData),
+      const response = await socialRegister({
+        provider,
+        provider_id: "114468729516638108730", // This should come from OAuth
+        device_id: "browser",
+        device: "web",
       });
 
-      if (!response.ok) {
-        throw new Error("Social sign-up failed");
+      if (!response?.status) {
+        throw new Error(response?.message || "Social sign-up failed");
       }
 
-      const data = await response.json();
-      console.log("Social sign-up successful:", data);
-      toast.success("Social sign-up successful!");
-      // Handle successful registration (e.g., redirect to dashboard)
+      toast.success(response.message || "Social sign-up successful!");
     } catch (err) {
       console.error("Social sign-up error:", err);
-      toast.error("Social sign-up failed. Please try again.");
+      toast.error(err instanceof Error ? err.message : "Social sign-up failed");
     } finally {
       if (provider === "google") {
         setIsGoogleAuthLoading(false);

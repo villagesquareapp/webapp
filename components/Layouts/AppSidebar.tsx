@@ -33,55 +33,55 @@ const items = [
   {
     title: "Social",
     url: "/dashboard/social",
-    icon: GoHome,
-    activeIcon: GoHomeFill,
+    icon: <GoHome className="!size-6" />,
+    activeIcon: <GoHomeFill className="fill-black !size-6" />,
   },
   {
     title: "Vflix",
     url: "#",
-    icon: VFlixOutline,
-    activeIcon: VFlixFill,
+    icon: <VFlixOutline className="!size-6" />,
+    activeIcon: <VFlixFill className="fill-black !size-6" />,
   },
   {
     title: "Live Streams",
     url: "/dashboard/live-streams",
-    icon: HiOutlineVideoCamera,
-    activeIcon: VSCameraFill,
+    icon: <HiOutlineVideoCamera className="!size-[26px]" />,
+    activeIcon: <VSCameraFill className="fill-black !size-[26px]" />,
   },
   {
     title: "Messages",
-    url: "#",
-    icon: MdMailOutline,
-    activeIcon: VSMailFill,
+    url: "/dashboard/messages",
+    icon: <MdMailOutline className="!size-6" />,
+    activeIcon: <VSMailFill className="fill-black !size-6" />,
   },
   {
     title: "Wallet",
     url: "/dashboard/wallet",
-    icon: VSWalletOutline,
-    activeIcon: VSWalletFill,
+    icon: <VSWalletOutline className="!size-6 mt-2" />,
+    activeIcon: <VSWalletFill className="fill-black !size-6 mt-1" />,
   },
   {
     title: "Profile",
     url: "/dashboard/profile",
-    icon: IoPersonOutline,
-    activeIcon: IoPersonSharp,
+    icon: <IoPersonOutline className="!size-6" />,
+    activeIcon: <IoPersonSharp className="!fill-black !size-6" />,
   },
   {
     title: "More Pages",
     url: "#",
-    icon: VSMore,
+    icon: <VSMore className="!size-[26px] -mb-2" />,
   },
 ];
 
 const morePageItems = [
-  { title: "Dating", icon: FaHeart, url: "#" },
-  { title: "Marketplace", icon: FaShoppingBasket, url: "#" },
-  { title: "Audio Hub", icon: BsMic, url: "#" },
-  { title: "Forums", icon: FaComments, url: "#" },
-  { title: "Event", icon: BsCalendar, url: "#" },
-  { title: "Chat", icon: IoChatbubbleEllipsesOutline, url: "#" },
-  { title: "Search Users", icon: FaUsers, url: "#" },
-  { title: "Jobs", icon: BsBriefcase, url: "#" },
+  { title: "Dating", icon: <FaHeart />, url: "#" },
+  { title: "Marketplace", icon: <FaShoppingBasket />, url: "#" },
+  { title: "Audio Hub", icon: <BsMic />, url: "#" },
+  { title: "Forums", icon: <FaComments />, url: "#" },
+  { title: "Event", icon: <BsCalendar />, url: "#" },
+  { title: "Chat", icon: <IoChatbubbleEllipsesOutline />, url: "#" },
+  { title: "Search Users", icon: <FaUsers />, url: "#" },
+  { title: "Jobs", icon: <BsBriefcase />, url: "#" },
 ];
 
 export function AppSidebar() {
@@ -116,7 +116,7 @@ export function AppSidebar() {
                             onMouseEnter={() => setHoveredItem(item.title)}
                             onMouseLeave={() => setHoveredItem(null)}
                           >
-                            <Icon className="size-6" />
+                            {Icon}
                             <span className="font-semibold">{item.title}</span>
                           </SidebarMenuButton>
                         </PopoverTrigger>
@@ -128,7 +128,7 @@ export function AppSidebar() {
                                 href={moreItem.url}
                                 className="flex flex-row  items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
                               >
-                                <moreItem.icon className="size-5" />
+                                {moreItem.icon}
                                 <span>{moreItem.title}</span>
                               </Link>
                             ))}
@@ -152,7 +152,7 @@ export function AppSidebar() {
                       onMouseLeave={() => setHoveredItem(null)}
                     >
                       <Link href={item.url} className="flex items-center px-3 py-2">
-                        <Icon className="size-6" />
+                        {Icon}
                         <span className="font-semibold">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>

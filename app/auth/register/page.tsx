@@ -1,5 +1,6 @@
 import { Register } from "components/Auth/Register";
+import AlreadyAuthenticate from "src/hoc/AlreadyAuthenticate";
 
 const RegisterPage = () => <Register />;
 
-export default RegisterPage;
+export default AlreadyAuthenticate(RegisterPage);

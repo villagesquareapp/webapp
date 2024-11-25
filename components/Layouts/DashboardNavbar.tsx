@@ -3,16 +3,21 @@
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import VsCustomLogo from "components/ui/custom/vs-custom-logo";
 import { useState } from "react";
-import { FaBell } from "react-icons/fa";
 import { IoClose, IoSearch } from "react-icons/io5";
 import { RiSearchLine } from "react-icons/ri";
 import Notification from "./Notification";
+import { Popover, PopoverTrigger } from "components/ui/popover";
+import { PopoverContent } from "@radix-ui/react-popover";
+import { signOut, useSession } from "next-auth/react";
+import { Button } from "components/ui/button";
 
 const DashboardNavbar = () => {
+  const { data: session } = useSession();
+  const user = session?.user;
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const userProfileImage = "https://github.com/shadcn.png";
-  const notificationsCount = 3;
+
+  console.log("USER:", user?.profile_picture);
 
   return (
     <div className="flex fixed w-full h-16 z-50 border-b bg-background">
@@ -68,11 +73,20 @@ const DashboardNavbar = () => {
 
       <div className="w-[280px] flex items-center justify-end gap-x-4 pr-8">
         <Notification />
-        <CustomAvatar
-          src={userProfileImage}
-          name="CN"
-          className="size-11 border-foreground border-2"
-        />
+        <Popover>
+          <PopoverTrigger>
+            <CustomAvatar
+              src={user?.profile_picture || ""}
+              name={user?.name || ""}
+              className="size-11 border-foreground border-2"
+            />
+          </PopoverTrigger>
+          <PopoverContent>
+            <Button variant="outline" onClick={() => signOut()}>
+              Logout
+            </Button>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

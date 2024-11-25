@@ -8,11 +8,39 @@ export const loginSchema = z.object({
 
 
 export const registerSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 characters"),
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    referrer: z.string().optional(),
+    username: z
+        .string()
+        .min(3, "Username must be at least 3 characters")
+        .max(30, "Username must not exceed 30 characters")
+        .regex(
+            /^[a-zA-Z0-9_]+$/,
+            "Username can only contain letters, numbers, and underscores"
+        ),
+    name: z
+        .string()
+        .min(2, "Name must be at least 2 characters")
+        .max(50, "Name must not exceed 50 characters")
+        .regex(
+            /^[a-zA-Z\s'-]+$/,
+            "Name can only contain letters, spaces, hyphens, and apostrophes"
+        ),
+    email: z
+        .string()
+        .email("Invalid email address")
+        .max(100, "Email must not exceed 100 characters"),
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters")
+        .max(100, "Password must not exceed 100 characters")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+            "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        ),
+    referrer: z
+        .string()
+        .max(30, "Referrer code must not exceed 30 characters")
+        .regex(/^[a-zA-Z0-9_]*$/, "Invalid referrer code format")
+        .optional(),
 });
 
 export const forgotPasswordSchema = z.object({

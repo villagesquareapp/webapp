@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { VSAuthPadLock } from "components/icons/village-square";
 import { Button } from "components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
 import { Input } from "components/ui/input";
 import { cn } from "lib/utils";
 import { loginSchema, type LoginFormValues } from "lib/validations/auth";
-import { RiUserLine } from "react-icons/ri";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,9 +16,8 @@ import { FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { ImSpinner8 } from "react-icons/im";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
+import { RiUserLine } from "react-icons/ri";
 import { toast } from "sonner";
-import { VSAuthPadLock } from "components/icons/village-square";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
 
 interface LoginProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -59,7 +59,6 @@ export function Login({ className, ...props }: LoginProps) {
         toast.success("Logged in successfully");
       }
     } catch (error) {
-      console.error("Login error:", error);
       toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
       setIsLoading(false);
@@ -73,8 +72,6 @@ export function Login({ className, ...props }: LoginProps) {
         redirect: false,
         callbackUrl: "/dashboard/social",
       });
-
-      console.log("Google sign-in result:", result);
 
       if (result?.error) {
         if (result.error.includes("?error=")) {

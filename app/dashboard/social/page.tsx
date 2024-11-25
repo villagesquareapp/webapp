@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState, useRef, useCallback } from "react";
 import NotFoundResult from "components/Dashboard/Reusable/NotFoundResult";
 import AddPost from "components/Dashboard/Social/AddPost";
 import DailyLoginReward from "components/Dashboard/Social/DailyLoginReward";
@@ -7,6 +10,8 @@ import SocialFlash from "components/Dashboard/Social/SocialFlash";
 import SocialMainWrapper from "components/Dashboard/Social/SocialMainWrapper";
 import SocialPost from "components/Dashboard/Social/SocialPost";
 import PostShortcut from "components/Dashboard/Social/SocialSearch/PostShortcut";
+import { getPosts } from "app/api/post";
+import { toast } from "sonner";
 import { VSChat, VSPeople } from "components/icons/village-square";
 import { Button } from "components/ui/button";
 import CustomAvatar from "components/ui/custom/custom-avatar";
@@ -17,7 +22,13 @@ import { HiMiniCheckBadge } from "react-icons/hi2";
 import { PiHeartFill } from "react-icons/pi";
 import { TbDots } from "react-icons/tb";
 
-const SocialPage = () => {
+const SocialPage = ({ searchParams }: { searchParams: PageSearchParams }) => {
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const loadingRef = useRef<HTMLDivElement>(null);
+
   let showAddPost = false;
   let showDailyLoginReward = false;
   let showHome = true;
@@ -27,6 +38,66 @@ const SocialPage = () => {
   let showPostsAndHashtags = false;
   let showProfileSearch = false;
   let showNotFoundResult = false;
+
+  const fetchPosts = async () => {
+    try {
+      if (!hasMore || loading) return;
+
+      setLoading(true);
+      const response = await getPosts({
+        order: "latest",
+        location: "lagos",
+        include: "livestream,echo,post",
+        page,
+      });
+
+      if (response.status && response.data) {
+        if (page === 1) {
+          setPosts(response.data);
+        } else {
+          setPosts((prev) => [...prev, ...(response.data ?? [])]);
+        }
+        setHasMore(response.data.length > 0);
+      } else {
+        toast.error("Failed to fetch posts");
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      toast.error("An error occurred while fetching posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Intersection Observer setup
+  const observer = useRef<IntersectionObserver>();
+  const lastPostRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            setPage((prevPage) => prevPage + 1);
+          }
+        },
+        {
+          root: null,
+          rootMargin: "200px",
+          threshold: 0.1,
+        }
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
+
+  useEffect(() => {
+    fetchPosts();
+  }, [page]);
 
   return (
     <>
@@ -38,7 +109,33 @@ const SocialPage = () => {
             <MessageShortcut />
             <SocialFlash />
             <NewSocialField />
-            <SocialPost />
+
+            {posts.map((post, index) => {
+              if (posts.length === index + 1) {
+                return (
+                  <div ref={lastPostRef} key={post.uuid}>
+                    <SocialPost post={post} />
+                  </div>
+                );
+              }
+              return <SocialPost key={post.uuid} post={post} />;
+            })}
+
+            {loading && (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            )}
+
+            {!loading && !hasMore && posts.length > 0 && (
+              <div className="text-center py-4 text-muted-foreground">
+                No more posts to load
+              </div>
+            )}
+
+            {!loading && posts.length === 0 && (
+              <NotFoundResult content={<p>No posts available at the moment.</p>} />
+            )}
           </div>
         </SocialMainWrapper>
       )}

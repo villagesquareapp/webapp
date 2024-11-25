@@ -1,64 +1,99 @@
 "use client";
 
-import { Separator } from "components/ui/separator";
 import Image from "next/image";
-import PostHeader from "./PostHeader";
-import PostText from "./PostText";
-import PostVideo from "./PostVideo";
-import SocialPostActionButtons from "./SocialPostActionButtons";
-import SocialPostFilterDialog from "./SocialPostFilterDialog";
+import { likePost, unlikePost, savePost, unsavePost, sharePost } from "app/api/post";
+import { useState } from "react";
+import { toast } from "sonner";
 
-const SocialPost = () => {
-  const postWriteup =
-    "Ex aute fugiat do consequat ut cillum minim quis aliquip consectetur qui esse. Ea ut dolor amet excepteur ad do. #WixStudio #Good #Nice";
+interface SocialPostProps {
+  post: IPost;
+}
 
-  let postType = "video";
+const SocialPost = ({ post }: SocialPostProps) => {
+  const [isLiked, setIsLiked] = useState(post.is_liked);
+  const [isSaved, setIsSaved] = useState(post.is_saved);
+  const [likesCount, setLikesCount] = useState(Number(post.likes_count));
+
+  const handleLike = async () => {
+    try {
+      const response = await (isLiked ? unlikePost(post.uuid) : likePost(post.uuid));
+      if (response.status) {
+        setIsLiked(!isLiked);
+        setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      }
+    } catch (error) {
+      toast.error("Failed to update like status");
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await (isSaved ? unsavePost(post.uuid) : savePost(post.uuid));
+      if (response.status) {
+        setIsSaved(!isSaved);
+      }
+    } catch (error) {
+      toast.error("Failed to update save status");
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await sharePost(post.uuid);
+      toast.success("Post shared successfully");
+    } catch (error) {
+      toast.error("Failed to share post");
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <div className="border-b-[1.5px] flex justify-between">
-        <div className="flex flex-row">
-          {/* @Todo Font is bold and primary border when selected */}
-          <span className="py-3 px-5 text-lg border-b-4 border-primary font-semibold">
-            For You
-          </span>
-          <span className="py-3 px-5 text-lg text-muted-foreground">Following</span>
+    <div className="border rounded-lg p-4">
+      {/* Post Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <Image
+          src={post.user.profile_picture || "/default-avatar.png"}
+          alt={post.user.name || "User"}
+          width={40}
+          height={40}
+          className="rounded-full"
+        />
+        <div>
+          <h3 className="font-semibold">{post.user.name || "Anonymous"}</h3>
+          <p className="text-sm text-muted-foreground">@{post.user.username}</p>
         </div>
-        <SocialPostFilterDialog />
       </div>
-      <div className="border rounded-xl flex flex-col gap-y-4 py-4 ">
-        {/* Post */}
-        {[1, 2, 3].map((_, index) => (
-          <div key={index} className="flex flex-col gap-y-4">
-            <PostHeader />
-            {/* Image Post - optimized for 500px width */}
-            {postType === "image" && (
-              <div className="px-4">
-                <div className="w-full  aspect-[4/5] relative rounded-xl overflow-hidden">
-                  <Image
-                    className="object-cover"
-                    src="/images/beautiful-image.webp"
-                    alt="post"
-                    fill
-                    sizes="500px"
-                    quality={90}
-                    priority
-                  />
-                </div>
-              </div>
+
+      {/* Post Content */}
+      <p className="mb-4">{post.caption}</p>
+
+      {/* Post Media */}
+      <div className="grid gap-2">
+        {post.media.map((media) => (
+          <div key={media.uuid} className="relative aspect-video">
+            {media.media_type === "image" ? (
+              <Image
+                src={media.media_url}
+                alt="Post media"
+                fill
+                className="object-cover rounded"
+              />
+            ) : (
+              <video
+                src={media.transcoded_media_url || media.media_url}
+                controls
+                className="w-full h-full rounded"
+                poster={media.media_thumbnail}
+              />
             )}
-            {/* Video Post */}
-            {postType === "video" && (
-              <div className="px-4">
-                <PostVideo showEchoButtons={true} />
-              </div>
-            )}
-            {/* Post text with highlighted hashtags */}
-            <PostText text={postWriteup} />
-            <SocialPostActionButtons />
-            <Separator className="my-2" />
           </div>
         ))}
+      </div>
+
+      {/* Post Stats */}
+      <div className="flex justify-between mt-4">
+        <button onClick={handleLike}>Likes: {likesCount}</button>
+        <button onClick={handleSave}>{isSaved ? "Saved" : "Save"}</button>
+        <button onClick={handleShare}>Share</button>
       </div>
     </div>
   );
