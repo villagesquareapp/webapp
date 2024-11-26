@@ -17,7 +17,6 @@ async function baseApiCall<T>(
     const url = `${NEXT_PUBLIC_API_URL?.replace(/\/+$/, '')}${cleanRoute}`
 
     const headers = new Headers(options.headers)
-
     if (!headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json')
     }
