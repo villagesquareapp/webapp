@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         />
       </div>
       <div className="container relative min-h-[100dvh] flex flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col p-10 dark:border-r lg:flex">
+        <div className="relative hidden h-full flex-col p-10 lg:flex">
           <div className="flex flex-col items-center justify-center  gap-y-3 my-auto h-[400px]">
             <Image src="/images/vs_logo.png" alt="Logo" width={150} height={150} />
             <div className="flex flex-col items-center justify-center gap-y-1">
