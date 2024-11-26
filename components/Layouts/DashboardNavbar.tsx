@@ -17,8 +17,6 @@ const DashboardNavbar = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  console.log("USER:", user?.profile_picture);
-
   return (
     <div className="flex fixed w-full h-16 z-50 border-b bg-background">
       <div className="w-[280px] flex items-center pl-8">
