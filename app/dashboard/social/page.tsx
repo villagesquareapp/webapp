@@ -22,7 +22,7 @@ import { HiMiniCheckBadge } from "react-icons/hi2";
 import { PiHeartFill } from "react-icons/pi";
 import { TbDots } from "react-icons/tb";
 
-const SocialPage = ({ searchParams }: { searchParams: PageSearchParams }) => {
+const SocialPage = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
