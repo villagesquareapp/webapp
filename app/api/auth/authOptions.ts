@@ -26,7 +26,6 @@ export const authOptions: NextAuthOptions = {
                 login_type: { label: 'Login Type', type: 'text' }
             },
             async authorize(credentials, _req) {
-
                 try {
                     const authResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
                         method: "POST",
@@ -41,15 +40,11 @@ export const authOptions: NextAuthOptions = {
                         }),
                     });
 
-
                     const authData = await authResponse.json();
 
                     if (!authResponse.ok) throw new Error(messageHandler(authData?.message))
 
-                    return {
-                        ...authData.data,
-                        token: authData.token
-                    };
+                    return authData.data;
                 } catch (error: any) {
                     throw new Error(error.message || "Authentication failed");
                 }
@@ -59,15 +54,18 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                return { ...user };
+                return {
+                    ...token,
+                    ...user
+                }
             }
             return token;
         },
         async session({ session, token }) {
             return {
                 ...session,
-                user: token
-            };
+                user: token as IUser
+            }
         },
     },
     pages: {

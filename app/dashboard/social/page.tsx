@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { getPosts } from "app/api/post";
 import NotFoundResult from "components/Dashboard/Reusable/NotFoundResult";
 import AddPost from "components/Dashboard/Social/AddPost";
 import DailyLoginReward from "components/Dashboard/Social/DailyLoginReward";
@@ -10,17 +10,17 @@ import SocialFlash from "components/Dashboard/Social/SocialFlash";
 import SocialMainWrapper from "components/Dashboard/Social/SocialMainWrapper";
 import SocialPost from "components/Dashboard/Social/SocialPost";
 import PostShortcut from "components/Dashboard/Social/SocialSearch/PostShortcut";
-import { getPosts } from "app/api/post";
-import { toast } from "sonner";
 import { VSChat, VSPeople } from "components/icons/village-square";
 import { Button } from "components/ui/button";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Separator } from "components/ui/separator";
 import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { HiBell, HiShare } from "react-icons/hi";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import { PiHeartFill } from "react-icons/pi";
 import { TbDots } from "react-icons/tb";
+import { toast } from "sonner";
 
 const SocialPage = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -41,8 +41,8 @@ const SocialPage = () => {
 
   const fetchPosts = async () => {
     try {
-      if (!hasMore || loading) return;
-
+      // if (!hasMore || loading) return;
+      // if (loading) return;
       setLoading(true);
       const response = await getPosts({
         order: "latest",
@@ -50,14 +50,15 @@ const SocialPage = () => {
         include: "livestream,echo,post",
         page,
       });
-
-      if (response.status && response.data) {
+      console.log("response", response);
+      const data = response?.data?.data;
+      if (response.status && data) {
         if (page === 1) {
-          setPosts(response.data);
+          setPosts(data);
         } else {
-          setPosts((prev) => [...prev, ...(response.data ?? [])]);
+          setPosts((prev) => [...prev, ...data]);
         }
-        setHasMore(response.data.length > 0);
+        setHasMore(data?.length > 0);
       } else {
         toast.error("Failed to fetch posts");
       }
@@ -99,6 +100,8 @@ const SocialPage = () => {
     fetchPosts();
   }, [page]);
 
+  console.log("posts I GOT", posts);
+
   return (
     <>
       {showDailyLoginReward && <DailyLoginReward />}
@@ -110,8 +113,8 @@ const SocialPage = () => {
             <SocialFlash />
             <NewSocialField />
 
-            {posts.map((post, index) => {
-              if (posts.length === index + 1) {
+            {posts?.map((post, index) => {
+              if (posts?.length === index + 1) {
                 return (
                   <div ref={lastPostRef} key={post.uuid}>
                     <SocialPost post={post} />
@@ -127,14 +130,14 @@ const SocialPage = () => {
               </div>
             )}
 
-            {!loading && !hasMore && posts.length > 0 && (
+            {!loading && !hasMore && posts?.length > 0 && (
               <div className="text-center py-4 text-muted-foreground">
                 No more posts to load
               </div>
             )}
 
-            {!loading && posts.length === 0 && (
-              <NotFoundResult content={<p>No posts available at the moment.</p>} />
+            {!loading && posts?.length === 0 && (
+              <NotFoundResult content={<span>No posts available at the moment.</span>} />
             )}
           </div>
         </SocialMainWrapper>

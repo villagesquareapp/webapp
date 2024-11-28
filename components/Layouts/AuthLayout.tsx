@@ -24,7 +24,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
         <div className="lg:p-8">
-          <div className="mx-auto flex w-full flex-col justify-center space-y-6 lg:w-[400px] sm:w-[350px]">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 lg:w-[450px] sm:w-[350px]">
             {children}
           </div>
         </div>

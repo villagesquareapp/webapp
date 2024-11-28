@@ -1,4 +1,9 @@
+'use server'
+
+import { apiGet } from 'lib/api'
 import { baseApiCall } from 'lib/api/base'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './auth/authOptions'
 
 interface GetPostsParams {
     order?: 'latest' | 'popular'
@@ -8,6 +13,9 @@ interface GetPostsParams {
 }
 
 export async function getPosts(params: GetPostsParams = {}) {
+    // Get the session
+    const session = await getServerSession(authOptions)
+    const token = session?.user?.token
     const queryParams = new URLSearchParams()
 
     if (params.order) queryParams.append('order', params.order)
@@ -17,25 +25,38 @@ export async function getPosts(params: GetPostsParams = {}) {
 
     const route = `/posts/social/foryou?${queryParams.toString()}`
 
-    return await baseApiCall<IPost[]>('GET', route)
+    const data = await apiGet<IPost[]>(route, token)
+    console.log("data I GOT", data)
+    return data
 }
 
 export async function likePost(postId: string) {
-    return await baseApiCall('POST', `/posts/${postId}/like`)
+    const session = await getServerSession(authOptions)
+    const token = session?.user?.token
+    return await baseApiCall('POST', `/posts/${postId}/like`, {}, token)
 }
 
 export async function unlikePost(postId: string) {
-    return await baseApiCall('DELETE', `/posts/${postId}/like`)
+    const session = await getServerSession(authOptions)
+    const token = session?.user?.token
+    return await baseApiCall('DELETE', `/posts/${postId}/like`, {}, token)
 }
 
 export async function savePost(postId: string) {
-    return await baseApiCall('POST', `/posts/${postId}/save`)
+    const session = await getServerSession(authOptions)
+    const token = session?.user?.token
+    return await baseApiCall('POST', `/posts/${postId}/save`, {}, token)
 }
 
 export async function unsavePost(postId: string) {
-    return await baseApiCall('DELETE', `/posts/${postId}/save`)
+    const session = await getServerSession(authOptions)
+    const token = session?.user?.token
+    return await baseApiCall('DELETE', `/posts/${postId}/save`, {}, token)
 }
 
 export async function sharePost(postId: string) {
-    return await baseApiCall('POST', `/posts/${postId}/share`)
+    const session = await getServerSession(authOptions)
+    const token = session?.user?.token
+    return await baseApiCall('POST', `/posts/${postId}/share`, {}, token)
 }
+

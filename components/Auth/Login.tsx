@@ -26,6 +26,7 @@ export function Login({ className, ...props }: LoginProps) {
   const [isAppleLoading, setIsAppleLoading] = React.useState<boolean>(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isRedirecting, setIsRedirecting] = React.useState<boolean>(false);
   const router = useRouter();
 
   const form = useForm<LoginFormValues>({
@@ -55,13 +56,16 @@ export function Login({ className, ...props }: LoginProps) {
       if (result.error) {
         toast.error(result.error);
       } else {
-        router.push("/dashboard/social");
+        setIsRedirecting(true);
         toast.success("Logged in successfully");
+        router.push("/dashboard/social");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
-      setIsLoading(false);
+      if (!isRedirecting) {
+        setIsLoading(false);
+      }
     }
   }
 
@@ -194,10 +198,12 @@ export function Login({ className, ...props }: LoginProps) {
               type="submit"
               size={"lg"}
               className="auth_button"
-              disabled={isLoading || isAppleLoading || isGoogleLoading}
+              disabled={isLoading || isAppleLoading || isGoogleLoading || isRedirecting}
             >
-              {isLoading && <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              {(isLoading || isRedirecting) && (
+                <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isRedirecting ? "Redirecting..." : "Sign In"}
             </Button>
           </form>
         </Form>

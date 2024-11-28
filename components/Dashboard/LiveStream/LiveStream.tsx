@@ -23,6 +23,8 @@ import LiveStreamInviteFriends from "./LiveStreamInviteFriends";
 import LiveStreamLeaveSession from "./LiveStreamLeaveSession";
 import LiveStreamReport from "./LiveStreamReport";
 import LiveStreamGift from "./LiveStreamGift";
+import { HiDotsHorizontal } from "react-icons/hi";
+import { Separator } from "components/ui/separator";
 
 const LiveStream = () => {
   let turnedOffComment = true;
@@ -45,6 +47,8 @@ const LiveStream = () => {
   const handleVideoClick = () => {
     setIsPlaying(!isPlaying);
   };
+
+  let isHost = true;
 
   if (!isClient) return null;
 
@@ -145,14 +149,36 @@ const LiveStream = () => {
                 <p className="text-muted-foreground text-sm">@micheal_jord</p>
               </div>
             </div>
-            <div className="flex items-center gap-x-3">
-              <LiveStreamReport />
-              <LiveStreamLeaveSession />
-              <span className="bg-white/10 flex items-center backdrop-blur-sm rounded-full px-5 py-1 space-x-2">
-                <CgEyeAlt className="size-4" />
-                <p className="font-medium">123</p>
-              </span>
-            </div>
+            {isHost && (
+              <Popover>
+                <PopoverTrigger>
+                  <HiDotsHorizontal className="size-6" />
+                </PopoverTrigger>
+                <PopoverContent
+                  className="p-0 w-[350px] place-items-center text-center"
+                  side="top"
+                  align="end"
+                >
+                  <div className="p-4">Add Cohost</div>
+                  <Separator />
+                  <div className="p-4">Turn Off Commenting</div>
+                  <Separator />
+                  <div className="p-4">Turn Off Questions</div>
+                  <Separator />
+                  <div className="p-4">End Session</div>
+                </PopoverContent>
+              </Popover>
+            )}
+            {!isHost && (
+              <div className="flex items-center gap-x-3">
+                <LiveStreamReport />
+                <LiveStreamLeaveSession />
+                <span className="bg-white/10 flex items-center backdrop-blur-sm rounded-full px-5 py-1 space-x-2">
+                  <CgEyeAlt className="size-4" />
+                  <p className="font-medium">123</p>
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex flex-col mt-4 gap-y-4">
             <p className="font-semibold">Featured Lives</p>
