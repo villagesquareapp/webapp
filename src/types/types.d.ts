@@ -63,6 +63,9 @@ interface ISignup {
     fcm_token?: string
 }
 
+
+
+
 interface IPostMedia {
     uuid: string
     post_id: string
@@ -81,7 +84,7 @@ interface IPostMedia {
 
 interface IPostUser {
     uuid: string
-    name: string | null
+    name: string
     username: string | null
     email: string
     verified_status: number
@@ -103,8 +106,19 @@ interface IPost {
     likes_count: string
     comments_count: string
     additional_metadata: any
+    created_at: Date
+    updated_at: Date
     user: IPostUser
     media: IPostMedia[]
     is_saved: boolean
     is_liked: boolean
+}
+
+
+interface IPostsResponse {
+    current_page: string,
+    data: IPost[],
+    per_page: number,
+    total: number,
+    last_page: number
 }

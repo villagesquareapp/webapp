@@ -61,29 +61,85 @@ const mapStyles = [
   },
 ];
 
-const Map = ({ onLocationSelect }: { onLocationSelect: (location: string) => void }) => {
+const Map = ({
+  onLocationSelect,
+}: {
+  onLocationSelect: (location: {
+    coordinates: string;
+    state: string;
+    country: string;
+  }) => void;
+}) => {
   const [markerPosition, setMarkerPosition] = useState(defaultCenter);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
 
-  const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setMarkerPosition({ lat, lng });
-      onLocationSelect(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-    }
+  const onLoad = useCallback((map: google.maps.Map) => {
+    setMap(map);
   }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
+
+  const handleMapClick = useCallback(
+    async (e: google.maps.MapMouseEvent) => {
+      if (e.latLng && map && window.google) {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        setMarkerPosition({ lat, lng });
+
+        try {
+          const geocoder = new window.google.maps.Geocoder();
+          const response = await geocoder.geocode({
+            location: { lat, lng },
+          });
+
+          if (response.results[0]) {
+            let state = "";
+            let country = "";
+
+            response.results[0].address_components.forEach((component) => {
+              if (component.types.includes("administrative_area_level_1")) {
+                state = component.long_name;
+              }
+              if (component.types.includes("country")) {
+                country = component.long_name;
+              }
+            });
+
+            onLocationSelect({
+              coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+              state,
+              country,
+            });
+          }
+        } catch (error) {
+          console.error("Geocoding error:", error);
+          onLocationSelect({
+            coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+            state: "",
+            country: "",
+          });
+        }
+      }
+    },
+    [map, onLocationSelect]
+  );
 
   return (
     <div className="mt-2 rounded-lg overflow-hidden">
-      <LoadScriptComponent
+      {/* <LoadScriptComponent
         id="google-map-script"
         googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+        libraries={["places"]}
       >
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={defaultCenter}
           zoom={13}
           onClick={handleMapClick}
+          onLoad={onLoad}
+          onUnmount={onUnmount}
           options={{
             styles: mapStyles,
             disableDefaultUI: true,
@@ -92,7 +148,7 @@ const Map = ({ onLocationSelect }: { onLocationSelect: (location: string) => voi
         >
           <MarkerComponent position={markerPosition} />
         </GoogleMap>
-      </LoadScriptComponent>
+      </LoadScriptComponent> */}
     </div>
   );
 };

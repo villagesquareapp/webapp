@@ -1,100 +1,117 @@
 "use client";
 
 import Image from "next/image";
-import { likePost, unlikePost, savePost, unsavePost, sharePost } from "app/api/post";
-import { useState } from "react";
+import { likePost, unlikePost, savePost, unsavePost, sharePost, getPosts } from "app/api/post";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Separator } from "@radix-ui/react-separator";
+import PostVideo from "./PostVideo";
+import SocialPostActionButtons from "./SocialPostActionButtons";
+import PostText from "./PostText";
+import PostHeader from "./PostHeader";
+import SocialPostFilterDialog from "./SocialPostFilterDialog";
+import EachSocialPost from "./EachSocialPost";
+import LoadingSpinner from "../Reusable/LoadingSpinner";
+import NotFoundResult from "../Reusable/NotFoundResult";
 
-interface SocialPostProps {
-  post: IPost;
-}
+const SocialPost = () => {
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
-const SocialPost = ({ post }: SocialPostProps) => {
-  const [isLiked, setIsLiked] = useState(post.is_liked);
-  const [isSaved, setIsSaved] = useState(post.is_saved);
-  const [likesCount, setLikesCount] = useState(Number(post.likes_count));
-
-  const handleLike = async () => {
+  const fetchPosts = async () => {
     try {
-      const response = await (isLiked ? unlikePost(post.uuid) : likePost(post.uuid));
-      if (response.status) {
-        setIsLiked(!isLiked);
-        setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      setLoading(true);
+      const response = await getPosts({
+        order: "latest",
+        location: "lagos",
+        include: "livestream,echo,post",
+        page,
+      });
+
+      const posts = response?.data?.data;
+      if (posts?.length) {
+        if (page === 1) {
+          setPosts(posts);
+        } else {
+          setPosts((prev) => [...prev, ...posts]);
+        }
+        setHasMore(posts?.length === response?.data?.total);
+      } else {
+        toast.error("Failed to fetch posts");
       }
     } catch (error) {
-      toast.error("Failed to update like status");
+      console.error("Error fetching posts:", error);
+      toast.error("An error occurred while fetching posts");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSave = async () => {
-    try {
-      const response = await (isSaved ? unsavePost(post.uuid) : savePost(post.uuid));
-      if (response.status) {
-        setIsSaved(!isSaved);
-      }
-    } catch (error) {
-      toast.error("Failed to update save status");
-    }
-  };
+  // Intersection Observer setup
+  const observer = useRef<IntersectionObserver>();
+  const lastPostRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (observer.current) observer.current.disconnect();
 
-  const handleShare = async () => {
-    try {
-      await sharePost(post.uuid);
-      toast.success("Post shared successfully");
-    } catch (error) {
-      toast.error("Failed to share post");
-    }
-  };
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            setPage((prevPage) => prevPage + 1);
+          }
+        },
+        {
+          root: null,
+          rootMargin: "200px",
+          threshold: 0.1,
+        }
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
+
+  useEffect(() => {
+    fetchPosts();
+  }, [page]);
 
   return (
-    <div className="border rounded-lg p-4">
-      {/* Post Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <Image
-          src={post.user.profile_picture || "/default-avatar.png"}
-          alt={post.user.name || "User"}
-          width={40}
-          height={40}
-          className="rounded-full"
-        />
-        <div>
-          <h3 className="font-semibold">{post.user.name || "Anonymous"}</h3>
-          <p className="text-sm text-muted-foreground">@{post.user.username}</p>
+    <div className="flex flex-col gap-y-4">
+      <div className="border-b-[1.5px] flex justify-between">
+        <div className="flex flex-row">
+          {/* @Todo Font is bold and primary border when selected */}
+          <span className="py-3 px-5 text-lg border-b-4 border-primary">For You</span>
+          <span className="py-3 px-5 text-lg">Following</span>
         </div>
+        <SocialPostFilterDialog />
       </div>
+      {loading && <LoadingSpinner />}
 
-      {/* Post Content */}
-      <p className="mb-4">{post.caption}</p>
+      {!loading && posts?.length > 0 && (
+        <div className="border rounded-xl flex flex-col gap-y-4 py-4 ">
+          {/* Post */}
 
-      {/* Post Media */}
-      <div className="grid gap-2">
-        {post.media.map((media) => (
-          <div key={media.uuid} className="relative aspect-video">
-            {media.media_type === "image" ? (
-              <Image
-                src={media.media_url}
-                alt="Post media"
-                fill
-                className="object-cover rounded"
-              />
-            ) : (
-              <video
-                src={media.transcoded_media_url || media.media_url}
-                controls
-                className="w-full h-full rounded"
-                poster={media.media_thumbnail}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Post Stats */}
-      <div className="flex justify-between mt-4">
-        <button onClick={handleLike}>Likes: {likesCount}</button>
-        <button onClick={handleSave}>{isSaved ? "Saved" : "Save"}</button>
-        <button onClick={handleShare}>Share</button>
-      </div>
+          {posts?.map((post, index) => {
+            if (posts?.length === index + 1) {
+              return (
+                <div className="flex flex-col gap-y-4 py-4" ref={lastPostRef} key={post.uuid}>
+                  <EachSocialPost key={post.uuid} post={post} />
+                </div>
+              );
+            }
+            return <EachSocialPost key={post.uuid} post={post} />;
+          })}
+        </div>
+      )}
+      {!loading && posts?.length === 0 && (
+        <NotFoundResult content={<span>No posts available at the moment.</span>} />
+      )}
+      {!loading && !hasMore && posts?.length > 0 && (
+        <div className="text-center py-4 text-muted-foreground">No more posts to load</div>
+      )}
     </div>
   );
 };

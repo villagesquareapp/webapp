@@ -25,9 +25,8 @@ export async function getPosts(params: GetPostsParams = {}) {
 
     const route = `/posts/social/foryou?${queryParams.toString()}`
 
-    const data = await apiGet<IPost[]>(route, token)
-    console.log("data I GOT", data)
-    return data
+    const data = await apiGet<IPostsResponse>(route, token)
+    return data || null
 }
 
 export async function likePost(postId: string) {

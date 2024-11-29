@@ -7,28 +7,67 @@ import { Separator } from "components/ui/separator";
 import { BsDot } from "react-icons/bs";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import { IoEllipsisHorizontal } from "react-icons/io5";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import updateLocale from "dayjs/plugin/updateLocale";
 
-const PostHeader = ({ showMoreDetailButton = true }: { showMoreDetailButton?: boolean }) => {
+dayjs.extend(relativeTime);
+dayjs.extend(updateLocale);
+
+dayjs.updateLocale("en", {
+  relativeTime: {
+    future: "in %s",
+    past: "%s",
+    s: "%ds",
+    ss: "%ds",
+    m: "1m",
+    mm: "%dm",
+    h: "1hr",
+    hh: "%dhrs",
+    d: "1d",
+    dd: "%dd",
+    M: "1mon",
+    MM: "%dmons",
+    y: "1yr",
+    yy: "%dyrs",
+  },
+});
+
+const PostHeader = ({
+  showMoreDetailButton = true,
+  post,
+}: {
+  showMoreDetailButton?: boolean;
+  post: IPost;
+}) => {
   return (
-    <div className="flex justify-between items-center h-12  px-4">
+    <div key={post.uuid} className="flex justify-between items-center h-12  px-4">
       {/* Post Header */}
       <div className="flex flex-row gap-x-3 items-center">
         <CustomAvatar
-          src="https://github.com/shadcn.png"
-          name="CN"
+          src={post?.user?.profile_picture || ""}
+          name={post?.user?.name || ""}
           className="size-12 border-foreground border-[1.5px]"
         />
         <div className="flex flex-col gap-y-1">
           <span className="flex flex-row gap-x-2 items-center">
-            <span className="font-semibold text-sm">John Doe</span>
-            <HiMiniCheckBadge className="size-5 text-green-600" />
+            <span className="font-semibold text-sm">{post?.user?.name}</span>
+            {post?.user?.verified_status && (
+              <HiMiniCheckBadge className="size-5 text-green-600" />
+            )}
           </span>
           <span className="flex flex-row items-center gap-x-1">
-            <span className="text-xs text-muted-foreground">New York, US</span>{" "}
-            <span>
-              <BsDot />
-            </span>
-            <p className="text-xs text-muted-foreground">2h</p>
+            {post?.address && (
+              <>
+                <span className="text-xs text-muted-foreground">{post?.address}</span>{" "}
+                <span>
+                  <BsDot />
+                </span>
+              </>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {dayjs(post?.created_at).fromNow()}
+            </p>
           </span>
         </div>
       </div>
