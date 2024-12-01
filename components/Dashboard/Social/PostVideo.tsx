@@ -13,7 +13,7 @@ const PostVideo = ({
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <div className="w-full  aspect-video rounded-xl overflow-hidden bg-black relative">
+    <div className="w-full  aspect-[4/5] rounded-xl overflow-hidden bg-black relative">
       {showEchoButtons && (
         <>
           <Button className="absolute bottom-4 right-4 rounded-full text-foreground text-xs font-semibold py-1">

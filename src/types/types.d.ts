@@ -84,7 +84,7 @@ interface IPostMedia {
 
 interface IPostUser {
     uuid: string
-    name: string
+    name: string | null
     username: string | null
     email: string
     verified_status: number
@@ -115,10 +115,38 @@ interface IPost {
 }
 
 
-interface IPostsResponse {
-    current_page: string,
-    data: IPost[],
-    per_page: number,
-    total: number,
+interface IPaginatedResponse<T> {
+    current_page: string
+    data: T[]
+    per_page: number
+    total: number
     last_page: number
+}
+
+interface IPostsResponse extends IPaginatedResponse<IPost> { }
+
+interface ICommentsResponse extends IPaginatedResponse<IPostComment> { }
+
+
+
+interface IPostComment {
+    uuid: string
+    post_id: string
+    user_id: string
+    likes_count: string
+    comment: string
+    parent_id: string
+    created_at: Date
+    updated_at: Date
+    user: IPostUser
+    formatted_time: string
+    reply_count: number
+}
+
+interface ILikeOrUnlikePostResponse {
+    is_liked: boolean
+}
+
+interface ISaveOrUnsavePostResponse {
+    is_saved: boolean
 }

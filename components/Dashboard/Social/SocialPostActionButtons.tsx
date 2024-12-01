@@ -5,28 +5,39 @@ import { CgEyeAlt } from "react-icons/cg";
 import { IoMdShareAlt } from "react-icons/io";
 import { PiHeartFill } from "react-icons/pi";
 import SocialPostComment from "./SocialPostComment";
+import { useEffect } from "react";
 
 const SocialPostActionButtons = ({
   disableCommentButton = false,
+  likeUnlikePost,
+  saveUnsavePost,
   post,
 }: {
   disableCommentButton?: boolean;
+  likeUnlikePost: (postId: string) => void;
+  saveUnsavePost: (postId: string) => void;
   post: IPost;
 }) => {
   return (
     <div className="flex flex-row justify-between items-center px-4">
       <div className="flex flex-row gap-x-7 items-center">
         <div className="flex flex-row gap-x-1 items-center">
-          <PiHeartFill className={`size-6 ${post.is_liked && "text-red-600"}`} />
+          <PiHeartFill
+            onClick={() => likeUnlikePost(post.uuid)}
+            className={`size-6 cursor-pointer ${post.is_liked && "text-red-600"}`}
+          />
           <p className="text-sm">{post?.likes_count}</p>
         </div>
-        <SocialPostComment disableCommentButton={disableCommentButton} />
+        <SocialPostComment post={post} disableCommentButton={disableCommentButton} />
         <div className="flex flex-row gap-x-1 items-center">
           <IoMdShareAlt className="size-8" />
           <p className="text-sm">{post?.shares_count}</p>
         </div>
         <div className="flex flex-row gap-x-1 items-center">
-          <BsBookmarkDashFill className={`size-5 ${post.is_saved && "text-primary"} size-5`} />
+          <BsBookmarkDashFill
+            onClick={() => saveUnsavePost(post.uuid)}
+            className={`size-5 ${post?.is_saved && "text-primary"} size-5 cursor-pointer`}
+          />
         </div>
       </div>
       <div className="flex items-center gap-x-1">

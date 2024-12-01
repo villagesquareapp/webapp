@@ -9,7 +9,7 @@ export async function apiDelete(route: string, token: string): Promise<ApiRespon
     })
 
     // Revalidate the path on the client side
-    await revalidatePathClient(route)
+    // await revalidatePathClient(route)
 
     return response
 }

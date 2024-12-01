@@ -1,4 +1,3 @@
-
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://staging-api.villagesquare.io/v2'
 
 export interface ApiResponse<T = any> {
@@ -10,7 +9,7 @@ export interface ApiResponse<T = any> {
 async function baseApiCall<T>(
     method: string,
     route: string,
-    options: RequestInit = {},
+    options: RequestInit & { isFormData?: boolean } = {},
     token?: string
 ): Promise<ApiResponse<T>> {
 
@@ -18,7 +17,7 @@ async function baseApiCall<T>(
     const url = `${NEXT_PUBLIC_API_URL?.replace(/\/+$/, '')}${cleanRoute}`
 
     const headers = new Headers(options.headers)
-    if (!headers.has('Content-Type')) {
+    if (!headers.has('Content-Type') && !options.isFormData) {
         headers.set('Content-Type', 'application/json')
     }
 

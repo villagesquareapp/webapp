@@ -290,7 +290,7 @@ const SocialPostFilterDialog = () => {
                     </div>
                     <p className="text-sm">{selectedLocation}</p>
                   </div>
-                  <Map onLocationSelect={handleLocationSelect} />
+                  {/* <Map onLocationSelect={handleLocationSelect} /> */}
                 </div>
 
                 <div className="gap-y-1 flex flex-col">

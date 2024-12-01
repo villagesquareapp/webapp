@@ -14,11 +14,8 @@ export async function apiPost<T>(route: string, body: any, token?: string, optio
         headers,
         body: JSON.stringify(body),
     })
-    console.log("API POST RESPONSE:", response);
 
-    // Revalidate the path on the client side
-    await revalidatePathClient(route)
-
+    // await revalidatePathClient(route)
     return response
 }
 

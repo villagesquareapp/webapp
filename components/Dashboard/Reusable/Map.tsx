@@ -64,11 +64,12 @@ const mapStyles = [
 const Map = ({
   onLocationSelect,
 }: {
-  onLocationSelect: (location: {
-    coordinates: string;
-    state: string;
-    country: string;
-  }) => void;
+  // onLocationSelect: (location: {
+  //   coordinates: string;
+  //   state: string;
+  //   country: string;
+  // }) => void;
+  onLocationSelect: (location: string) => void;
 }) => {
   const [markerPosition, setMarkerPosition] = useState(defaultCenter);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -107,19 +108,21 @@ const Map = ({
               }
             });
 
-            onLocationSelect({
-              coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-              state,
-              country,
-            });
+            // onLocationSelect({
+            //   coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+            //   state,
+            //   country,
+            // });
+            onLocationSelect(`${state}, ${country}`);
           }
         } catch (error) {
           console.error("Geocoding error:", error);
-          onLocationSelect({
-            coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-            state: "",
-            country: "",
-          });
+          // onLocationSelect({
+          //   coordinates: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+          //   state: "",
+          //   country: "",
+          // });
+          onLocationSelect("");
         }
       }
     },

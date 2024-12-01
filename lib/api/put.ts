@@ -10,7 +10,7 @@ export async function apiPut<T>(route: string, body: any, token: string): Promis
     })
 
     // Revalidate the path on the client side
-    await revalidatePathClient(route)
+    // await revalidatePathClient(route)
 
     return response
 }

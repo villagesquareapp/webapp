@@ -9,15 +9,14 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { IoClose, IoEllipsisHorizontal } from "react-icons/io5";
+import CommentInput from "./CommentInput";
 import PostHeader from "./PostHeader";
 import PostText from "./PostText";
-import SocialPostActionButtons from "./SocialPostActionButtons";
-import { Separator } from "components/ui/separator";
-import SocialComment from "./SocialComment";
-import CommentInput from "./CommentInput";
 import PostVideo from "./PostVideo";
+import SocialComment from "./SocialComment";
+import SocialPostActionButtons from "./SocialPostActionButtons";
 
-const PostDetails = () => {
+const PostDetails = ({ post }: { post: IPost }) => {
   const [openPostDetails, setOpenPostDetails] = useState(false);
   const [commentContent, setCommentContent] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -71,6 +70,11 @@ const PostDetails = () => {
         <div className="grid grid-cols-2 h-full">
           <div className="col-span-1 w-full h-full relative flex !place-content-center !items-center object-center bg-black/35">
             <div className="flex flex-col h-fit my-auto center place-self-center">
+              {postType === "text" && (
+                <div className="w-[90%] flex mx-auto !text-center font-semibold text-xl">
+                  <PostText text={postWriteup} />
+                </div>
+              )}
               {postType === "image" && (
                 <div className="relative w-full aspect-square">
                   <Image
@@ -82,23 +86,29 @@ const PostDetails = () => {
                   />
                 </div>
               )}
-              {postType === "text" && (
-                <div className="w-[90%] flex mx-auto !text-center font-semibold text-xl">
-                  <PostText text={postWriteup} />
-                </div>
+              {postType === "video" && (
+                <PostVideo
+                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                  showEchoButtons={false}
+                />
               )}
-              {postType === "video" && <PostVideo showEchoButtons={false} />}
             </div>
           </div>
           <div className="col-span-1 w-full h-full flex flex-col relative">
             <div className="sticky bg-background z-10 border-b pt-4 pb-2">
-              <PostHeader showMoreDetailButton={false} />
+              <PostHeader post={post} showMoreDetailButton={false} />
               <PostText text={postWriteup} />
-              <SocialPostActionButtons disableCommentButton={true} />
+              <SocialPostActionButtons
+                likeUnlikePost={() => {}}
+                saveUnsavePost={() => {}}
+                disableCommentButton={true}
+                post={post}
+              />
             </div>
+            post
             <div className="flex-1 overflow-y-auto">
               <div className="min-h-full pt-3">
-                <SocialComment onChangeReplyingTo={handleReplyingTo} />
+                <SocialComment postId={post?.uuid} onChangeReplyingTo={handleReplyingTo} />
               </div>
             </div>
             <div className="sticky bottom-0 bg-background mt-auto border-t">

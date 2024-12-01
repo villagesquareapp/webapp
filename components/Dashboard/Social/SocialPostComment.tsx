@@ -1,10 +1,10 @@
 import { Button } from "components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "components/ui/dialog";
 import { useState } from "react";
 import { IoChatbubbleEllipses, IoClose } from "react-icons/io5";
@@ -12,8 +12,10 @@ import CommentInput from "./CommentInput";
 import SocialComment from "./SocialComment";
 
 const SocialPostComment = ({
+  post,
   disableCommentButton = false,
 }: {
+  post: IPost;
   disableCommentButton?: boolean;
 }) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -32,13 +34,15 @@ const SocialPostComment = ({
       <DialogTrigger>
         <div className="flex flex-row gap-x-1 items-center">
           <IoChatbubbleEllipses className="size-6" />
-          <p className="text-sm">12</p>
+          <p className="text-sm">{post?.comments_count}</p>
         </div>
       </DialogTrigger>
       <DialogContent className="max-w-[650px] !max-h-[90dvh] overflow-hidden p-0">
         <DialogHeader className="sticky top-0 bg-background border-b z-50">
           <div className="flex items-center justify-between px-6 py-3">
-            <DialogTitle className="text-center flex-1">Comment (28)</DialogTitle>
+            <DialogTitle className="text-center flex-1">
+              Comment ({post?.comments_count})
+            </DialogTitle>
             <Button
               variant="ghost"
               className="p-1 px-2.5 rounded-full transition-colors"
@@ -48,8 +52,8 @@ const SocialPostComment = ({
             </Button>
           </div>
         </DialogHeader>
-        <div style={{ height: "calc(90dvh - 140px)" }}>
-          <SocialComment onChangeReplyingTo={setReplyingTo} />
+        <div style={{ height: "calc(90dvh - 140px)" }} className="overflow-y-auto">
+          <SocialComment onChangeReplyingTo={setReplyingTo} postId={post.uuid} />
         </div>
         <CommentInput
           handleEmojiClick={handleEmojiClick}

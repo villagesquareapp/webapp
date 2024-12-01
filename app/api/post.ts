@@ -29,33 +29,55 @@ export async function getPosts(params: GetPostsParams = {}) {
     return data || null
 }
 
-export async function likePost(postId: string) {
+export async function likeOrUnlikePost(postId: string, formData: FormData) {
     const session = await getServerSession(authOptions)
     const token = session?.user?.token
-    return await baseApiCall('POST', `/posts/${postId}/like`, {}, token)
+    return await baseApiCall<ILikeOrUnlikePostResponse>('POST', `/posts/${postId}/like`, {
+        body: formData,
+        isFormData: true
+    }, token)
 }
 
-export async function unlikePost(postId: string) {
+export async function saveOrUnsavePost(postId: string, formData: FormData) {
     const session = await getServerSession(authOptions)
     const token = session?.user?.token
-    return await baseApiCall('DELETE', `/posts/${postId}/like`, {}, token)
+    return await baseApiCall<ISaveOrUnsavePostResponse>('POST', `/posts/${postId}/save`, { body: formData, isFormData: true }, token)
 }
 
-export async function savePost(postId: string) {
-    const session = await getServerSession(authOptions)
-    const token = session?.user?.token
-    return await baseApiCall('POST', `/posts/${postId}/save`, {}, token)
-}
-
-export async function unsavePost(postId: string) {
-    const session = await getServerSession(authOptions)
-    const token = session?.user?.token
-    return await baseApiCall('DELETE', `/posts/${postId}/save`, {}, token)
-}
 
 export async function sharePost(postId: string) {
     const session = await getServerSession(authOptions)
     const token = session?.user?.token
     return await baseApiCall('POST', `/posts/${postId}/share`, {}, token)
 }
+
+export const getPostComments = async (postId: string, page: number = 1) => {
+    try {
+        // Get the session
+        const session = await getServerSession(authOptions)
+        const token = session?.user?.token
+
+        const response = await apiGet<ICommentsResponse>(`posts/${postId}/comments?page=${page}`, token);
+        return response;
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        return null;
+    }
+};
+
+export const getCommentReplies = async (postId: string, commentId: string, page: number = 1) => {
+    try {
+        const session = await getServerSession(authOptions)
+        const token = session?.user?.token
+
+        const response = await apiGet<ICommentsResponse>(
+            `posts/${postId}/comments/${commentId}?page=${page}`,
+            token
+        );
+        return response;
+    } catch (error) {
+        console.error("Error fetching comment replies:", error);
+        return null;
+    }
+};
 
