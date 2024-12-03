@@ -1,6 +1,5 @@
 "use client";
 
-import { getPosts } from "app/api/post";
 import NotFoundResult from "components/Dashboard/Reusable/NotFoundResult";
 import AddPost from "components/Dashboard/Social/AddPost";
 import DailyLoginReward from "components/Dashboard/Social/DailyLoginReward";
@@ -15,12 +14,10 @@ import { Button } from "components/ui/button";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Separator } from "components/ui/separator";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { HiBell, HiShare } from "react-icons/hi";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import { PiHeartFill } from "react-icons/pi";
 import { TbDots } from "react-icons/tb";
-import { toast } from "sonner";
 
 const SocialPage = () => {
   let showAddPost = false;
@@ -41,7 +38,7 @@ const SocialPage = () => {
           <div className="flex flex-col gap-y-4 w-full">
             {showAddPost && <AddPost />}
             <MessageShortcut />
-            <SocialFlash />
+            {/* <SocialFlash /> */}
             <NewSocialField />
             <SocialPost />
           </div>

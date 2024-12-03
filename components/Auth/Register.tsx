@@ -72,7 +72,6 @@ export function Register({ className, ...props }: RegisterProps) {
         referrer_code: values.referrer || undefined,
       });
 
-      console.log("Signup RESPONSE:", response);
 
       if (!response?.status) {
         toast.error(messageHandler(response?.message));
@@ -85,7 +84,6 @@ export function Register({ className, ...props }: RegisterProps) {
         redirect: false,
       });
 
-      console.log("Signin RESPONSE:", result);
       if (!result) {
         redirect("/auth/login");
       }

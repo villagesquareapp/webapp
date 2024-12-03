@@ -1,9 +1,8 @@
 'use server'
 
-import { apiGet } from 'lib/api'
+import { apiGet, apiPost } from 'lib/api'
 import { baseApiCall } from 'lib/api/base'
-import { getServerSession } from 'next-auth'
-import { authOptions } from './auth/authOptions'
+import { getToken } from 'lib/getToken'
 
 interface GetPostsParams {
     order?: 'latest' | 'popular'
@@ -14,8 +13,7 @@ interface GetPostsParams {
 
 export async function getPosts(params: GetPostsParams = {}) {
     // Get the session
-    const session = await getServerSession(authOptions)
-    const token = session?.user?.token
+    const token = await getToken()
     const queryParams = new URLSearchParams()
 
     if (params.order) queryParams.append('order', params.order)
@@ -30,8 +28,7 @@ export async function getPosts(params: GetPostsParams = {}) {
 }
 
 export async function likeOrUnlikePost(postId: string, formData: FormData) {
-    const session = await getServerSession(authOptions)
-    const token = session?.user?.token
+    const token = await getToken()
     return await baseApiCall<ILikeOrUnlikePostResponse>('POST', `/posts/${postId}/like`, {
         body: formData,
         isFormData: true
@@ -39,45 +36,45 @@ export async function likeOrUnlikePost(postId: string, formData: FormData) {
 }
 
 export async function saveOrUnsavePost(postId: string, formData: FormData) {
-    const session = await getServerSession(authOptions)
-    const token = session?.user?.token
+    const token = await getToken()
     return await baseApiCall<ISaveOrUnsavePostResponse>('POST', `/posts/${postId}/save`, { body: formData, isFormData: true }, token)
 }
 
 
 export async function sharePost(postId: string) {
-    const session = await getServerSession(authOptions)
-    const token = session?.user?.token
+    const token = await getToken()
     return await baseApiCall('POST', `/posts/${postId}/share`, {}, token)
 }
 
-export const getPostComments = async (postId: string, page: number = 1) => {
-    try {
-        // Get the session
-        const session = await getServerSession(authOptions)
-        const token = session?.user?.token
+// ============== Comments =================
 
-        const response = await apiGet<ICommentsResponse>(`posts/${postId}/comments?page=${page}`, token);
-        return response;
-    } catch (error) {
-        console.error("Error fetching comments:", error);
-        return null;
-    }
+export const getPostComments = async (postId: string, page: number = 1) => {
+    const token = await getToken()
+    const response = await apiGet<ICommentsResponse>(`posts/${postId}/comments?page=${page}`, token);
+    return response;
+};
+
+export const createComments = async (postId: string, newCommentData: INewComment) => {
+    const token = await getToken()
+    const response = await apiPost<IPostComment>(`posts/${postId}/comments/add`, newCommentData, token);
+    return response;
 };
 
 export const getCommentReplies = async (postId: string, commentId: string, page: number = 1) => {
-    try {
-        const session = await getServerSession(authOptions)
-        const token = session?.user?.token
-
-        const response = await apiGet<ICommentsResponse>(
-            `posts/${postId}/comments/${commentId}?page=${page}`,
-            token
-        );
-        return response;
-    } catch (error) {
-        console.error("Error fetching comment replies:", error);
-        return null;
-    }
+    const token = await getToken()
+    const response = await apiGet<ICommentsResponse>(
+        `posts/${postId}/comments/${commentId}?page=${page}`,
+        token
+    );
+    return response;
 };
+
+
+export async function likeOrUnlikeComments(postId: string, commentId: string, formData: FormData) {
+    const token = await getToken()
+    return await baseApiCall<ILikeOrUnlikePostResponse>('POST', `/posts/${postId}/comments/${commentId}/like`, {
+        body: formData,
+        isFormData: true
+    }, token)
+}
 

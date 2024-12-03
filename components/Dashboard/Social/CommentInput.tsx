@@ -2,18 +2,23 @@ import { VSSend } from "components/icons/village-square";
 import ReplyTextArea from "./ReplyTextArea";
 
 import CustomAvatar from "components/ui/custom/custom-avatar";
+import { Loader2 } from "lucide-react";
 const CommentInput = ({
   replyingTo,
   content,
   onChangeContentAction,
   onCancelReply,
   handleEmojiClick,
+  onSubmitComment,
+  loading,
 }: {
-  replyingTo: string | null;
+  replyingTo: IPostComment | null;
   content: string;
   onChangeContentAction: (content: string) => void;
   handleEmojiClick: (emoji: string) => void;
   onCancelReply: () => void;
+  onSubmitComment: () => void;
+  loading: boolean;
 }) => {
   return (
     <div className="sticky bottom-0 bg-background border-t px-6 h-fit gap-y-4 py-4 flex flex-col">
@@ -35,14 +40,21 @@ const CommentInput = ({
           className="size-12 border-foreground border"
         />
         <ReplyTextArea
-          replyingTo={replyingTo || ""}
+          replyingTo={replyingTo}
           content={content}
           onChangeContentAction={onChangeContentAction}
           onCancelReply={onCancelReply}
           className="w-full"
         />
-        <div className="p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex">
-          <VSSend className="size-6 flex m-auto" />
+        <div
+          className="p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex"
+          onClick={onSubmitComment}
+        >
+          {loading ? (
+            <Loader2 className="size-6 flex m-auto animate-spin" />
+          ) : (
+            <VSSend className="size-6 flex m-auto" />
+          )}
         </div>
       </div>
     </div>

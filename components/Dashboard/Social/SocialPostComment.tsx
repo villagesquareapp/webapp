@@ -10,21 +10,35 @@ import { useState } from "react";
 import { IoChatbubbleEllipses, IoClose } from "react-icons/io5";
 import CommentInput from "./CommentInput";
 import SocialComment from "./SocialComment";
+import { createComments } from "api/post";
+import { toast } from "sonner";
+import { CommentWithReplies } from "./types";
+import usePost from "src/hooks/usePost";
 
 const SocialPostComment = ({
   post,
   disableCommentButton = false,
+  setPosts,
 }: {
   post: IPost;
   disableCommentButton?: boolean;
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
 }) => {
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [content, setContent] = useState("");
-  const [openCommentDialog, setOpenCommentDialog] = useState(false);
-
-  const handleEmojiClick = (emoji: string) => {
-    setContent((prev) => prev + emoji);
-  };
+  const {
+    replyingTo,
+    setReplyingTo,
+    newComment,
+    setNewComment,
+    openCommentDialog,
+    setOpenCommentDialog,
+    postCommentLoading,
+    setCommentsWithReplies,
+    comments,
+    setComments,
+    commentsWithReplies,
+    handleEmojiClick,
+    handleSubmitComment,
+  } = usePost(post, setPosts);
 
   return (
     <Dialog
@@ -53,13 +67,22 @@ const SocialPostComment = ({
           </div>
         </DialogHeader>
         <div style={{ height: "calc(90dvh - 140px)" }} className="overflow-y-auto">
-          <SocialComment onChangeReplyingTo={setReplyingTo} postId={post.uuid} />
+          <SocialComment
+            comments={comments}
+            setComments={setComments}
+            onChangeReplyingTo={setReplyingTo}
+            postId={post.uuid}
+            commentsWithReplies={commentsWithReplies}
+            setCommentsWithReplies={setCommentsWithReplies}
+          />
         </div>
         <CommentInput
+          onSubmitComment={handleSubmitComment}
+          loading={postCommentLoading}
           handleEmojiClick={handleEmojiClick}
           replyingTo={replyingTo}
-          content={content}
-          onChangeContentAction={setContent}
+          content={newComment}
+          onChangeContentAction={setNewComment}
           onCancelReply={() => setReplyingTo(null)}
         />
       </DialogContent>

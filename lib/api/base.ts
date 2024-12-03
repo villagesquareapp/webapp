@@ -34,18 +34,13 @@ async function baseApiCall<T>(
 
         const data: ApiResponse<T> = await response.json()
 
-        console.log("data I GOT base", data)
         if (response.ok) {
             return data
         } else {
-            // if (method === 'GET') {
-            //     toast.error(data.message || 'An unexpected error occurred')
-            // }
             return data
         }
     } catch (error: any) {
         const errorMessage = error.message || `An unexpected error occurred during the ${method} request.`
-        // toast.error(errorMessage)
         return {
             status: false,
             message: errorMessage,

@@ -3,7 +3,7 @@
 import * as React from "react";
 
 interface ReplyTextareaProps {
-  replyingTo?: string;
+  replyingTo?: IPostComment | null;
   onCancelReply?: () => void;
   content?: string;
   onChangeContentAction: (content: string) => void;
@@ -25,7 +25,7 @@ export default function ReplyTextArea({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Backspace" && !content && replyingTo) {
+    if (e.key === "Backspace" && !content && replyingTo?.user.username) {
       e.preventDefault();
       onCancelReply?.();
     }
@@ -63,7 +63,8 @@ export default function ReplyTextArea({
             onClick={() => onCancelReply?.()}
             className="bg-black text-muted-foreground px-2 rounded-sm py-0.5 mr-1 cursor-pointer hover:bg-accent-foreground transition-colors"
           >
-            Replying to <span className="font-semibold text-foreground">{replyingTo}</span>
+            Replying to{" "}
+            <span className="font-semibold text-foreground">{replyingTo.user.username}</span>
           </span>
         )}
         {content}

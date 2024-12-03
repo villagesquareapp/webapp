@@ -1,7 +1,6 @@
 import { ApiResponse, baseApiCall } from './base'
 
 export async function apiGet<T>(route: string, token?: string): Promise<ApiResponse<T> | null> {
-    console.log("token I GOT", token)
     const headers: HeadersInit = {}
     if (token) {
         headers['Authorization'] = `Bearer ${token}`

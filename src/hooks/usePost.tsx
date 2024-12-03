@@ -1,28 +1,24 @@
-import { getCommentReplies, getPostComments, likeOrUnlikeComments } from "app/api/post";
-import { Separator } from "components/ui/separator";
+"use client";
+
+import {
+  createComments,
+  getCommentReplies,
+  getPostComments,
+  likeOrUnlikeComments,
+} from "api/post";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import LoadingSpinner from "../Reusable/LoadingSpinner";
-import Comment from "./Comment";
-import { CommentWithReplies } from "./types";
 
-const SocialComment = ({
-  onChangeReplyingTo,
-  postId,
-  comments,
-  setComments,
-  commentsWithReplies,
-  setCommentsWithReplies,
-}: {
-  onChangeReplyingTo: (postComment: IPostComment, parentComment?: IPostComment) => void;
-  postId: string;
-  comments: IPostComment[];
-  setComments: React.Dispatch<React.SetStateAction<IPostComment[]>>;
-  commentsWithReplies: Record<string, CommentWithReplies>;
-  setCommentsWithReplies: React.Dispatch<
-    React.SetStateAction<Record<string, CommentWithReplies>>
-  >;
-}) => {
+const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPost[]>>) => {
+  const [replyingTo, setReplyingTo] = useState<IPostComment | null>(null);
+  const [newComment, setNewComment] = useState("");
+  const [openCommentDialog, setOpenCommentDialog] = useState(false);
+  const [postCommentLoading, setPostCommentLoading] = useState(false);
+  const [comments, setComments] = useState<IPostComment[]>([]);
+  const [commentsWithReplies, setCommentsWithReplies] = useState<
+    Record<string, CommentWithReplies>
+  >({});
+
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -41,7 +37,7 @@ const SocialComment = ({
         setLoadingMore(true);
       }
 
-      const response = await getPostComments(postId, pageNumber);
+      const response = await getPostComments(post?.uuid, pageNumber);
 
       if (response?.status && response.data) {
         const allComments = response.data.data;
@@ -101,7 +97,7 @@ const SocialComment = ({
     try {
       setLoadingReplies((prev) => ({ ...prev, [commentId]: true }));
 
-      const response = await getCommentReplies(postId, commentId, page);
+      const response = await getCommentReplies(post?.uuid, commentId, page);
 
       if (response?.status && response.data?.data) {
         const replies = response.data.data;
@@ -155,7 +151,7 @@ const SocialComment = ({
 
   const handleCommentLike = async (comment: IPostComment, parentCommentId?: string) => {
     const formData = new FormData();
-    const result = await likeOrUnlikeComments(postId, comment.uuid, formData);
+    const result = await likeOrUnlikeComments(post.uuid, comment.uuid, formData);
 
     if (result?.status) {
       if (parentCommentId) {
@@ -230,7 +226,7 @@ const SocialComment = ({
   }, [hasMore, loading, loadingMore]);
 
   useEffect(() => {
-    if (postId) {
+    if (post?.uuid) {
       setPage(1);
       setComments([]);
       setHasMore(true);
@@ -238,7 +234,7 @@ const SocialComment = ({
       setExpandedComments(new Set());
       fetchComments(1);
     }
-  }, [postId]);
+  }, [post?.uuid]);
 
   useEffect(() => {
     if (page > 1) {
@@ -246,97 +242,94 @@ const SocialComment = ({
     }
   }, [page]);
 
-  if (loading && !initialFetchDone) {
-    return (
-      <div className="flex-1 overflow-y-auto px-6">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const handleEmojiClick = (emoji: string) => {
+    setNewComment((prev) => prev + emoji);
+  };
 
-  if (!loading && comments.length === 0 && initialFetchDone) {
-    return (
-      <div className="flex-1 overflow-y-auto px-6">
-        <div className="text-center py-4 text-muted-foreground">
-          {" "}
-          No comments yet! <br /> Be the first one to comment.
-        </div>
-      </div>
-    );
-  }
+  const handleSubmitComment = async () => {
+    if (postCommentLoading) return;
+    const newCommentData: INewComment = {
+      comment: newComment,
+    };
 
-  return (
-    <div className="flex-1 !overflow-y-auto px-6">
-      {comments.map((comment) => (
-        <div key={comment.uuid} className="flex flex-col gap-y-4">
-          <Comment
-            type="mainComment"
-            comment={comment}
-            onReply={() => onChangeReplyingTo(comment)}
-            onLike={() => handleCommentLike(comment)}
-          />
+    if (replyingTo) newCommentData.parent_id = replyingTo.uuid;
 
-          {comment?.reply_count > 0 && (
-            <div
-              className="ml-16 text-sm text-primary cursor-pointer"
-              onClick={() => toggleReplies(comment.uuid)}
-            >
-              {expandedComments.has(comment.uuid) ? "Hide" : "Show"} {comment.reply_count}{" "}
-              replies
-            </div>
-          )}
+    try {
+      setPostCommentLoading(true);
+      const response = await createComments(post.uuid, newCommentData);
 
-          {/* Replies section */}
-          {expandedComments.has(comment.uuid) && (
-            <div className="w-[90%] ml-auto flex flex-col gap-y-4">
-              {loadingReplies[comment.uuid] &&
-              !commentsWithReplies[comment.uuid]?.loadedReplies ? (
-                <LoadingSpinner />
-              ) : (
-                <>
-                  {commentsWithReplies[comment.uuid]?.loadedReplies?.map(
-                    (reply: IPostComment) => (
-                      <Comment
-                        key={reply.uuid}
-                        type="subComment"
-                        comment={reply}
-                        onReply={() => onChangeReplyingTo(reply, comment)}
-                        onLike={() => handleCommentLike(reply, comment.uuid)}
-                      />
-                    )
-                  )}
+      if (response?.status) {
+        const newCommentObj = response.data as IPostComment;
+        setNewComment("");
 
-                  {commentsWithReplies[comment.uuid]?.hasMoreReplies && (
-                    <button
-                      onClick={() => loadMoreReplies(comment.uuid)}
-                      className="text-sm text-primary ml-4"
-                      disabled={loadingReplies[comment.uuid]}
-                    >
-                      {loadingReplies[comment.uuid] ? <LoadingSpinner /> : "Load more replies"}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          )}
+        if (replyingTo) {
+          // Update the reply count of the parent comment
+          setComments((prev) =>
+            prev.map((comment) => {
+              if (comment.uuid === replyingTo.uuid) {
+                return {
+                  ...comment,
+                  reply_count: comment.reply_count + 1,
+                };
+              }
+              return comment;
+            })
+          );
 
-          <Separator className="mt-4 mb-2" />
-        </div>
-      ))}
+          // Add the new reply to commentsWithReplies
+          setCommentsWithReplies((prev) => ({
+            ...prev,
+            [replyingTo.uuid]: {
+              ...prev[replyingTo.uuid],
+              loadedReplies: [newCommentObj, ...(prev[replyingTo.uuid]?.loadedReplies || [])],
+            },
+          }));
+        } else {
+          // Add new top-level comment
+          setComments((prev) => [newCommentObj, ...prev]);
+        }
 
-      {hasMore && <div ref={observerTarget} style={{ height: "10px" }} />}
+        setReplyingTo(null);
 
-      {loadingMore && (
-        <div className="py-4 text-center">
-          <LoadingSpinner />
-        </div>
-      )}
+        // Update the total comment count in the post
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.uuid === post.uuid
+              ? { ...p, comments_count: (parseInt(p.comments_count) + 1).toString() }
+              : p
+          )
+        );
+      } else {
+        toast.error(response?.message);
+      }
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      toast.error("An error occurred while posting comment");
+    } finally {
+      setPostCommentLoading(false);
+    }
+  };
 
-      {!loading && !hasMore && comments.length > 0 && (
-        <div className="text-center py-4 text-muted-foreground">No more comments to load</div>
-      )}
-    </div>
-  );
+  return {
+    replyingTo,
+    setReplyingTo,
+    newComment,
+    setNewComment,
+    openCommentDialog,
+    setOpenCommentDialog,
+    postCommentLoading,
+    setPostCommentLoading,
+    comments,
+    setComments,
+    commentsWithReplies,
+    handleEmojiClick,
+    handleSubmitComment,
+    setCommentsWithReplies,
+    toggleReplies,
+    loadMoreReplies,
+    observerTarget,
+    initialFetchDone,
+  };
 };
 
-export default SocialComment;
+export default usePost;

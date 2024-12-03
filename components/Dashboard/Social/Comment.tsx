@@ -7,10 +7,12 @@ const Comment = ({
   comment,
   onReply,
   type,
+  onLike,
 }: {
   comment: IPostComment;
   onReply: () => void;
   type: "mainComment" | "subComment";
+  onLike: () => void;
 }) => {
   return (
     <div className="flex flex-col gap-y-4">
@@ -43,8 +45,8 @@ const Comment = ({
       </div>
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-x-8 ml-16">
-          <div className="flex flex-row gap-x-1 items-center">
-            <PiHeartFill className="size-5" />
+          <div onClick={onLike} className="flex flex-row gap-x-1 items-center cursor-pointer">
+            <PiHeartFill className={`size-5 ${comment.is_liked ? "text-red-500" : ""}`} />
             <p className="text-sm">{comment.likes_count}</p>
           </div>
           <div onClick={onReply} className="flex flex-row gap-x-1 items-center cursor-pointer">

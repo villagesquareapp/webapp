@@ -12,11 +12,13 @@ const SocialPostActionButtons = ({
   likeUnlikePost,
   saveUnsavePost,
   post,
+  setPosts,
 }: {
   disableCommentButton?: boolean;
   likeUnlikePost: (postId: string) => void;
   saveUnsavePost: (postId: string) => void;
   post: IPost;
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
 }) => {
   return (
     <div className="flex flex-row justify-between items-center px-4">
@@ -28,7 +30,11 @@ const SocialPostActionButtons = ({
           />
           <p className="text-sm">{post?.likes_count}</p>
         </div>
-        <SocialPostComment post={post} disableCommentButton={disableCommentButton} />
+        <SocialPostComment
+          post={post}
+          disableCommentButton={disableCommentButton}
+          setPosts={setPosts}
+        />
         <div className="flex flex-row gap-x-1 items-center">
           <IoMdShareAlt className="size-8" />
           <p className="text-sm">{post?.shares_count}</p>

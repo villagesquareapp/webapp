@@ -4,18 +4,30 @@ import PostHeader from "./PostHeader";
 import PostText from "./PostText";
 import PostVideo from "./PostVideo";
 import SocialPostActionButtons from "./SocialPostActionButtons";
-import { useEffect, useState } from "react";
-import { getPostComments } from "api/post";
+import { useState } from "react";
+import PostDetails from "./PostDetails";
 
 const EachSocialPost = ({
   post,
   likeUnlikePost,
   saveUnsavePost,
+  setPosts,
 }: {
   post: IPost;
   likeUnlikePost: (postId: string) => void;
   saveUnsavePost: (postId: string) => void;
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
 }) => {
+  const [showPostDetail, setShowPostDetail] = useState<IPost | null>(null);
+
+  const handlePostClick = () => {
+    setShowPostDetail(post);
+  };
+
+  const handleRemovePostDetail = () => {
+    setShowPostDetail(null);
+  };
+
   return (
     <div className="flex flex-col gap-y-4">
       <PostHeader post={post} />
@@ -44,8 +56,21 @@ const EachSocialPost = ({
         ))}
       </div>
       {/* Post text with highlighted hashtags */}
-      <PostText text={post?.caption} />
+      <div onClick={handlePostClick} className="cursor-pointer">
+        <PostText text={post?.caption} />
+      </div>
+      {showPostDetail && (
+        <PostDetails
+          likeUnlikePost={likeUnlikePost}
+          saveUnsavePost={saveUnsavePost}
+          open={showPostDetail === post}
+          setPosts={setPosts}
+          post={post}
+          onClose={handleRemovePostDetail}
+        />
+      )}
       <SocialPostActionButtons
+        setPosts={setPosts}
         likeUnlikePost={likeUnlikePost}
         saveUnsavePost={saveUnsavePost}
         post={post}

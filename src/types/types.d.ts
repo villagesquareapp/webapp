@@ -10,6 +10,11 @@ interface ApiResponse<T = any> {
     [key: string]: any
 }
 
+interface INewComment {
+    comment: string
+    parent_id?: string
+}
+
 interface IUser {
     uuid: string
     name: string
@@ -134,8 +139,9 @@ interface IPostComment {
     post_id: string
     user_id: string
     likes_count: string
+    is_liked: boolean
     comment: string
-    parent_id: string
+    parent_id?: string
     created_at: Date
     updated_at: Date
     user: IPostUser
@@ -150,3 +156,9 @@ interface ILikeOrUnlikePostResponse {
 interface ISaveOrUnsavePostResponse {
     is_saved: boolean
 }
+
+interface CommentWithReplies {
+    loadedReplies: IPostComment[];
+    hasMoreReplies: boolean;
+    replyPage: number;
+} 

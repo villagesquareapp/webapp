@@ -10,10 +10,10 @@ import SocialPostFilterDialog from "./SocialPostFilterDialog";
 
 const SocialPost = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isPostLoading, setIsPostLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingMorePost, setLoadingMore] = useState(false);
 
   const likeUnlikePost = async (postId: string) => {
     const formData = new FormData();
@@ -59,7 +59,7 @@ const SocialPost = () => {
   const fetchPosts = async (pageNumber: number) => {
     try {
       if (pageNumber === 1) {
-        setLoading(true);
+        setIsPostLoading(true);
       } else {
         setLoadingMore(true);
       }
@@ -85,13 +85,13 @@ const SocialPost = () => {
           (pageNumber - 1) * (response?.data?.per_page || 10) + newPosts.length;
         setHasMore(currentTotal < totalPosts);
       } else {
-        toast.error("Failed to fetch posts");
+        toast.error(response?.message);
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
       toast.error("An error occurred while fetching posts");
     } finally {
-      setLoading(false);
+      setIsPostLoading(false);
       setLoadingMore(false);
     }
   };
@@ -102,7 +102,7 @@ const SocialPost = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+        if (entries[0].isIntersecting && hasMore && !isPostLoading && !loadingMorePost) {
           setPage((prevPage) => prevPage + 1);
         }
       },
@@ -123,7 +123,7 @@ const SocialPost = () => {
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, loading, loadingMore]);
+  }, [hasMore, isPostLoading, loadingMorePost]);
 
   useEffect(() => {
     fetchPosts(page);
@@ -139,12 +139,13 @@ const SocialPost = () => {
         <SocialPostFilterDialog />
       </div>
 
-      {loading && <LoadingSpinner />}
+      {isPostLoading && <LoadingSpinner />}
 
-      {!loading && posts?.length > 0 && (
+      {!isPostLoading && posts?.length > 0 && (
         <div className="border rounded-xl flex flex-col gap-y-4 py-4">
           {posts.map((post) => (
             <EachSocialPost
+              setPosts={setPosts}
               likeUnlikePost={likeUnlikePost}
               saveUnsavePost={saveUnsavePost}
               key={post.uuid}
@@ -156,7 +157,7 @@ const SocialPost = () => {
           <div ref={observerTarget} style={{ height: "10px" }} />
 
           {/* Loading more indicator */}
-          {loadingMore && (
+          {loadingMorePost && (
             <div className="py-4 text-center">
               <LoadingSpinner />
             </div>
@@ -164,11 +165,11 @@ const SocialPost = () => {
         </div>
       )}
 
-      {!loading && posts?.length === 0 && (
+      {!isPostLoading && posts?.length === 0 && (
         <NotFoundResult content={<span>No posts available at the moment.</span>} />
       )}
 
-      {!loading && !hasMore && posts?.length > 0 && (
+      {!isPostLoading && !hasMore && posts?.length > 0 && (
         <div className="text-center py-4 text-muted-foreground">No more posts to load</div>
       )}
     </div>
