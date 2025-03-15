@@ -28,7 +28,7 @@ const SponsorCard = ({ sponsorType }: { sponsorType: "liveStream" | "social" }) 
             Make Your Business Profit
           </p>
           <div
-            className={`px-5 py-1.5 bg-muted-foreground w-fit rounded-full text-foreground !z-30 absolute font-medium inset-x-0 ml-4 flex text-xs ${
+            className={`px-5 py-1.5 glassmorphism w-fit rounded-full text-foreground !z-30 absolute font-medium inset-x-0 ml-4 flex text-xs font-semibold ${
               sponsorType === "social" ? "-bottom-4" : "bottom-2"
             }`}
           >

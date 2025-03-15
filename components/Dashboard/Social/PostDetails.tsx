@@ -66,7 +66,7 @@ const PostDetails = ({
               } gap-4  h-fit my-auto center place-self-center`}
             >
               {post?.media?.map((media) => (
-                <div key={media?.uuid}>
+                <div key={media?.uuid} className="px-4">
                   {media?.media_type === "image" && (
                     <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden">
                       <Image
@@ -90,7 +90,9 @@ const PostDetails = ({
           <div className="col-span-1 w-full h-full flex flex-col relative">
             <div className="sticky bg-background z-10 border-b pt-4 pb-2">
               <PostHeader post={post} showMoreDetailButton={false} />
-              <PostText text={post?.caption} />
+              <div className="my-4">
+                <PostText text={post?.caption} />
+              </div>
               <SocialPostActionButtons
                 setPosts={setPosts}
                 likeUnlikePost={likeUnlikePost}

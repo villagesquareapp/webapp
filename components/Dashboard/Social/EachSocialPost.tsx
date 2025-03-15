@@ -28,32 +28,64 @@ const EachSocialPost = ({
     setShowPostDetail(null);
   };
 
+  // Determine if this is a single media post
+  const isSingleMedia = post?.media?.length === 1;
+
   return (
     <div className="flex flex-col gap-y-4">
       <PostHeader post={post} />
-      <div
-        className={`grid ${post.media?.length > 1 ? "grid-cols-2" : "grid-cols-1"} gap-4 px-4`}
-      >
-        {post?.media?.map((media) => (
-          <div key={media?.uuid}>
-            {media?.media_type === "image" && (
-              <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden">
-                <Image
-                  className="object-cover"
+
+      <div className={`p-4 ${isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"}`}>
+        {post?.media?.map((media, index, array) => {
+          // For multiple media posts, check if this is a single item in the last row
+          const isLastItem = index === array.length - 1;
+          const isOddCount = array.length % 2 === 1;
+          const shouldSpanFull = !isSingleMedia && isLastItem && isOddCount;
+
+          return (
+            <div
+              key={media?.uuid}
+              className={`${shouldSpanFull ? "col-span-2" : ""} ${
+                isSingleMedia ? "w-full" : ""
+              }`}
+            >
+              {media?.media_type === "image" && (
+                <div
+                  className={`w-full relative rounded-xl overflow-hidden ${
+                    isSingleMedia
+                      ? "aspect-[4/5] max-h-[500px]"
+                      : shouldSpanFull
+                      ? "aspect-[16/9] max-h-[250px]"
+                      : "aspect-[4/5]"
+                  }`}
+                >
+                  <Image
+                    className="object-cover"
+                    src={media?.media_url}
+                    alt="post"
+                    fill
+                    sizes={isSingleMedia ? "100vw" : "500px"}
+                    quality={90}
+                    priority
+                  />
+                </div>
+              )}
+              {media?.media_type === "video" && (
+                <PostVideo
                   src={media?.media_url}
-                  alt="post"
-                  fill
-                  sizes="500px"
-                  quality={90}
-                  priority
+                  showEchoButtons={false}
+                  className={
+                    isSingleMedia
+                      ? "aspect-[4/5] max-h-[500px]"
+                      : shouldSpanFull
+                      ? "aspect-[16/9] max-h-[250px]"
+                      : "aspect-[4/5]"
+                  }
                 />
-              </div>
-            )}
-            {media?.media_type === "video" && (
-              <PostVideo src={media?.media_url} showEchoButtons={false} />
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
       </div>
       {/* Post text with highlighted hashtags */}
       <div onClick={handlePostClick} className="cursor-pointer">

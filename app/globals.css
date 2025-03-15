@@ -115,3 +115,7 @@
     display: none; /* Chrome, Safari and Opera */
   }
 }
+
+.glassmorphism {
+  @apply !backdrop-filter !backdrop-blur-lg !bg-white !bg-opacity-10 !border-opacity-20 !shadow-lg;
+}

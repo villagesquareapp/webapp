@@ -34,7 +34,7 @@ const items = [
     title: "Social",
     url: "/dashboard/social",
     icon: <GoHome className="!size-6" />,
-    activeIcon: <GoHomeFill className="fill-black !size-6" />,
+    activeIcon: <GoHomeFill className="fill-black !size-6 -mt-0.5" />,
   },
   {
     title: "Vflix",
@@ -69,7 +69,7 @@ const items = [
   {
     title: "More Pages",
     url: "#",
-    icon: <VSMore className="!size-[26px] -mb-2" />,
+    icon: <VSMore className="!size-[28px] -mb-2" />,
   },
 ];
 
@@ -89,10 +89,10 @@ export function AppSidebar() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
-    <Sidebar className="w-[280px] bg-yellow-500">
+    <Sidebar className="w-[280px]">
       <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupContent className="pt-20 px-5 ">
+          <SidebarGroupContent className="pt-20 px-3">
             <SidebarMenu>
               {items.map((item) => {
                 const isActive = pathname === item.url;
@@ -108,7 +108,7 @@ export function AppSidebar() {
                       <Popover>
                         <PopoverTrigger asChild>
                           <SidebarMenuButton
-                            className={`w-full flex items-center px-3 py-2 rounded-md transition-colors ${
+                            className={`w-full flex items-center px-3 py-3 rounded-md transition-colors h-11 ${
                               isActive || isHovered
                                 ? "bg-foreground text-background"
                                 : "text-foreground"
@@ -117,7 +117,7 @@ export function AppSidebar() {
                             onMouseLeave={() => setHoveredItem(null)}
                           >
                             {Icon}
-                            <span className="font-semibold">{item.title}</span>
+                            <span className="font-semibold text-base mt-1">{item.title}</span>
                           </SidebarMenuButton>
                         </PopoverTrigger>
                         <PopoverContent className="w-56 p-2" side="bottom">
@@ -129,7 +129,7 @@ export function AppSidebar() {
                                 className="flex flex-row  items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
                               >
                                 {moreItem.icon}
-                                <span>{moreItem.title}</span>
+                                <span className="text-xl">{moreItem.title}</span>
                               </Link>
                             ))}
                           </div>
@@ -143,7 +143,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title} className="px-2">
                     <SidebarMenuButton
                       asChild
-                      className={`w-full rounded-md transition-colors ${
+                      className={`w-full rounded-lg transition-colors h-11 ${
                         isActive || isHovered
                           ? "bg-foreground text-background"
                           : "text-foreground"
@@ -151,9 +151,9 @@ export function AppSidebar() {
                       onMouseEnter={() => setHoveredItem(item.title)}
                       onMouseLeave={() => setHoveredItem(null)}
                     >
-                      <Link href={item.url} className="flex items-center px-3 py-2">
+                      <Link href={item.url} className="flex items-center p-3">
                         {Icon}
-                        <span className="font-semibold">{item.title}</span>
+                        <span className="font-semibold text-base">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

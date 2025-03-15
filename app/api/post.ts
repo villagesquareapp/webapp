@@ -27,6 +27,14 @@ export async function getPosts(params: GetPostsParams = {}) {
     return data || null
 }
 
+export async function createPost(formData: FormData) {
+    const token = await getToken()
+    return await baseApiCall<IPostsResponse>('POST', `/posts/create`, {
+        body: formData,
+        isFormData: true
+    }, token)
+}
+
 export async function likeOrUnlikePost(postId: string, formData: FormData) {
     const token = await getToken()
     return await baseApiCall<ILikeOrUnlikePostResponse>('POST', `/posts/${postId}/like`, {

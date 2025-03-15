@@ -78,7 +78,7 @@ const PostHeader = ({
             <PopoverTrigger>
               <IoEllipsisHorizontal className="size-6" />
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-fit p-0 text-center z-[50]">
+            <PopoverContent align="end" className="bg-background w-fit p-0 text-center z-[50]">
               <div className="text-sm px-20 py-3">Report</div>
               <Separator className="my-2" />
               <div className="px-20 py-3">Block</div>

@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             enableSystem
             disableTransitionOnChange
           >
-            <div className="min-h-[100dvh] overflow-x-hidden">{children}</div>
+            <div className="min-h-[100dvh] overflow-x-hidden relative">{children}</div>
             <CustomToaster />
           </ThemeProvider>
         </Providers>

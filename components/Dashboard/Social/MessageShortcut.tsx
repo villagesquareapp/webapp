@@ -20,7 +20,7 @@ const MessageCount = ({ count, className }: { count: number; className?: string 
   );
 };
 
-const MessageShortcut = () => {
+const MessageShortcut = ({ user }: { user: IUser }) => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [showMessages, setShowMessages] = useState(false);
 
@@ -37,11 +37,13 @@ const MessageShortcut = () => {
           className="flex items-center justify-between py-2 px-3 cursor-pointer"
         >
           <div className="flex flex-row items-center gap-x-2">
-            <CustomAvatar
-              src="https://github.com/shadcn.png"
-              name="CN"
-              className="size-8 border-foreground border"
-            />
+            {user?.profile_picture && (
+              <CustomAvatar
+                src={user?.profile_picture}
+                name={user?.name}
+                className="size-8 border-foreground border"
+              />
+            )}
             <p className="font-medium text-sm">Messages</p>
           </div>
           <div className="flex flex-row items-center gap-x-2">

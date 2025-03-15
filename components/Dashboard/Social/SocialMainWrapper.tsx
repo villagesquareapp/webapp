@@ -2,12 +2,44 @@ import { Button } from "components/ui/button";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Separator } from "components/ui/separator";
 import SponsorCard from "../Reusable/SponsorCard";
+import { useEffect, useRef, useState } from "react";
 
 const SocialMainWrapper = ({ children }: { children: React.ReactNode }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rightPosition, setRightPosition] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const rightEdge = window.innerWidth - containerRect.right;
+        setRightPosition(rightEdge);
+      }
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-row justify-between w-[800px] mx-auto h-full pt-4">
+    <div
+      ref={containerRef}
+      className="flex flex-row justify-between w-[800px] mx-auto h-full pt-4 relative"
+    >
       <div className="flex w-[500px] rounded-lg pb-8">{children}</div>
-      <div className="flex flex-col gap-8">
+      <div
+        className="flex flex-col gap-8 h-fit"
+        style={{
+          position: "fixed",
+          top: "5rem" /* Adjusted to account for navbar height */,
+          right: rightPosition ? `${rightPosition}px` : "auto",
+          width: "280px",
+        }}
+      >
         <SponsorCard sponsorType="social" />
         <div className="w-full gap-y-3 h-fit border rounded-xl flex flex-col">
           <p className="px-3 pt-4 pb-2 font-semibold">People Suggestions</p>

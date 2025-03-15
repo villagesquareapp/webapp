@@ -72,7 +72,6 @@ export function Register({ className, ...props }: RegisterProps) {
         referrer_code: values.referrer || undefined,
       });
 
-
       if (!response?.status) {
         toast.error(messageHandler(response?.message));
       }
@@ -90,7 +89,8 @@ export function Register({ className, ...props }: RegisterProps) {
 
       if (result.error) {
         redirect("/auth/login");
-      } else {
+      }
+      if (!!response?.status) {
         toast.success(response.message || "Registration successful!");
         setTimeout(() => {
           router.push("/auth/account-verification");

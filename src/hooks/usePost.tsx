@@ -305,8 +305,6 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
     } catch (error) {
       console.error("Error creating comment:", error);
       toast.error("An error occurred while posting comment");
-    } finally {
-      setPostCommentLoading(false);
     }
   };
 

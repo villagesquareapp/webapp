@@ -13,7 +13,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <DashboardNavbar />
       <SidebarProvider>
         <AppSidebar />
-        <div className="flex-1 mt-16 pl-6">{children}</div>
+        <div className="flex-1 mt-16 pl-6 relative">{children}</div>
       </SidebarProvider>
     </main>
   );

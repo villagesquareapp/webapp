@@ -51,7 +51,7 @@ const SocialPostComment = ({
           <p className="text-sm">{post?.comments_count}</p>
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-[650px] !max-h-[90dvh] overflow-hidden p-0">
+      <DialogContent className="max-w-[800px] !max-h-[900px] overflow-hidden p-0">
         <DialogHeader className="sticky top-0 bg-background border-b z-50">
           <div className="flex items-center justify-between px-6 py-3">
             <DialogTitle className="text-center flex-1">

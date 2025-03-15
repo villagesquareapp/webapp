@@ -15,6 +15,17 @@ interface INewComment {
     parent_id?: string
 }
 
+type PrivacyType = 'everyone' | 'followers' | 'private'
+
+interface INewPost {
+    caption: string
+    media_files: File[]
+    address: string
+    latitude: string
+    longitude: string
+    privacy: PrivacyType
+}
+
 interface IUser {
     uuid: string
     name: string
@@ -104,7 +115,7 @@ interface IPost {
     address: string
     latitude: string
     longitude: string
-    privacy: 'everyone' | 'followers' | 'private'
+    privacy: PrivacyType
     status: 'active' | 'inactive'
     views_count: string
     shares_count: string

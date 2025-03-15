@@ -7,8 +7,9 @@ import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
 import EachSocialPost from "./EachSocialPost";
 import SocialPostFilterDialog from "./SocialPostFilterDialog";
+import AddPost from "./AddPost";
 
-const SocialPost = () => {
+const SocialPost = ({ user }: { user: IUser }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isPostLoading, setIsPostLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -129,50 +130,59 @@ const SocialPost = () => {
     fetchPosts(page);
   }, [page]);
 
+  console.log("POSTS", posts);
+
   return (
-    <div className="flex flex-col gap-y-4">
-      <div className="border-b-[1.5px] flex justify-between">
-        <div className="flex flex-row">
-          <span className="py-3 px-5 text-lg border-b-4 border-primary">For You</span>
-          <span className="py-3 px-5 text-lg">Following</span>
+    <>
+      <AddPost
+        user={user}
+        addPost={(newPost: IPost) => setPosts((prev) => [newPost, ...prev])}
+      />
+
+      <div className="flex flex-col gap-y-4">
+        <div className="border-b-[1.5px] flex justify-between">
+          <div className="flex flex-row">
+            <span className="py-3 px-5 text-lg border-b-4 border-primary">For You</span>
+            <span className="py-3 px-5 text-lg">Following</span>
+          </div>
+          <SocialPostFilterDialog />
         </div>
-        <SocialPostFilterDialog />
+
+        {isPostLoading && <LoadingSpinner />}
+
+        {!isPostLoading && posts?.length > 0 && (
+          <div className="border rounded-xl flex flex-col gap-y-4 py-4">
+            {posts.map((post) => (
+              <EachSocialPost
+                setPosts={setPosts}
+                likeUnlikePost={likeUnlikePost}
+                saveUnsavePost={saveUnsavePost}
+                key={post.uuid}
+                post={post}
+              />
+            ))}
+
+            {/* Observer target */}
+            <div ref={observerTarget} style={{ height: "10px" }} />
+
+            {/* Loading more indicator */}
+            {loadingMorePost && (
+              <div className="py-4 text-center">
+                <LoadingSpinner />
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isPostLoading && posts?.length === 0 && (
+          <NotFoundResult content={<span>No posts available at the moment.</span>} />
+        )}
+
+        {!isPostLoading && !hasMore && posts?.length > 0 && (
+          <div className="text-center py-4 text-muted-foreground">No more posts to load</div>
+        )}
       </div>
-
-      {isPostLoading && <LoadingSpinner />}
-
-      {!isPostLoading && posts?.length > 0 && (
-        <div className="border rounded-xl flex flex-col gap-y-4 py-4">
-          {posts.map((post) => (
-            <EachSocialPost
-              setPosts={setPosts}
-              likeUnlikePost={likeUnlikePost}
-              saveUnsavePost={saveUnsavePost}
-              key={post.uuid}
-              post={post}
-            />
-          ))}
-
-          {/* Observer target */}
-          <div ref={observerTarget} style={{ height: "10px" }} />
-
-          {/* Loading more indicator */}
-          {loadingMorePost && (
-            <div className="py-4 text-center">
-              <LoadingSpinner />
-            </div>
-          )}
-        </div>
-      )}
-
-      {!isPostLoading && posts?.length === 0 && (
-        <NotFoundResult content={<span>No posts available at the moment.</span>} />
-      )}
-
-      {!isPostLoading && !hasMore && posts?.length > 0 && (
-        <div className="text-center py-4 text-muted-foreground">No more posts to load</div>
-      )}
-    </div>
+    </>
   );
 };
 

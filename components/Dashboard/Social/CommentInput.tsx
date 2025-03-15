@@ -1,8 +1,8 @@
 import { VSSend } from "components/icons/village-square";
 import ReplyTextArea from "./ReplyTextArea";
-
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Loader2 } from "lucide-react";
+
 const CommentInput = ({
   replyingTo,
   content,
