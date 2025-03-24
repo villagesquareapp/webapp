@@ -24,7 +24,9 @@ const DashboardNavbar = () => {
       </div>
       <div className="flex-1 flex">
         <div className="w-[800px] mx-auto flex items-center">
-          <div className="w-[500px] ml-[140px] relative">
+          {/* What we have in the design was commented out for now. */}
+          {/* <div className="w-[500px] ml-[140px] relative"> */}
+          <div className="w-[700px] ml-[190px] absolute">
             <input
               type="search"
               placeholder="Search"

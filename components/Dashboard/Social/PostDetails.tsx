@@ -1,21 +1,17 @@
 import { Button } from "components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "components/ui/dialog";
+import { AspectRatio } from "components/ui/aspect-ratio";
 import Image from "next/image";
-import { useState } from "react";
-import { IoClose, IoEllipsisHorizontal } from "react-icons/io5";
+import { useEffect, useState } from "react";
+import { IoClose } from "react-icons/io5";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import usePost from "src/hooks/usePost";
 import CommentInput from "./CommentInput";
 import PostHeader from "./PostHeader";
 import PostText from "./PostText";
 import PostVideo from "./PostVideo";
 import SocialComment from "./SocialComment";
 import SocialPostActionButtons from "./SocialPostActionButtons";
-import usePost from "src/hooks/usePost";
 
 const PostDetails = ({
   post,
@@ -24,6 +20,10 @@ const PostDetails = ({
   setPosts,
   likeUnlikePost,
   saveUnsavePost,
+  currentVideoPlaying,
+  setCurrentVideoPlaying,
+  isPlayingVideo,
+  setIsPlayingVideo,
 }: {
   post: IPost;
   onClose: () => void;
@@ -31,6 +31,10 @@ const PostDetails = ({
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   likeUnlikePost: (postId: string) => void;
   saveUnsavePost: (postId: string) => void;
+  currentVideoPlaying: string;
+  setCurrentVideoPlaying: (mediaID: string) => void;
+  isPlayingVideo: boolean;
+  setIsPlayingVideo: (playing: boolean) => void;
 }) => {
   const {
     replyingTo,
@@ -46,6 +50,34 @@ const PostDetails = ({
     handleSubmitComment,
   } = usePost(post, setPosts);
 
+  // State for carousel
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  // Stop any playing videos when dialog opens or media changes
+  useEffect(() => {
+    if (open && isPlayingVideo) {
+      setIsPlayingVideo(false);
+      setCurrentVideoPlaying("");
+    }
+  }, [open, isPlayingVideo, setIsPlayingVideo, setCurrentVideoPlaying, currentMediaIndex]);
+
+  // Handle navigation
+  const goToNextMedia = () => {
+    if (post?.media && currentMediaIndex < post.media.length - 1) {
+      setCurrentMediaIndex((prev) => prev + 1);
+    }
+  };
+
+  const goToPrevMedia = () => {
+    if (currentMediaIndex > 0) {
+      setCurrentMediaIndex((prev) => prev - 1);
+    }
+  };
+
+  // Determine if there is more than one media item
+  const hasMultipleMedia = post?.media && post.media.length > 1;
+  const currentMedia = post?.media?.[currentMediaIndex];
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="!min-w-[85vw] flex flex-col !h-[95dvh] !max-h-[90dvh] overflow-hidden p-0 gap-0">
@@ -59,38 +91,104 @@ const PostDetails = ({
         </DialogHeader>
 
         <div className="grid grid-cols-2 h-full">
-          <div className="h-[calc(100%-140px)] grid overflow-y-auto col-span-1 w-full  bg-black/35">
-            <div
-              className={`grid ${
-                post.media?.length > 1 ? "grid-cols-2" : "grid-cols-1"
-              } gap-4  h-fit my-auto center place-self-center`}
-            >
-              {post?.media?.map((media) => (
-                <div key={media?.uuid} className="px-4">
-                  {media?.media_type === "image" && (
-                    <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden">
-                      <Image
-                        className="object-cover"
-                        src={media?.media_url}
-                        alt="post"
-                        fill
-                        sizes="500px"
-                        quality={90}
-                        priority
-                      />
-                    </div>
-                  )}
-                  {media?.media_type === "video" && (
-                    <PostVideo src={media?.media_url} showEchoButtons={false} />
-                  )}
+          <div className="h-full flex items-center justify-center overflow-y-auto col-span-1 w-full bg-black/35 p-4 relative">
+            {post?.media?.length > 0 ? (
+              <div className="w-full max-w-3xl relative">
+                {/* Media Display */}
+                <div className="w-full overflow-hidden border-0 rounded-xl shadow-md">
+                  <div className="p-0">
+                    {currentMedia?.media_type === "image" && (
+                      <AspectRatio ratio={3 / 4} className="bg-muted">
+                        <Image
+                          src={currentMedia.media_url}
+                          alt="Post image"
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 100vw, 40vw"
+                          priority
+                        />
+                      </AspectRatio>
+                    )}
+                    {currentMedia?.media_type === "video" && (
+                      <AspectRatio ratio={3 / 4} className="bg-muted">
+                        <PostVideo
+                          media={currentMedia}
+                          currentVideoPlaying={currentVideoPlaying}
+                          setCurrentVideoPlaying={setCurrentVideoPlaying}
+                          src={currentMedia.media_url}
+                          showEchoButtons={false}
+                          isPlayingVideo={isPlayingVideo}
+                          setIsPlayingVideo={setIsPlayingVideo}
+                          className="w-full h-full"
+                        />
+                      </AspectRatio>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Navigation Controls */}
+                {hasMultipleMedia && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className={`absolute left-2 top-1/2 transform -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background ${
+                        currentMediaIndex === 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : "opacity-100"
+                      }`}
+                      onClick={goToPrevMedia}
+                      disabled={currentMediaIndex === 0}
+                    >
+                      <IoIosArrowBack className="size-5" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background ${
+                        currentMediaIndex === post.media.length - 1
+                          ? "opacity-50 cursor-not-allowed"
+                          : "opacity-100"
+                      }`}
+                      onClick={goToNextMedia}
+                      disabled={currentMediaIndex === post.media.length - 1}
+                    >
+                      <IoIosArrowForward className="size-5" />
+                    </Button>
+                  </>
+                )}
+
+                {/* Media Indicator Dots */}
+                {hasMultipleMedia && (
+                  <div className="flex justify-center gap-1.5 mt-3">
+                    {post.media.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`w-2 h-2 rounded-full ${
+                          index === currentMediaIndex
+                            ? "bg-primary"
+                            : "bg-gray-300 dark:bg-gray-600"
+                        }`}
+                        onClick={() => setCurrentMediaIndex(index)}
+                        aria-label={`Go to media ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="w-full max-w-xl p-6 bg-background rounded-xl shadow-md">
+                <div className="text-xl font-semibold">
+                  <PostText text={post?.caption} />
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="col-span-1 w-full h-full flex flex-col relative">
-            <div className="sticky bg-background z-10 border-b pt-4 pb-2">
+            <div className="sticky bg-background z-10 border-b pt-4 pb-2 px-4">
               <PostHeader post={post} showMoreDetailButton={false} />
-              <div className="my-4">
+              <div className="my-4 max-h-[400px] overflow-y-auto">
                 <PostText text={post?.caption} />
               </div>
               <SocialPostActionButtons
@@ -102,7 +200,7 @@ const PostDetails = ({
               />
             </div>
 
-            <div style={{ height: "calc(100% - 140px)" }} className="overflow-y-auto">
+            <div style={{ height: "calc(100% - 140px)" }} className="overflow-y-auto px-4">
               <div className="min-h-full pt-3">
                 <SocialComment
                   postId={post?.uuid}
@@ -114,7 +212,7 @@ const PostDetails = ({
                 />
               </div>
             </div>
-            <div className="sticky bottom-0 bg-background mt-auto border-t">
+            <div className="sticky bottom-0 bg-background mt-auto border-t px-4">
               <CommentInput
                 replyingTo={replyingTo}
                 content={newComment}

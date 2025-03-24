@@ -14,7 +14,9 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const [isPostLoading, setIsPostLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [loadingMorePost, setLoadingMore] = useState(false);
+  const [loadingMorePost, setLoadingMorePost] = useState(false);
+  const [currentVideoPlaying, setCurrentVideoPlaying] = useState("");
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   const likeUnlikePost = async (postId: string) => {
     const formData = new FormData();
@@ -62,7 +64,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       if (pageNumber === 1) {
         setIsPostLoading(true);
       } else {
-        setLoadingMore(true);
+        setLoadingMorePost(true);
       }
 
       const response = await getPosts({
@@ -93,7 +95,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       toast.error("An error occurred while fetching posts");
     } finally {
       setIsPostLoading(false);
-      setLoadingMore(false);
+      setLoadingMorePost(false);
     }
   };
 
@@ -142,8 +144,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
       <div className="flex flex-col gap-y-4">
         <div className="border-b-[1.5px] flex justify-between">
           <div className="flex flex-row">
-            <span className="py-3 px-5 text-lg border-b-4 border-primary">For You</span>
-            <span className="py-3 px-5 text-lg">Following</span>
+            <span className="py-3 px-5 text-lg border-b-4 border-primary">Explore</span>
+            <span className="py-3 px-5 text-lg">Connections</span>
           </div>
           <SocialPostFilterDialog />
         </div>
@@ -159,6 +161,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 saveUnsavePost={saveUnsavePost}
                 key={post.uuid}
                 post={post}
+                currentVideoPlaying={currentVideoPlaying}
+                setCurrentVideoPlaying={setCurrentVideoPlaying}
+                isPlayingVideo={isPlayingVideo}
+                setIsPlayingVideo={setIsPlayingVideo}
               />
             ))}
 

@@ -1,21 +1,83 @@
 import { Button } from "components/ui/button";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CgEyeAlt } from "react-icons/cg";
 import ReactPlayer from "react-player";
 
 const PostVideo = ({
   src,
+  media,
   showEchoButtons = true,
+  isPlayingVideo,
+  setIsPlayingVideo,
+  currentVideoPlaying,
+  setCurrentVideoPlaying,
   className = "",
 }: {
+  media: IPostMedia;
   src: string;
+  currentVideoPlaying: string;
+  setCurrentVideoPlaying: (mediaID: string) => void;
+  isPlayingVideo: boolean;
+  setIsPlayingVideo: (playing: boolean) => void;
   showEchoButtons?: boolean;
   className?: string;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Set up intersection observer to detect when video is in viewport
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        setIsVisible(entry.isIntersecting);
+
+        // If video is playing but scrolled out of view, pause it
+        if (!entry.isIntersecting && isPlaying) {
+          setIsPlaying(false);
+          if (currentVideoPlaying === media.uuid) {
+            setIsPlayingVideo(false);
+            setCurrentVideoPlaying("");
+          }
+        }
+      },
+      {
+        threshold: 0.2, // 20% of the video must be visible
+      }
+    );
+
+    const currentVideoRef = videoRef.current;
+    if (currentVideoRef) {
+      observer.observe(currentVideoRef);
+    }
+
+    return () => {
+      if (currentVideoRef) {
+        observer.unobserve(currentVideoRef);
+      }
+    };
+  }, [media.uuid, currentVideoPlaying, isPlaying, setCurrentVideoPlaying, setIsPlayingVideo]);
+
+  // When currentVideoPlaying changes, pause this video if it's not the current one
+  useEffect(() => {
+    if (currentVideoPlaying !== media.uuid) {
+      setIsPlaying(false);
+    }
+  }, [currentVideoPlaying, media.uuid]);
+
+  // When this video becomes the current video, start playing only if it's visible
+  useEffect(() => {
+    if (currentVideoPlaying === media.uuid && isPlayingVideo && isVisible) {
+      setIsPlaying(true);
+    }
+  }, [currentVideoPlaying, media.uuid, isPlayingVideo, isVisible]);
 
   return (
-    <div className={`w-full relative rounded-xl overflow-hidden bg-black ${className}`}>
+    <div
+      ref={videoRef}
+      className={`w-full relative rounded-xl overflow-hidden bg-black ${className}`}
+    >
       {showEchoButtons && (
         <>
           <Button className="absolute bottom-4 right-4 rounded-full text-foreground text-xs font-semibold py-1 z-10">
@@ -58,20 +120,33 @@ const PostVideo = ({
           className="react-player"
           style={{ borderRadius: "12px" }}
           onPlay={() => {
-            console.log("Video playing");
-            setIsPlaying(true);
+            // Only allow playing if the video is visible
+            if (isVisible) {
+              setCurrentVideoPlaying(media.uuid);
+              setIsPlayingVideo(true);
+            } else {
+              setIsPlaying(false);
+            }
           }}
           onPause={() => {
             console.log("Video paused");
-            setIsPlaying(false);
+            if (currentVideoPlaying === media.uuid) {
+              setIsPlayingVideo(false);
+            }
           }}
           onEnded={() => {
             console.log("Video ended");
-            setIsPlaying(false);
+            if (currentVideoPlaying === media.uuid) {
+              setIsPlayingVideo(false);
+              setCurrentVideoPlaying("");
+            }
           }}
           onError={(e) => {
             console.log("Video error:", e);
-            setIsPlaying(false);
+            if (currentVideoPlaying === media.uuid) {
+              setIsPlayingVideo(false);
+              setCurrentVideoPlaying("");
+            }
           }}
         />
       </div>
