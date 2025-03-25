@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import Comment from "./Comment";
+import { v4 as uuidv4 } from "uuid";
 import { CommentWithReplies } from "./types";
 
 const SocialComment = ({
@@ -268,7 +269,7 @@ const SocialComment = ({
   return (
     <div className="flex-1 !overflow-y-auto px-6">
       {comments.map((comment) => (
-        <div key={comment.uuid} className="flex flex-col gap-y-4">
+        <div key={`${comment.uuid}-${uuidv4()}`} className="flex flex-col gap-y-4">
           <Comment
             type="mainComment"
             comment={comment}

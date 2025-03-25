@@ -75,28 +75,28 @@ const PostDetails = ({
 
   // Ensure video is paused when modal opens or closes
   useEffect(() => {
-    if (open) {
-      // Add a small delay to ensure we don't interrupt any ongoing transitions
-      const timer = setTimeout(() => {
-        if (isPlayingVideo) {
-          setIsPlayingVideo(false);
-          setCurrentVideoPlaying("");
-        }
-      }, 150);
-      return () => clearTimeout(timer);
+    if (!open) {
+      setIsPlayingVideo(false);
+      setCurrentVideoPlaying("");
     }
   }, [open, setIsPlayingVideo, setCurrentVideoPlaying]);
 
-  // Ensure video is paused when changing media in carousel
+  // Handle video state when changing slides
   useEffect(() => {
-    if (isPlayingVideo) {
-      const timer = setTimeout(() => {
+    const handleSlideChange = () => {
+      if (isPlayingVideo) {
         setIsPlayingVideo(false);
         setCurrentVideoPlaying("");
-      }, 150);
-      return () => clearTimeout(timer);
+      }
+    };
+
+    if (api) {
+      api.on("select", handleSlideChange);
+      return () => {
+        api.off("select", handleSlideChange);
+      };
     }
-  }, [currentMediaIndex, setIsPlayingVideo, setCurrentVideoPlaying]);
+  }, [api, isPlayingVideo, setIsPlayingVideo, setCurrentVideoPlaying]);
 
   // Determine if there is more than one media item
   const hasMultipleMedia = post?.media && post.media.length > 1;
@@ -139,7 +139,7 @@ const PostDetails = ({
                 >
                   <CarouselContent>
                     {post.media.map((media, index) => (
-                      <CarouselItem key={index}>
+                      <CarouselItem key={`${media.uuid}-${index}`}>
                         <div className="w-full overflow-hidden">
                           <div className="p-0">
                             {media.media_type === "image" && (

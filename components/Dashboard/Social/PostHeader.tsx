@@ -9,6 +9,7 @@ import { HiMiniCheckBadge } from "react-icons/hi2";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { v4 as uuidv4 } from "uuid";
 import updateLocale from "dayjs/plugin/updateLocale";
 
 dayjs.extend(relativeTime);
@@ -41,7 +42,10 @@ const PostHeader = ({
   post: IPost;
 }) => {
   return (
-    <div key={post.uuid} className="flex justify-between items-center h-12  px-4">
+    <div
+      key={`${post.uuid}-${uuidv4()}`}
+      className="flex justify-between items-center h-12  px-4"
+    >
       {/* Post Header */}
       <div className="flex flex-row gap-x-3 items-center">
         <CustomAvatar
