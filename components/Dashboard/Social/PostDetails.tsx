@@ -107,7 +107,11 @@ const PostDetails = ({
         <DialogHeader className="sticky top-0 bg-background border-b z-50 m-0 p-0">
           <div className="flex items-center justify-between px-6 py-3">
             <DialogTitle className="text-center flex-1 m-0">Post Details</DialogTitle>
-            <Button variant="ghost" className="p-1 px-2.5 rounded-full transition-colors">
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              className="p-1 px-2.5 rounded-full transition-colors"
+            >
               <IoClose className="size-6" />
             </Button>
           </div>

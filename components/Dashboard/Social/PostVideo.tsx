@@ -169,13 +169,16 @@ const PostVideo = ({
         setShowControls(false);
         setShowVolumeSlider(false);
       }}
-      onClick={handleVideoClick}
     >
+      {/* Video click area */}
+      <div className="absolute inset-0 z-0" onClick={handleVideoClick} />
+
       {/* Play/Pause overlay */}
       <div
         className={`absolute inset-0 z-10 flex items-center justify-center bg-black/20 transition-opacity duration-200 ${
           isPlaying ? "opacity-0 hover:opacity-100" : "opacity-100"
         }`}
+        onClick={handleVideoClick}
       >
         {isPlaying ? (
           <FaPause className="text-white text-4xl opacity-80" />
@@ -186,10 +189,9 @@ const PostVideo = ({
 
       {/* Interactive controls (progress bar) */}
       <div
-        className={`absolute bottom-12 left-0 right-0 px-4 transition-opacity duration-200 ${
+        className={`absolute bottom-12 left-0 right-0 px-4 transition-opacity duration-200 z-20 ${
           showControls || !isPlaying ? "opacity-100" : "opacity-0"
         }`}
-        onClick={(e) => e.stopPropagation()}
       >
         <input
           type="range"
@@ -197,27 +199,41 @@ const PostVideo = ({
           max={0.999999}
           step="any"
           value={played}
-          onMouseDown={handleSeekMouseDown}
-          onChange={handleSeekChange}
-          onMouseUp={handleSeekMouseUp}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleSeekMouseDown();
+          }}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleSeekChange(e);
+          }}
+          onMouseUp={(e) => {
+            e.stopPropagation();
+            handleSeekMouseUp(e);
+          }}
+          onClick={(e) => e.stopPropagation()}
           className="w-full h-1 rounded-lg appearance-none cursor-pointer bg-gray-400/50"
         />
       </div>
 
       {/* Always visible controls */}
-      <div
-        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between text-white text-sm">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 z-20">
+        <div
+          className="flex items-center justify-between text-white text-sm"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex items-center gap-4">
             {/* Volume control with hover effect */}
             <div
               className="relative flex items-center"
               onMouseEnter={() => setShowVolumeSlider(true)}
               onMouseLeave={() => setShowVolumeSlider(false)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <button
+                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleMute();
@@ -230,6 +246,8 @@ const PostVideo = ({
                 className={`absolute left-8 bottom-1 transition-all duration-200 ${
                   showVolumeSlider ? "opacity-100 visible" : "opacity-0 invisible"
                 }`}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
               >
                 <input
                   type="range"
@@ -237,14 +255,18 @@ const PostVideo = ({
                   max={1}
                   step="any"
                   value={volume}
-                  onChange={handleVolumeChange}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleVolumeChange(e);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}
                   className="w-16 h-1 rounded-lg appearance-none cursor-pointer bg-gray-400/50"
                 />
               </div>
             </div>
             {/* Time display */}
-            <div onClick={(e) => e.stopPropagation()}>
+            <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
               {formatTime(duration * played)} / {formatTime(duration)}
             </div>
           </div>
