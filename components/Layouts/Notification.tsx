@@ -24,9 +24,14 @@ const Notification = () => {
           <FaBell className="text-foreground size-8" />
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-0" side="left" align="start" sideOffset={10}>
+      <PopoverContent
+        className="w-[380px] rounded-xl p-0"
+        side="left"
+        align="start"
+        sideOffset={10}
+      >
         {/* Fixed header */}
-        <div className="px-4 py-2 flex items-center justify-between sticky top-0 bg-background">
+        <div className="px-4 py-2 flex items-center justify-between sticky top-0 bg-background rounded-t-xl">
           <p className="font-semibold">Notifications</p>
           <IoIosClose
             className="size-8 cursor-pointer hover:text-muted-foreground"

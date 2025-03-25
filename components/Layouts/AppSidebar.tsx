@@ -33,26 +33,26 @@ const items = [
   {
     title: "Social",
     url: "/dashboard/social",
-    icon: <GoHome className="!size-6" />,
+    icon: <GoHome className="!size-6 -ml-0.5" />,
     activeIcon: <GoHomeFill className="fill-black !size-6 -mt-0.5" />,
   },
   {
     title: "Vflix",
     url: "#",
     icon: <VFlixOutline className="!size-6" />,
-    activeIcon: <VFlixFill className="fill-black !size-6" />,
+    activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },
   {
     title: "Live Streams",
     url: "/dashboard/live-streams",
-    icon: <HiOutlineVideoCamera className="!size-[26px]" />,
-    activeIcon: <VSCameraFill className="fill-black !size-[26px]" />,
+    icon: <HiOutlineVideoCamera className="!size-[28px] -ml-0.5" />,
+    activeIcon: <VSCameraFill className="fill-black !size-[26px] -ml-0.5" />,
   },
   {
     title: "Messages",
     url: "/dashboard/messages",
-    icon: <MdMailOutline className="!size-6" />,
-    activeIcon: <VSMailFill className="fill-black !size-6" />,
+    icon: <MdMailOutline className="!size-6 -ml-0.5" />,
+    activeIcon: <VSMailFill className="fill-black !size-6 -ml-0.5" />,
   },
   {
     title: "Wallet",
@@ -63,13 +63,14 @@ const items = [
   {
     title: "Profile",
     url: "/dashboard/profile",
-    icon: <IoPersonOutline className="!size-6" />,
-    activeIcon: <IoPersonSharp className="!fill-black !size-6" />,
+    icon: <IoPersonOutline className="!size-6 -ml-0.5" />,
+    activeIcon: <IoPersonSharp className="!fill-black !size-6 -ml-0.5" />,
   },
   {
     title: "More Pages",
     url: "#",
-    icon: <VSMore className="!size-[28px] -mb-2" />,
+    icon: <VSMore className="!size-[28px] -mb-2 -ml-0.5" />,
+    activeIcon: <VSMore className="!fill-black !size-6 -ml-0.5" />,
   },
 ];
 
@@ -93,7 +94,7 @@ export function AppSidebar() {
       <SidebarContent className="bg-background">
         <SidebarGroup>
           <SidebarGroupContent className="pt-20 px-3">
-            <SidebarMenu>
+            <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
                 const isActive = pathname === item.url;
                 const isHovered = hoveredItem === item.title;
@@ -117,7 +118,7 @@ export function AppSidebar() {
                             onMouseLeave={() => setHoveredItem(null)}
                           >
                             {Icon}
-                            <span className="font-semibold text-base mt-1">{item.title}</span>
+                            <span className="text-base mt-1">{item.title}</span>
                           </SidebarMenuButton>
                         </PopoverTrigger>
                         <PopoverContent className="w-56 p-2" side="bottom">
@@ -129,7 +130,7 @@ export function AppSidebar() {
                                 className="flex flex-row  items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
                               >
                                 {moreItem.icon}
-                                <span className="text-xl">{moreItem.title}</span>
+                                <span className="font-medium text-xl">{moreItem.title}</span>
                               </Link>
                             ))}
                           </div>
@@ -153,7 +154,7 @@ export function AppSidebar() {
                     >
                       <Link href={item.url} className="flex items-center p-3">
                         {Icon}
-                        <span className="font-semibold text-base">{item.title}</span>
+                        <span className="font-medium text-base">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

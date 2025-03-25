@@ -1,6 +1,14 @@
 import { Button } from "components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "components/ui/dialog";
 import { AspectRatio } from "components/ui/aspect-ratio";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "components/ui/carousel";
+import type { CarouselApi } from "components/ui/carousel";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
@@ -18,14 +26,17 @@ const PostDetails = ({
   onClose,
   open,
   setPosts,
+  user,
   likeUnlikePost,
   saveUnsavePost,
   currentVideoPlaying,
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
+  initialMediaIndex = 0,
 }: {
   post: IPost;
+  user: IUser;
   onClose: () => void;
   open: boolean;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
@@ -35,6 +46,7 @@ const PostDetails = ({
   setCurrentVideoPlaying: (mediaID: string) => void;
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
+  initialMediaIndex?: number;
 }) => {
   const {
     replyingTo,
@@ -51,32 +63,43 @@ const PostDetails = ({
   } = usePost(post, setPosts);
 
   // State for carousel
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(initialMediaIndex);
+  const [api, setApi] = useState<CarouselApi | null>(null);
 
-  // Stop any playing videos when dialog opens or media changes
+  // Set initial carousel position
   useEffect(() => {
-    if (open && isPlayingVideo) {
-      setIsPlayingVideo(false);
-      setCurrentVideoPlaying("");
+    if (api && initialMediaIndex !== undefined) {
+      api.scrollTo(initialMediaIndex);
     }
-  }, [open, isPlayingVideo, setIsPlayingVideo, setCurrentVideoPlaying, currentMediaIndex]);
+  }, [api, initialMediaIndex]);
 
-  // Handle navigation
-  const goToNextMedia = () => {
-    if (post?.media && currentMediaIndex < post.media.length - 1) {
-      setCurrentMediaIndex((prev) => prev + 1);
+  // Ensure video is paused when modal opens or closes
+  useEffect(() => {
+    if (open) {
+      // Add a small delay to ensure we don't interrupt any ongoing transitions
+      const timer = setTimeout(() => {
+        if (isPlayingVideo) {
+          setIsPlayingVideo(false);
+          setCurrentVideoPlaying("");
+        }
+      }, 150);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [open, setIsPlayingVideo, setCurrentVideoPlaying]);
 
-  const goToPrevMedia = () => {
-    if (currentMediaIndex > 0) {
-      setCurrentMediaIndex((prev) => prev - 1);
+  // Ensure video is paused when changing media in carousel
+  useEffect(() => {
+    if (isPlayingVideo) {
+      const timer = setTimeout(() => {
+        setIsPlayingVideo(false);
+        setCurrentVideoPlaying("");
+      }, 150);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [currentMediaIndex, setIsPlayingVideo, setCurrentVideoPlaying]);
 
   // Determine if there is more than one media item
   const hasMultipleMedia = post?.media && post.media.length > 1;
-  const currentMedia = post?.media?.[currentMediaIndex];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -94,69 +117,69 @@ const PostDetails = ({
           <div className="h-full flex items-center justify-center overflow-y-auto col-span-1 w-full bg-black/35 p-4 relative">
             {post?.media?.length > 0 ? (
               <div className="w-full max-w-3xl relative">
-                {/* Media Display */}
-                <div className="w-full overflow-hidden border-0 rounded-xl shadow-md">
-                  <div className="p-0">
-                    {currentMedia?.media_type === "image" && (
-                      <AspectRatio ratio={3 / 4} className="bg-muted">
-                        <Image
-                          src={currentMedia.media_url}
-                          alt="Post image"
-                          fill
-                          className="object-contain"
-                          sizes="(max-width: 768px) 100vw, 40vw"
-                          priority
-                        />
-                      </AspectRatio>
-                    )}
-                    {currentMedia?.media_type === "video" && (
-                      <AspectRatio ratio={3 / 4} className="bg-muted">
-                        <PostVideo
-                          media={currentMedia}
-                          currentVideoPlaying={currentVideoPlaying}
-                          setCurrentVideoPlaying={setCurrentVideoPlaying}
-                          src={currentMedia.media_url}
-                          showEchoButtons={false}
-                          isPlayingVideo={isPlayingVideo}
-                          setIsPlayingVideo={setIsPlayingVideo}
-                          className="w-full h-full"
-                        />
-                      </AspectRatio>
-                    )}
-                  </div>
-                </div>
-
-                {/* Navigation Controls */}
-                {hasMultipleMedia && (
-                  <>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className={`absolute left-2 top-1/2 transform -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background ${
-                        currentMediaIndex === 0
-                          ? "opacity-50 cursor-not-allowed"
-                          : "opacity-100"
-                      }`}
-                      onClick={goToPrevMedia}
-                      disabled={currentMediaIndex === 0}
-                    >
-                      <IoIosArrowBack className="size-5" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background ${
-                        currentMediaIndex === post.media.length - 1
-                          ? "opacity-50 cursor-not-allowed"
-                          : "opacity-100"
-                      }`}
-                      onClick={goToNextMedia}
-                      disabled={currentMediaIndex === post.media.length - 1}
-                    >
-                      <IoIosArrowForward className="size-5" />
-                    </Button>
-                  </>
-                )}
+                <Carousel
+                  opts={{
+                    align: "center",
+                    loop: false,
+                    dragFree: true,
+                    containScroll: "trimSnaps",
+                    skipSnaps: false,
+                  }}
+                  className="w-full"
+                  setApi={(api) => {
+                    setApi(api);
+                    api?.on("select", () => {
+                      const newIndex = api.selectedScrollSnap();
+                      // Only update if the index actually changed
+                      if (newIndex !== currentMediaIndex) {
+                        setCurrentMediaIndex(newIndex);
+                      }
+                    });
+                  }}
+                >
+                  <CarouselContent>
+                    {post.media.map((media, index) => (
+                      <CarouselItem key={index}>
+                        <div className="w-full overflow-hidden">
+                          <div className="p-0">
+                            {media.media_type === "image" && (
+                              <AspectRatio ratio={3 / 4}>
+                                <Image
+                                  src={media.media_url}
+                                  alt="Post image"
+                                  fill
+                                  className="object-contain"
+                                  sizes="(max-width: 768px) 100vw, 40vw"
+                                  priority
+                                />
+                              </AspectRatio>
+                            )}
+                            {media.media_type === "video" && (
+                              <AspectRatio ratio={3 / 4}>
+                                <PostVideo
+                                  media={media}
+                                  currentVideoPlaying={currentVideoPlaying}
+                                  setCurrentVideoPlaying={setCurrentVideoPlaying}
+                                  src={media.media_url}
+                                  showEchoButtons={false}
+                                  isPlayingVideo={isPlayingVideo}
+                                  setIsPlayingVideo={setIsPlayingVideo}
+                                  className="w-full h-full"
+                                />
+                              </AspectRatio>
+                            )}
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {hasMultipleMedia && (
+                    <>
+                      <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background" />
+                      <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background" />
+                    </>
+                  )}
+                </Carousel>
 
                 {/* Media Indicator Dots */}
                 {hasMultipleMedia && (
@@ -214,6 +237,7 @@ const PostDetails = ({
             </div>
             <div className="sticky bottom-0 bg-background mt-auto border-t px-4">
               <CommentInput
+                user={user}
                 replyingTo={replyingTo}
                 content={newComment}
                 onChangeContentAction={setNewComment}

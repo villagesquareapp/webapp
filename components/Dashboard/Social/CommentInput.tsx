@@ -11,8 +11,10 @@ const CommentInput = ({
   handleEmojiClick,
   onSubmitComment,
   loading,
+  user,
 }: {
   replyingTo: IPostComment | null;
+  user: IUser;
   content: string;
   onChangeContentAction: (content: string) => void;
   handleEmojiClick: (emoji: string) => void;
@@ -35,8 +37,8 @@ const CommentInput = ({
       </div>
       <div className="flex flex-row h-fit gap-x-2 items-center">
         <CustomAvatar
-          src="https://github.com/shadcn.png"
-          name="CN"
+          src={user?.profile_picture}
+          name="user profile"
           className="size-12 border-foreground border"
         />
         <ReplyTextArea

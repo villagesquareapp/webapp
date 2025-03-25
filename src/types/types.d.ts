@@ -72,7 +72,7 @@ interface ISignup {
     registration_type: IRegistrationType
     provider?: IRegistrationType,
     timezone?: string,
-    provider_id?: "114468729516638108730",
+    provider_id?: string,
     device_id?: string,
     device?: string,
     referrer_code?: string,

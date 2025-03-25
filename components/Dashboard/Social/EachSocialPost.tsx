@@ -9,40 +9,46 @@ import PostDetails from "./PostDetails";
 
 const EachSocialPost = ({
   post,
+  setPosts,
+  user,
   likeUnlikePost,
   saveUnsavePost,
-  setPosts,
   currentVideoPlaying,
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
 }: {
   post: IPost;
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
+  user: IUser;
   likeUnlikePost: (postId: string) => void;
   saveUnsavePost: (postId: string) => void;
-  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   currentVideoPlaying: string;
   setCurrentVideoPlaying: (mediaID: string) => void;
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
 }) => {
-  const [showPostDetail, setShowPostDetail] = useState<IPost | null>(null);
+  const [showPostDetails, setShowPostDetails] = useState(false);
+  const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
 
-  const handlePostClick = () => {
-    setShowPostDetail(post);
-  };
+  const handlePostClickWithVideoPause = (e: React.MouseEvent, mediaIndex?: number) => {
+    e.stopPropagation();
 
-  const handleRemovePostDetail = () => {
-    setShowPostDetail(null);
-  };
-
-  // When navigating to post details, pause any playing videos
-  const handlePostClickWithVideoPause = () => {
+    // If a video is playing, pause it before opening the details
     if (isPlayingVideo) {
-      setIsPlayingVideo(false);
-      setCurrentVideoPlaying("");
+      // Small delay to ensure we don't create race conditions
+      setTimeout(() => {
+        setIsPlayingVideo(false);
+        setCurrentVideoPlaying("");
+        // Open details after ensuring video is paused
+        setClickedMediaIndex(mediaIndex ?? 0);
+        setShowPostDetails(true);
+      }, 150);
+    } else {
+      // No video playing, just open details immediately
+      setClickedMediaIndex(mediaIndex ?? 0);
+      setShowPostDetails(true);
     }
-    handlePostClick();
   };
 
   // Determine if this is a single media post
@@ -52,7 +58,10 @@ const EachSocialPost = ({
     <div className="flex flex-col gap-y-4">
       <PostHeader post={post} />
 
-      <div className="flex flex-col gap-y-4">
+      <div
+        className="flex flex-col gap-y-4 cursor-pointer"
+        onClick={(e) => handlePostClickWithVideoPause(e)}
+      >
         {!!post?.media?.length && (
           <div className={`p-4 ${isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"}`}>
             {post?.media?.map((media, index, array) => {
@@ -63,14 +72,14 @@ const EachSocialPost = ({
 
               return (
                 <div
-                  key={media?.uuid}
+                  key={`${media?.uuid} - ${index}`}
                   className={`${shouldSpanFull ? "col-span-2" : ""} ${
                     isSingleMedia ? "w-full" : ""
                   }`}
                 >
                   {media?.media_type === "image" && (
                     <div
-                      onClick={handlePostClickWithVideoPause}
+                      onClick={(e) => handlePostClickWithVideoPause(e, index)}
                       className={`w-full relative rounded-xl overflow-hidden ${
                         isSingleMedia
                           ? "aspect-[4/5] max-h-[500px]"
@@ -116,22 +125,24 @@ const EachSocialPost = ({
           </div>
         )}
         {/* Post text with highlighted hashtags */}
-        <div onClick={handlePostClickWithVideoPause} className="cursor-pointer">
+        <div onClick={(e) => handlePostClickWithVideoPause(e)} className="cursor-pointer">
           <PostText text={post?.caption} />
         </div>
       </div>
-      {showPostDetail && (
+      {showPostDetails && (
         <PostDetails
+          post={post}
+          open={showPostDetails}
+          onClose={() => setShowPostDetails(false)}
+          setPosts={setPosts}
+          user={user}
           likeUnlikePost={likeUnlikePost}
           saveUnsavePost={saveUnsavePost}
-          open={showPostDetail === post}
-          setPosts={setPosts}
-          post={post}
-          onClose={handleRemovePostDetail}
           currentVideoPlaying={currentVideoPlaying}
           setCurrentVideoPlaying={setCurrentVideoPlaying}
           isPlayingVideo={isPlayingVideo}
           setIsPlayingVideo={setIsPlayingVideo}
+          initialMediaIndex={clickedMediaIndex}
         />
       )}
       <SocialPostActionButtons

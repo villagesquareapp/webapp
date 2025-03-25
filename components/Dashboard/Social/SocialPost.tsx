@@ -156,6 +156,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           <div className="border rounded-xl flex flex-col gap-y-4 py-4">
             {posts.map((post) => (
               <EachSocialPost
+                user={user}
                 setPosts={setPosts}
                 likeUnlikePost={likeUnlikePost}
                 saveUnsavePost={saveUnsavePost}
