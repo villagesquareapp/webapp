@@ -2,7 +2,6 @@ import { Button } from "components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { CgEyeAlt } from "react-icons/cg";
 import { FaPlay, FaPause } from "react-icons/fa";
-import { IoMdVolumeHigh, IoMdVolumeLow, IoMdVolumeOff, IoMdVolumeMute } from "react-icons/io";
 import ReactPlayer from "react-player";
 
 const PostVideo = ({
@@ -25,16 +24,9 @@ const PostVideo = ({
   className?: string;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.8);
-  const [prevVolume, setPrevVolume] = useState(0.8);
-  const [played, setPlayed] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [seeking, setSeeking] = useState(false);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const videoRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<ReactPlayer>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [showControls, setShowControls] = useState(false);
 
   // Set up intersection observer to detect when video is in viewport
   useEffect(() => {
@@ -66,22 +58,6 @@ const PostVideo = ({
     };
   }, [media.uuid, isPlaying]);
 
-  // Format time for display
-  const formatTime = (seconds: number) => {
-    const date = new Date(seconds * 1000);
-    const hh = date.getUTCHours();
-    const mm = date.getUTCMinutes();
-    const ss = pad(date.getUTCSeconds());
-    if (hh) {
-      return `${hh}:${pad(mm)}:${ss}`;
-    }
-    return `${mm}:${ss}`;
-  };
-
-  const pad = (string: number) => {
-    return ("0" + string).slice(-2);
-  };
-
   // Handle play state
   const handlePlay = () => {
     if (!isVisible) return;
@@ -110,49 +86,6 @@ const PostVideo = ({
     }
   };
 
-  // Handle seeking
-  const handleSeekMouseDown = () => {
-    setSeeking(true);
-  };
-
-  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPlayed(parseFloat(e.target.value));
-  };
-
-  const handleSeekMouseUp = (e: React.MouseEvent<HTMLInputElement>) => {
-    setSeeking(false);
-    if (playerRef.current) {
-      playerRef.current.seekTo(parseFloat((e.target as HTMLInputElement).value));
-    }
-  };
-
-  // Get volume icon based on volume level
-  const getVolumeIcon = () => {
-    if (volume === 0) return <IoMdVolumeMute className="size-5" />;
-    if (volume < 0.3) return <IoMdVolumeOff className="size-5" />;
-    if (volume < 0.7) return <IoMdVolumeLow className="size-5" />;
-    return <IoMdVolumeHigh className="size-5" />;
-  };
-
-  // Handle volume change
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (newVolume > 0) {
-      setPrevVolume(newVolume);
-    }
-  };
-
-  // Toggle mute
-  const toggleMute = () => {
-    if (volume > 0) {
-      setPrevVolume(volume);
-      setVolume(0);
-    } else {
-      setVolume(prevVolume);
-    }
-  };
-
   // When currentVideoPlaying changes, pause this video if it's not the current one
   useEffect(() => {
     if (currentVideoPlaying !== media.uuid && isPlaying) {
@@ -164,18 +97,47 @@ const PostVideo = ({
     <div
       ref={videoRef}
       className={`w-full relative rounded-xl overflow-hidden bg-black ${className}`}
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => {
-        setShowControls(false);
-        setShowVolumeSlider(false);
-      }}
     >
-      {/* Video click area */}
-      <div className="absolute inset-0 z-0" onClick={handleVideoClick} />
+      {/* ReactPlayer - base layer */}
+      <ReactPlayer
+        ref={playerRef}
+        url={media.transcoded_media_url || src}
+        playing={isPlaying}
+        controls={true}
+        width="100%"
+        height="100%"
+        playsinline
+        light={false}
+        pip={false}
+        onPlay={handlePlay}
+        onPause={handlePause}
+        onEnded={handlePause}
+        config={{
+          file: {
+            attributes: {
+              playsInline: true,
+              style: { width: "100%", height: "100%" },
+            },
+            forceHLS: true,
+            hlsOptions: {
+              enableLowLatencyMode: true,
+              backBufferLength: 90,
+              maxBufferLength: 30,
+              maxMaxBufferLength: 600,
+              maxBufferSize: 60 * 1000 * 1000,
+              maxBufferHole: 0.5,
+              lowLatencyMode: true,
+              liveDurationInfinity: true,
+              liveBackBufferLength: 0,
+              progressive: true,
+            },
+          },
+        }}
+      />
 
-      {/* Play/Pause overlay */}
+      {/* Play/Pause overlay - excluding bottom control area */}
       <div
-        className={`absolute inset-0 z-10 flex items-center justify-center bg-black/20 transition-opacity duration-200 ${
+        className={`absolute inset-x-0 top-0 bottom-[45px] flex items-center justify-center bg-black/20 transition-opacity duration-200 ${
           isPlaying ? "opacity-0 hover:opacity-100" : "opacity-100"
         }`}
         onClick={handleVideoClick}
@@ -185,92 +147,6 @@ const PostVideo = ({
         ) : (
           <FaPlay className="text-white text-4xl opacity-80" />
         )}
-      </div>
-
-      {/* Interactive controls (progress bar) */}
-      <div
-        className={`absolute bottom-12 left-0 right-0 px-4 transition-opacity duration-200 z-20 ${
-          showControls || !isPlaying ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <input
-          type="range"
-          min={0}
-          max={0.999999}
-          step="any"
-          value={played}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleSeekMouseDown();
-          }}
-          onChange={(e) => {
-            e.stopPropagation();
-            handleSeekChange(e);
-          }}
-          onMouseUp={(e) => {
-            e.stopPropagation();
-            handleSeekMouseUp(e);
-          }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full h-1 rounded-lg appearance-none cursor-pointer bg-gray-400/50"
-        />
-      </div>
-
-      {/* Always visible controls */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 z-20">
-        <div
-          className="flex items-center justify-between text-white text-sm"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center gap-4">
-            {/* Volume control with hover effect */}
-            <div
-              className="relative flex items-center"
-              onMouseEnter={() => setShowVolumeSlider(true)}
-              onMouseLeave={() => setShowVolumeSlider(false)}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleMute();
-                }}
-                className="text-white hover:text-white/80 transition p-1"
-              >
-                {getVolumeIcon()}
-              </button>
-              <div
-                className={`absolute left-8 bottom-1 transition-all duration-200 ${
-                  showVolumeSlider ? "opacity-100 visible" : "opacity-0 invisible"
-                }`}
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step="any"
-                  value={volume}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    handleVolumeChange(e);
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-16 h-1 rounded-lg appearance-none cursor-pointer bg-gray-400/50"
-                />
-              </div>
-            </div>
-            {/* Time display */}
-            <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-              {formatTime(duration * played)} / {formatTime(duration)}
-            </div>
-          </div>
-        </div>
       </div>
 
       {showEchoButtons && (
@@ -300,55 +176,6 @@ const PostVideo = ({
           </div>
         </>
       )}
-      <ReactPlayer
-        ref={playerRef}
-        url={media.transcoded_media_url || src}
-        playing={isPlaying}
-        volume={volume}
-        controls={false}
-        width="100%"
-        height="100%"
-        playsinline
-        light={false}
-        pip={false}
-        onPlay={handlePlay}
-        onPause={handlePause}
-        onEnded={handlePause}
-        onProgress={(state) => {
-          if (!seeking) {
-            setPlayed(state.played);
-          }
-        }}
-        onDuration={setDuration}
-        onError={(e) => {
-          console.error("Video error:", e);
-          // Only pause for real errors, not interruptions
-          if (e && e.name !== "AbortError") {
-            handlePause();
-          }
-        }}
-        config={{
-          file: {
-            attributes: {
-              playsInline: true,
-              style: { width: "100%", height: "100%" },
-            },
-            forceHLS: true,
-            hlsOptions: {
-              enableLowLatencyMode: true,
-              backBufferLength: 90,
-              maxBufferLength: 30,
-              maxMaxBufferLength: 600,
-              maxBufferSize: 60 * 1000 * 1000,
-              maxBufferHole: 0.5,
-              lowLatencyMode: true,
-              liveDurationInfinity: true,
-              liveBackBufferLength: 0,
-              progressive: true,
-            },
-          },
-        }}
-      />
     </div>
   );
 };
