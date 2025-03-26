@@ -27,17 +27,14 @@ export async function getPosts(params: GetPostsParams = {}) {
     return data || null
 }
 
-export async function createPost(formData: FormData) {
+export async function createPost(newPost: INewPost) {
     const token = await getToken()
-    return await baseApiCall<IPostsResponse>('POST', `/posts/create`, {
-        body: formData,
-        isFormData: true
-    }, token)
+    return await apiPost<INewPostResponse>(`/posts/create`, newPost, token)
 }
 
 export async function likeOrUnlikePost(postId: string, formData: FormData) {
     const token = await getToken()
-    return await baseApiCall<ILikeOrUnlikePostResponse>('POST', `/posts/${postId}/like`, {
+    return await apiPost<ILikeOrUnlikePostResponse>(`/posts/${postId}/like`, {
         body: formData,
         isFormData: true
     }, token)
@@ -51,7 +48,7 @@ export async function saveOrUnsavePost(postId: string, formData: FormData) {
 
 export async function sharePost(postId: string) {
     const token = await getToken()
-    return await baseApiCall('POST', `/posts/${postId}/share`, {}, token)
+    return await apiPost(`/posts/${postId}/share`, {}, token)
 }
 
 // ============== Comments =================
@@ -86,3 +83,29 @@ export async function likeOrUnlikeComments(postId: string, commentId: string, fo
     }, token)
 }
 
+export const uploadPostMediaLessThan6MB = async (formData: FormData) => {
+    const token = await getToken()
+    const response = await apiPost<IFileUploadCompleteResponse>(`posts/upload/single`, formData, token);
+    return response;
+};
+
+export const startUploadPostGreaterThan6MB = async (filename: string, mime_type: string) => {
+    const token = await getToken()
+    const response = await apiPost<IFileUploadStartResponse>(`posts/upload/start`, {
+        filename,
+        mime_type
+    }, token);
+    return response;
+}
+
+export const uploadPostMediaGreaterThan6MB = async (formData: FormData) => {
+    const token = await getToken()
+    const response = await apiPost<IFileUploadChunkResponse>(`posts/upload/start`, { body: formData, isFormData: true }, token);
+    return response;
+}
+
+export const completePostMediaGreaterThan6MB = async (fileUploadCompleteBody: IFileUploadCompleteBody) => {
+    const token = await getToken()
+    const response = await apiPost<IFileUploadCompleteResponse>(`posts/upload/complete`, fileUploadCompleteBody, token);
+    return response;
+}

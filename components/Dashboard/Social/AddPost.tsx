@@ -1,31 +1,31 @@
 "use client";
 
+import {
+  createPost,
+  uploadPostMediaLessThan6MB,
+  startUploadPostGreaterThan6MB,
+  uploadPostMediaGreaterThan6MB,
+  completePostMediaGreaterThan6MB,
+} from "api/post";
 import { Button } from "components/ui/button";
 import CustomAvatar from "components/ui/custom/custom-avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "components/ui/dialog";
 import { Label } from "components/ui/label";
 import { RadioGroup, RadioGroupItem } from "components/ui/radio-group";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HiLocationMarker } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoVideocamOutline } from "react-icons/io5";
 import { LiaGlobeAmericasSolid } from "react-icons/lia";
 import { TbPlus } from "react-icons/tb";
 import { Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import { toast } from "sonner";
 import Map from "../Reusable/Map";
 import NewSocialField from "./NewSocialField";
-import { IoVideocamOutline } from "react-icons/io5";
-import { createPost } from "api/post";
-import { toast } from "sonner";
+import { ApiResponse } from "lib/api/base";
 
 const ReactCrop = dynamic(() => import("react-image-crop"), { ssr: false });
 
@@ -42,13 +42,34 @@ interface PreviewImage {
   file: File | null;
 }
 
-const SocialPostFilterDialog = ({
-  user,
-  addPost,
-}: {
-  user: IUser;
-  addPost: (newPost: IPost) => void;
-}) => {
+interface INewPostState {
+  caption: string;
+  media_files: File[];
+  address: string;
+  latitude: string;
+  longitude: string;
+  privacy: string;
+}
+
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB per chunk
+const MAX_PARALLEL_UPLOADS = 3; // Number of chunks to upload in parallel
+const MAX_FILES = 5; // Maximum number of files allowed
+const MAX_SMALL_FILE_SIZE = 6 * 1024 * 1024; // 6MB threshold
+
+interface UploadedPart {
+  partNumber: string;
+  eTag: string;
+}
+
+interface UploadProgress {
+  file: File;
+  progress: number;
+  status: "pending" | "uploading" | "completed" | "error";
+  uploadId?: string;
+  parts?: UploadedPart[];
+}
+
+const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => void }) => {
   const [imageProgress, setImageProgress] = useState({
     editing: false,
     previewing: false,
@@ -70,7 +91,7 @@ const SocialPostFilterDialog = ({
     position: "",
     file: null,
   });
-  const [newPost, setNewPost] = useState<INewPost>({
+  const [newPost, setNewPost] = useState<INewPostState>({
     caption: "",
     media_files: [],
     address: "",
@@ -79,6 +100,7 @@ const SocialPostFilterDialog = ({
     privacy: "everyone",
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
 
   // Function to adjust textarea height
   const adjustHeight = (element: HTMLTextAreaElement) => {
@@ -93,38 +115,305 @@ const SocialPostFilterDialog = ({
     }
   }, []);
 
-  console.log("NEW POST", newPost);
-  console.log("PREVIEW IMAGE", previewImageForPost);
+  const handleNext = () => {
+    if (previewImageForPost.file) {
+      if (previewImageForPost.type === "new") {
+        // Check if adding a new image would exceed the limit
+        if (newPost.media_files.length >= MAX_FILES) {
+          // Don't add more images if we already have max files
+          setPreviewImageForPost({
+            type: "new",
+            position: "",
+            file: null,
+          });
+          setCroppedImage(null);
+          setImageProgress({ previewing: false, editing: false });
+          return;
+        }
+
+        // Add new image to media_files
+        setNewPost({
+          ...newPost,
+          media_files: [...newPost.media_files, previewImageForPost.file],
+        });
+      } else if (previewImageForPost.type === "edit" && previewImageForPost.position) {
+        // Replace existing image at the specified position
+        const position = parseInt(previewImageForPost.position);
+        const updatedFiles = [...newPost.media_files];
+        updatedFiles[position] = previewImageForPost.file;
+
+        setNewPost({
+          ...newPost,
+          media_files: updatedFiles,
+        });
+      }
+    }
+
+    // Reset states
+    setPreviewImageForPost({
+      type: "new",
+      position: "",
+      file: null,
+    });
+    setCroppedImage(null);
+    setImageProgress({ previewing: false, editing: false });
+  };
 
   const createPostFunc = async () => {
-    console.log("CREATING POST...");
-    const formData = new FormData();
+    try {
+      console.log("🚀 Starting post creation process");
+      console.log(
+        "📁 Files to upload:",
+        newPost.media_files.map((f) => ({ name: f.name, size: f.size, type: f.type }))
+      );
 
-    formData.append("caption", newPost.caption);
-    formData.append("address", newPost.address);
-    formData.append("latitude", newPost.latitude);
-    formData.append("longitude", newPost.longitude);
-    formData.append("privacy", newPost.privacy);
-    newPost.media_files.forEach((file) => {
-      formData.append("media_files", file);
-    });
+      // First upload all media files
+      const uploadedFiles = [];
 
-    const result = await createPost(formData);
-    if (result?.status) {
-      if (result?.data?.data) {
-        addPost(result?.data?.data[0]);
-        toast.success("Post created successfully");
+      for (const file of newPost.media_files) {
+        try {
+          console.log(
+            `📤 Processing file: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`
+          );
+          let uploadResponse;
+
+          if (file.size <= MAX_SMALL_FILE_SIZE) {
+            console.log(`🔄 Using direct upload for file < 6MB: ${file.name}`);
+            const formData = new FormData();
+            formData.append("file", file);
+            console.log("📦 FormData contents:", {
+              fileName: file.name,
+              fileType: file.type,
+              fileSize: file.size,
+              formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+                key,
+                value: value instanceof File ? `File: ${value.name}` : value,
+              })),
+            });
+            uploadResponse = await uploadPostMediaLessThan6MB(formData);
+            console.log("✅ Direct upload response:", uploadResponse);
+          } else {
+            console.log(`🔄 Using chunked upload for large file: ${file.name}`);
+            const fileId = `${file.name}-${Date.now()}`;
+            uploadResponse = await handleLargeFileUpload(file, fileId);
+            console.log("✅ Chunked upload response:", uploadResponse);
+          }
+
+          if (!uploadResponse?.status || !uploadResponse?.data) {
+            console.error("❌ Upload failed - Invalid response:", uploadResponse);
+            throw new Error("Failed to upload file");
+          }
+
+          // Add the uploaded file info
+          uploadedFiles.push({
+            key: uploadResponse.data.Key,
+            mime_type: file.type,
+          });
+          console.log(`✅ Successfully processed file: ${file.name}`);
+        } catch (error) {
+          console.error("❌ Error uploading file:", file.name, error);
+          toast.error(`Failed to upload ${file.name}`);
+          return;
+        }
       }
-    } else {
-      toast.error(result?.message);
+
+      console.log("📝 All files uploaded, creating post with:", {
+        uploadedFiles: uploadedFiles,
+        caption: newPost.caption.length,
+        hasAddress: !!newPost.address,
+        privacy: newPost.privacy,
+      });
+
+      // Now create the post with all uploaded files
+      const postBody = {
+        uploaded_files: uploadedFiles,
+        caption: newPost.caption,
+        address: newPost.address || undefined,
+        latitude: newPost.latitude ? Number(newPost.latitude) : undefined,
+        longitude: newPost.longitude ? Number(newPost.longitude) : undefined,
+        privacy: newPost.privacy,
+      };
+
+      const result = await createPost(postBody);
+      console.log("📨 Create post response:", result);
+
+      if (result?.status) {
+        if (!!result?.data) {
+          console.log("✅ Post created successfully:", result.data);
+          addPost(result?.data);
+          toast.success("Post created successfully");
+          // Reset the form
+          setNewPost({
+            caption: "",
+            media_files: [],
+            address: "",
+            latitude: "",
+            longitude: "",
+            privacy: "everyone",
+          });
+          setIsNewPostDialogOpen(false);
+        }
+      } else {
+        console.error("❌ Failed to create post:", result?.message);
+        toast.error(result?.message || "Failed to create post");
+      }
+    } catch (error) {
+      console.error("❌ Error in createPostFunc:", error);
+      toast.error("Failed to create post. Please try again.");
     }
   };
 
-  const handleChangePostImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLargeFileUpload = async (file: File, fileId: string) => {
+    try {
+      console.log(`🚀 Starting large file upload for: ${file.name}`);
+      console.log(
+        `📊 File details: Size=${(file.size / (1024 * 1024)).toFixed(2)}MB, Type=${file.type}`
+      );
+
+      // Start multipart upload
+      const startResponse = await startUploadPostGreaterThan6MB(file.name, file.type);
+      console.log("📤 Start multipart upload response:", startResponse);
+
+      if (!startResponse?.status || !startResponse?.data) {
+        console.error("❌ Failed to start upload:", startResponse);
+        throw new Error("Failed to start upload");
+      }
+
+      const uploadId = startResponse.data.UploadId;
+      console.log("🔑 Upload ID received:", uploadId);
+
+      if (!uploadId) {
+        console.error("❌ No upload ID in response");
+        throw new Error("No upload ID received");
+      }
+
+      // Update progress state with upload ID
+      setUploadProgress((prev) => ({
+        ...prev,
+        [fileId]: {
+          ...prev[fileId],
+          uploadId,
+          parts: [],
+        },
+      }));
+
+      // Calculate total chunks
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+      console.log(`📦 Total chunks to upload: ${totalChunks}`);
+
+      const uploadPromises = [];
+      const uploadedParts: UploadedPart[] = [];
+
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end);
+
+        console.log(
+          `📤 Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(
+            (end - start) /
+            (1024 * 1024)
+          ).toFixed(2)}MB)`
+        );
+
+        const formData = new FormData();
+        formData.append("file", chunk);
+        formData.append("filename", file.name);
+        formData.append("upload_id", uploadId);
+        formData.append("part_number", (chunkIndex + 1).toString());
+        formData.append("offset", start.toString());
+
+        // Calculate checksum for the chunk
+        const checksum = await calculateChecksum(chunk);
+        formData.append("checksum", checksum);
+
+        console.log(`📤 Uploading chunk with offset: ${start}, checksum: ${checksum}`);
+
+        const uploadPromise = uploadPostMediaGreaterThan6MB(formData).then((response) => {
+          console.log(`✅ Chunk ${chunkIndex + 1} upload response:`, response);
+
+          if (response?.status && response?.data) {
+            const { partNumber, eTag } = response.data;
+
+            if (!partNumber || !eTag) {
+              console.error("❌ Invalid chunk upload response format:", response.data);
+              throw new Error("Invalid chunk upload response format");
+            }
+
+            uploadedParts.push({
+              partNumber: partNumber,
+              eTag: eTag,
+            });
+
+            // Update progress
+            const progress = (uploadedParts.length / totalChunks) * 100;
+            console.log(`📊 Upload progress: ${progress.toFixed(1)}%`);
+            console.log(`📦 Part uploaded:`, {
+              partNumber,
+              eTag,
+              totalParts: uploadedParts.length,
+            });
+
+            setUploadProgress((prev) => ({
+              ...prev,
+              [fileId]: {
+                ...prev[fileId],
+                progress,
+                parts: [...uploadedParts], // Create a new array to ensure state updates
+              },
+            }));
+          }
+          return response;
+        });
+
+        uploadPromises.push(uploadPromise);
+
+        // If we reach the parallel upload limit or this is the last chunk
+        if (uploadPromises.length >= MAX_PARALLEL_UPLOADS || chunkIndex === totalChunks - 1) {
+          console.log(`⏳ Waiting for ${uploadPromises.length} chunks to complete...`);
+          await Promise.all(uploadPromises);
+          console.log("✅ Chunk batch completed");
+          uploadPromises.length = 0;
+        }
+      }
+
+      console.log("📤 All chunks uploaded, completing multipart upload:", {
+        filename: file.name,
+        upload_id: uploadId,
+        parts: uploadedParts,
+      });
+
+      // Sort parts by part number before completing
+      const sortedParts = uploadedParts.sort(
+        (a, b) => parseInt(a.partNumber) - parseInt(b.partNumber)
+      );
+
+      // Complete the multipart upload
+      const completeResponse = await completePostMediaGreaterThan6MB({
+        filename: file.name,
+        upload_id: uploadId,
+        parts: sortedParts,
+      });
+      console.log("✅ Complete multipart upload response:", completeResponse);
+
+      return completeResponse;
+    } catch (error) {
+      console.error("❌ Error in large file upload:", error);
+      setUploadProgress((prev) => ({
+        ...prev,
+        [fileId]: {
+          ...prev[fileId],
+          status: "error",
+        },
+      }));
+      throw error;
+    }
+  };
+
+  const handleChangePostImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     // Check if we've already reached the maximum number of images
-    if (newPost.media_files.length >= 4) {
-      // Don't proceed if we already have 4 images
+    if (newPost.media_files.length >= MAX_FILES) {
       return;
     }
 
@@ -139,9 +428,9 @@ const SocialPostFilterDialog = ({
     handlePreviewImage();
   };
 
-  const handleFileFromNewSocialField = (file: File) => {
+  const handleFileFromNewSocialField = async (file: File) => {
     // Check if we've already reached the maximum number of images
-    if (newPost.media_files.length >= 4) {
+    if (newPost.media_files.length >= MAX_FILES) {
       return;
     }
 
@@ -191,12 +480,8 @@ const SocialPostFilterDialog = ({
 
   const getCroppedImg = async (
     image: HTMLImageElement,
-    pixelCrop: CropArea
+    cropArea: CropArea
   ): Promise<File | null> => {
-    if (!completedCrop) {
-      return null;
-    }
-
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -204,19 +489,19 @@ const SocialPostFilterDialog = ({
       throw new Error("No 2d context");
     }
 
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
+    canvas.width = cropArea.width;
+    canvas.height = cropArea.height;
 
     ctx.drawImage(
       image,
-      completedCrop.x,
-      completedCrop.y,
-      completedCrop.width,
-      completedCrop.height,
+      cropArea.x,
+      cropArea.y,
+      cropArea.width,
+      cropArea.height,
       0,
       0,
-      completedCrop.width,
-      completedCrop.height
+      cropArea.width,
+      cropArea.height
     );
 
     return new Promise<File | null>((resolve) => {
@@ -264,50 +549,6 @@ const SocialPostFilterDialog = ({
     }
   };
 
-  const handleNext = () => {
-    if (previewImageForPost.file) {
-      if (previewImageForPost.type === "new") {
-        // Check if adding a new image would exceed the limit
-        if (newPost.media_files.length >= 4) {
-          // Don't add more images if we already have 4
-          setPreviewImageForPost({
-            type: "new",
-            position: "",
-            file: null,
-          });
-          setCroppedImage(null);
-          setImageProgress({ previewing: false, editing: false });
-          return;
-        }
-
-        // Add new image to media_files
-        setNewPost({
-          ...newPost,
-          media_files: [...newPost.media_files, previewImageForPost.file],
-        });
-      } else if (previewImageForPost.type === "edit" && previewImageForPost.position) {
-        // Replace existing image at the specified position
-        const position = parseInt(previewImageForPost.position);
-        const updatedFiles = [...newPost.media_files];
-        updatedFiles[position] = previewImageForPost.file;
-
-        setNewPost({
-          ...newPost,
-          media_files: updatedFiles,
-        });
-      }
-    }
-
-    // Reset states
-    setPreviewImageForPost({
-      type: "new",
-      position: "",
-      file: null,
-    });
-    setCroppedImage(null);
-    setImageProgress({ previewing: false, editing: false });
-  };
-
   const handleExistingImageClick = (file: File, index: number) => {
     setPreviewImageForPost({
       type: "edit",
@@ -315,6 +556,23 @@ const SocialPostFilterDialog = ({
       file: file,
     });
     handlePreviewImage();
+  };
+
+  const calculateChecksum = async (chunk: Blob): Promise<string> => {
+    try {
+      // Convert chunk to ArrayBuffer
+      const arrayBuffer = await chunk.arrayBuffer();
+      // Calculate SHA-256 hash
+      const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+      // Convert to hex string
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+      return hashHex;
+    } catch (error) {
+      console.error("Error calculating checksum:", error);
+      // Fallback to a simpler checksum if crypto API fails
+      return `${chunk.size}-${Date.now()}`;
+    }
   };
 
   return (
@@ -473,7 +731,7 @@ const SocialPostFilterDialog = ({
                   </div>
 
                   <div className="flex flex-row gap-4 flex-wrap">
-                    {newPost.media_files.length < 4 && (
+                    {newPost.media_files.length < MAX_FILES && (
                       <div className="relative size-32 bg-accent flex rounded-lg">
                         <div className="absolute w-fit gap-y-2 place-items-center inset-0 m-auto flex flex-col justify-center">
                           <TbPlus className="size-8" />
@@ -490,10 +748,12 @@ const SocialPostFilterDialog = ({
                       </div>
                     )}
 
-                    {newPost.media_files.length >= 4 && (
+                    {newPost.media_files.length >= MAX_FILES && (
                       <div className="relative size-32 bg-accent/50 flex rounded-lg border border-primary/30">
                         <div className="absolute w-fit gap-y-2 place-items-center inset-0 m-auto flex flex-col justify-center text-center px-2">
-                          <span className="text-xs font-medium">Maximum 4 images reached</span>
+                          <span className="text-xs font-medium">
+                            Maximum {MAX_FILES} files reached
+                          </span>
                         </div>
                       </div>
                     )}
@@ -662,4 +922,4 @@ const SocialPostFilterDialog = ({
   );
 };
 
-export default SocialPostFilterDialog;
+export default AddPost;

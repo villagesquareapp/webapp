@@ -1,11 +1,10 @@
 'use server'
 
-import { apiGet, apiPost } from 'lib/api'
-import { baseApiCall } from 'lib/api/base'
-import { getToken } from 'lib/getToken'
+import { apiGet } from 'lib/api';
+import { getToken } from 'lib/getToken';
 
 
-export const getCommentReplies = async (page: number, limit: number) => {
+export const getNotifications = async (page: number, limit: number) => {
     const token = await getToken()
 
     const params = new URLSearchParams({
@@ -13,10 +12,23 @@ export const getCommentReplies = async (page: number, limit: number) => {
         limit: String(limit)
     })
 
-    const response = await apiGet<ICommentsResponse>(
+    const response = await apiGet<INotificationsResponse>(
         `app/notifications?${params.toString()}`,
         token
     );
     return response;
 };
+
+
+
+export const readAllNotifications = async () => {
+    const token = await getToken()
+
+    const response = await apiGet<INotificationsResponse>(
+        `/app/notifications/read-all`,
+        token
+    );
+    return response;
+};
+
 

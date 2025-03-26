@@ -17,13 +17,29 @@ interface INewComment {
 
 type PrivacyType = 'everyone' | 'followers' | 'private'
 
+interface IFileUploadCompleteBodyPart {
+    partNumber: string,
+    eTag: string
+}
+
+interface IFileUploadCompleteBody {
+    filename: string,
+    upload_id: string,
+    parts: IFileUploadCompleteBodyPart[]
+}
+
 interface INewPost {
-    caption: string
-    media_files: File[]
-    address: string
-    latitude: string
-    longitude: string
-    privacy: PrivacyType
+    uploaded_files?:
+    {
+        key: string,
+        mime_type: string
+    }[]
+    , // Optional
+    caption: string,
+    address?: string,
+    latitude?: Number,
+    longitude?: Number,
+    privacy: string
 }
 
 interface IUser {
@@ -80,7 +96,25 @@ interface ISignup {
 }
 
 
+interface INotifications {
+    subject: {
+        icon: string,
+        name: string
+    },
+    description: string,
+    object: {
+        title: string | null,
+        thumbnail: string | null
+    },
+    notification_type: string,
+    service_type: string,
+    service_id: string,
+    date: string,
+    time: string,
+    time_ago: string
+}
 
+interface INotificationsResponse extends IPaginatedResponse<INotifications> { }
 
 interface IPostMedia {
     uuid: string
@@ -136,6 +170,7 @@ interface IPaginatedResponse<T> {
     data: T[]
     per_page: number
     total: number
+    extras?: any
     last_page: number
 }
 
@@ -160,6 +195,8 @@ interface IPostComment {
     reply_count: number
 }
 
+interface INewPostResponse extends IPost { }
+
 interface ILikeOrUnlikePostResponse {
     is_liked: boolean
 }
@@ -172,4 +209,24 @@ interface CommentWithReplies {
     loadedReplies: IPostComment[];
     hasMoreReplies: boolean;
     replyPage: number;
+}
+
+interface IFileUploadStartResponse {
+    ServerSideEncryption: string;
+    Bucket: string;
+    Key: string;
+    UploadId: string;
+}
+
+interface IFileUploadChunkResponse {
+    partNumber: string;
+    eTag: string;
+}
+
+interface IFileUploadCompleteResponse {
+    ServerSideEncryption: string;
+    Location: string;
+    Bucket: string;
+    Key: string;
+    ETag: string;
 } 

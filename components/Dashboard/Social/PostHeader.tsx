@@ -54,9 +54,9 @@ const PostHeader = ({
           className="size-12 border-foreground border-[1.5px]"
         />
         <div className="flex flex-col gap-y-1">
-          <span className="flex flex-row gap-x-2 items-center">
-            <span className="font-semibold text-sm">{post?.user?.name}</span>
-            {post?.user?.verified_status && (
+          <span className="flex flex-row gap-x-2 items-center max-w-60">
+            <span className="font-semibold text-sm truncate">{post?.user?.name}</span>
+            {!!post?.user?.verified_status && (
               <HiMiniCheckBadge className="size-5 text-green-600" />
             )}
           </span>

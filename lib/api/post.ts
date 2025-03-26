@@ -10,10 +10,15 @@ export async function apiPost<T>(route: string, body: any, token?: string, optio
         headers = { ...headers, ...options.headers }
     }
 
-    headers = { ...headers, 'Content-Type': 'application/json' };
+    const isFormData = body instanceof FormData;
+    if (!isFormData) {
+        headers = { ...headers, 'Content-Type': 'application/json' };
+    }
+
     const response = await baseApiCall<T>('POST', route, {
         headers,
-        body: JSON.stringify(body),
+        body: isFormData ? body : JSON.stringify(body),
+        isFormData
     })
 
     // await revalidatePathClient(route)
