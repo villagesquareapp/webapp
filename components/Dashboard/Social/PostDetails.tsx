@@ -241,7 +241,7 @@ const PostDetails = ({
             </div>
             <div className="sticky bottom-0 bg-background mt-auto border-t px-4">
               <CommentInput
-                user={user}
+                userProfilePicture={user?.profile_picture}
                 replyingTo={replyingTo}
                 content={newComment}
                 onChangeContentAction={setNewComment}

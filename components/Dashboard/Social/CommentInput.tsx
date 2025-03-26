@@ -11,10 +11,10 @@ const CommentInput = ({
   handleEmojiClick,
   onSubmitComment,
   loading,
-  user,
+  userProfilePicture,
 }: {
   replyingTo: IPostComment | null;
-  user: IUser;
+  userProfilePicture: string | null;
   content: string;
   onChangeContentAction: (content: string) => void;
   handleEmojiClick: (emoji: string) => void;
@@ -36,11 +36,13 @@ const CommentInput = ({
         ))}
       </div>
       <div className="flex flex-row h-fit gap-x-2 items-center">
-        <CustomAvatar
-          src={user?.profile_picture}
-          name="user profile"
-          className="size-12 border-foreground border"
-        />
+        {userProfilePicture && (
+          <CustomAvatar
+            src={userProfilePicture}
+            name="user profile"
+            className="size-12 border-foreground border"
+          />
+        )}
         <ReplyTextArea
           replyingTo={replyingTo}
           content={content}

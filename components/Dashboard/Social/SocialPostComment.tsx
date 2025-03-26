@@ -77,6 +77,7 @@ const SocialPostComment = ({
           />
         </div>
         <CommentInput
+          userProfilePicture={post?.user?.profile_picture}
           onSubmitComment={handleSubmitComment}
           loading={postCommentLoading}
           handleEmojiClick={handleEmojiClick}
