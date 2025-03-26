@@ -12,10 +12,16 @@ import { ImSpinner8 } from "react-icons/im";
 import { RiMailLine } from "react-icons/ri";
 import { toast } from "sonner";
 import AuthBackButton from "./AuthBackButton";
+import { forgotPassword } from "api/auth";
+import { useRouter } from "next/navigation";
+import { AccountVerification } from "./AccountVerification";
 
 interface ForgotPasswordProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function ForgotPassword({ className, ...props }: ForgotPasswordProps) {
+  const router = useRouter();
+  const [isEmailVerified, setIsEmailVerified] = React.useState<boolean>(false);
+  const [redirecting, setRedirecting] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const form = useForm<ForgotPasswordFormValues>({
@@ -29,61 +35,80 @@ export function ForgotPassword({ className, ...props }: ForgotPasswordProps) {
     setIsLoading(true);
 
     try {
-      // TODO: Implement your password reset logic here
-      console.log(values);
-
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      toast.success("Password reset email sent successfully");
+      const response = await forgotPassword(values.email);
+      console.log("RESPONSE", response);
+      if (!!response?.status) {
+        setRedirecting(true);
+        toast.success(response?.message);
+        setIsEmailVerified(true);
+      } else {
+        return toast.error(response?.message);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error("Password reset error:", error);
       toast.error("Failed to send password reset email");
-    } finally {
       setIsLoading(false);
     }
   }
 
   return (
     <>
-      <AuthBackButton />
-      <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Forgot Password?</h1>
-        <p>Reset your password effortlessly by requesting an email confirmation.</p>
-      </div>
-      <div className={cn("grid gap-6", className)} {...props}>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="grid gap-1">
-                  <div className="relative">
-                    <RiMailLine className="size-4 absolute left-2 top-[49%] -translate-y-1/2" />
-                    <FormControl>
-                      <Input
-                        placeholder="Email"
-                        type="email"
-                        className="auth_input"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        autoCorrect="off"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage className="text-sm text-red-500" />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="auth_button" disabled={isLoading}>
-              {isLoading && <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />}
-              Send OTP
-            </Button>
-          </form>
-        </Form>
-      </div>
+      {!isEmailVerified ? (
+        <>
+          <AuthBackButton onClick={() => setIsEmailVerified(false)} />
+          <div className="flex flex-col space-y-2 text-center">
+            <h1 className="text-3xl font-semibold tracking-tight">Forgot Password?</h1>
+            <p>Reset your password effortlessly by requesting an email confirmation.</p>
+          </div>
+          <div className={cn("grid gap-6", className)} {...props}>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-1">
+                      <div className="relative">
+                        <RiMailLine className="size-4 absolute left-2 top-[49%] -translate-y-1/2" />
+                        <FormControl>
+                          <Input
+                            placeholder="Email"
+                            type="email"
+                            className="auth_input"
+                            autoCapitalize="none"
+                            autoComplete="email"
+                            autoCorrect="off"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage className="text-sm text-red-500" />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="auth_button"
+                  disabled={isLoading || redirecting}
+                >
+                  {(isLoading || redirecting) && (
+                    <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {redirecting ? "Redirecting..." : "Send OTP"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+        </>
+      ) : (
+        <AccountVerification
+          email={form.getValues().email}
+          username={"anything"} //@Todo
+          goBack={() => setIsEmailVerified(false)}
+        />
+      )}
     </>
   );
 }

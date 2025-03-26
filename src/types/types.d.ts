@@ -42,6 +42,14 @@ interface INewPost {
     privacy: string
 }
 
+
+interface IVerifyOtpBody {
+    email: string,
+    otp: string
+    type: 'password'
+}
+
+
 interface IUser {
     uuid: string
     name: string
@@ -79,6 +87,9 @@ interface IUser {
 }
 
 
+interface IRegisterResponse extends IUser { }
+
+
 type IRegistrationType = 'google' | 'password' | 'apple' | 'facebook'
 interface ISignup {
     username: string,
@@ -95,6 +106,47 @@ interface ISignup {
     fcm_token?: string
 }
 
+
+interface IFeaturedLivestream {
+    uuid: string,
+    title: string,
+    start_date: string,
+    start_time: string,
+    users: Number,
+    gifts: Number,
+    duration: string,
+    category_id: Number,
+    livestream_room_id: string,
+    livestream_room_stream_id: string,
+    livestream_room_stream_url: string,
+    status: string,
+    privacy: string,
+    comments_enabled: boolean,
+    questions_enabled: boolean,
+    gifting_enabled: boolean,
+    cover: string,
+    created_at: string,
+    updated_at: string,
+    deleted_at: string | null,
+    host: {
+        uuid: string,
+        name: string,
+        username: string,
+        email: string,
+        verified_status: number,
+        checkmark_verification_status: boolean,
+        premium_verification_status: boolean,
+        profile_picture: string,
+        online: boolean
+    },
+    category: {
+        id: Number,
+        name: string
+    }
+}
+
+
+interface IFeaturedLivestreamResponse extends IPaginatedResponse<IFeaturedLivestream> { }
 
 interface INotifications {
     subject: {

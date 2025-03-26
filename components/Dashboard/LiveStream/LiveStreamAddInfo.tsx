@@ -138,14 +138,14 @@ const LiveStreamAddInfo = () => {
                 onChange={(e) => setSearchValue(e.target.value)}
                 className="bg-accent h-10 w-full pl-4 pr-12 font-medium rounded-lg !outline-none !border-none !ring-0"
               />
-              {searchValue ?
+              {searchValue ? (
                 <IoSearch className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none" />
-              :
+              ) : (
                 <MdCancel
                   onClick={() => setSearchValue("")}
                   className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none cursor-pointer"
                 />
-              }
+              )}
             </div>
             <div className="grid grid-cols-4 gap-10">
               {Array.from({ length: 30 }).map((_, index) => (
@@ -261,8 +261,11 @@ const LiveStreamAddInfo = () => {
                 <div className="min-h-10 items-center px-2 h-fit w-full bg-accent rounded-xl flex-wrap flex relative">
                   {selectedCohost ? (
                     <>
-                      {selectedCohost.map((cohost) => (
-                        <div className="flex flex-row gap-x-2 text-xs font-semibold items-center bg-black rounded-sm px-2 py-1.5">
+                      {selectedCohost?.map((cohost, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-row gap-x-2 text-xs font-semibold items-center bg-black rounded-sm px-2 py-1.5"
+                        >
                           <p>{cohost}</p>
                           <MdCancel className="size-5 cursor-pointer" />
                         </div>

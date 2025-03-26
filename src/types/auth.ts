@@ -13,6 +13,7 @@ export interface RegisterData {
     fcm_token?: string;
 }
 
+
 export interface AuthResponse {
     status: boolean;
     message: string;
@@ -23,7 +24,6 @@ export interface AuthResponse {
             username: string;
             email: string;
             name: string;
-            // ... other user fields
         };
     };
 } 

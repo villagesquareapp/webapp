@@ -1,7 +1,6 @@
 'use server'
 
 import { apiGet, apiPost } from 'lib/api'
-import { baseApiCall } from 'lib/api/base'
 import { getToken } from 'lib/getToken'
 
 interface GetPostsParams {
@@ -42,7 +41,7 @@ export async function likeOrUnlikePost(postId: string, formData: FormData) {
 
 export async function saveOrUnsavePost(postId: string, formData: FormData) {
     const token = await getToken()
-    return await baseApiCall<ISaveOrUnsavePostResponse>('POST', `/posts/${postId}/save`, { body: formData, isFormData: true }, token)
+    return await apiPost<ISaveOrUnsavePostResponse>(`/posts/${postId}/save`, formData, token)
 }
 
 
@@ -77,10 +76,9 @@ export const getCommentReplies = async (postId: string, commentId: string, page:
 
 export async function likeOrUnlikeComments(postId: string, commentId: string, formData: FormData) {
     const token = await getToken()
-    return await baseApiCall<ILikeOrUnlikePostResponse>('POST', `/posts/${postId}/comments/${commentId}/like`, {
-        body: formData,
-        isFormData: true
-    }, token)
+    return await apiPost<ILikeOrUnlikePostResponse>(`/posts/${postId}/comments/${commentId}/like`,
+        formData,
+        token)
 }
 
 export const uploadPostMediaLessThan6MB = async (formData: FormData) => {

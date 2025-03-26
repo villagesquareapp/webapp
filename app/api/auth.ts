@@ -2,6 +2,8 @@ import { getTimeZone } from 'lib/timezone'
 import type { AuthResponse, RegisterData } from 'src/types/auth'
 import { apiPost } from 'lib/api'
 
+const route = 'auth'
+
 export async function register(data: Omit<RegisterData, 'registration_type' | 'timezone'>) {
     const registerData: RegisterData = {
         ...data,
@@ -9,7 +11,7 @@ export async function register(data: Omit<RegisterData, 'registration_type' | 't
         timezone: getTimeZone(),
     }
 
-    return apiPost<AuthResponse>('auth/register', registerData)
+    return apiPost<IRegisterResponse>(`${route}/register`, registerData)
 }
 
 interface SocialRegisterData {
@@ -29,5 +31,21 @@ export async function socialRegister(data: SocialRegisterData) {
         ...data,
     }
 
-    return apiPost<AuthResponse>('/auth/register', registerData)
-} 
+    return apiPost<AuthResponse>(`${route}/register`, registerData)
+}
+
+
+export const forgotPassword = async (email: string) => {
+    const response = await apiPost<ApiResponse>(`${route}/forgot-password`, email);
+    return response;
+}
+
+export const verifyEmail = async (verifyEmailBody: { email: string, username: string }) => {
+    const response = await apiPost<ApiResponse>(`${route}/verify-email`, verifyEmailBody);
+    return response;
+}
+
+export const verifyOtp = async (body: IVerifyOtpBody) => {
+    const response = await apiPost<ApiResponse>(`${route}/verify-otp`, body);
+    return response;
+}

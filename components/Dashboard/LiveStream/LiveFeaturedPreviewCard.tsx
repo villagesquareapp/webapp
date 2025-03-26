@@ -1,23 +1,44 @@
 import CustomAvatar from "components/ui/custom/custom-avatar";
-import Image from "next/image";
+import ReactPlayer from "react-player";
 import { CgEyeAlt } from "react-icons/cg";
 
-const LiveFeaturedPreviewCard = () => {
+const LiveFeaturedPreviewCard = ({
+  featuredLivestreamData,
+}: {
+  featuredLivestreamData: IFeaturedLivestream;
+}) => {
+  const hlsUrl = featuredLivestreamData?.livestream_room_stream_url;
+
+  console.log("HLS URL", hlsUrl);
+
   return (
-    <div className="relative flex flex-col rounded-xl">
+    <div className="relative bg-muted flex flex-col rounded-xl">
       <span className="bg-white/10 flex absolute top-2 left-2 items-center backdrop-blur-sm rounded-full px-2 py-1 space-x-1">
         <CgEyeAlt className="size-4" />
         <p className="font-medium text-xs">123</p>
       </span>
       <div className="flex flex-col gap-y-4">
         <div className="w-full h-[280px] relative rounded-xl overflow-hidden">
-          <Image
-            src="/images/beautiful-image.webp"
-            alt="post"
-            className="object-cover"
-            fill
-            quality={90}
-            priority
+          <ReactPlayer
+            url={hlsUrl}
+            width="100%"
+            height="100%"
+            playing
+            loop
+            muted
+            playsinline
+            controls={false}
+            config={{
+              file: {
+                attributes: {
+                  style: {
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  },
+                },
+              },
+            }}
           />
         </div>
       </div>
@@ -28,10 +49,10 @@ const LiveFeaturedPreviewCard = () => {
           </p>
         </div>
         <div className="flex items-center w-full">
-          <div className="flex items-center gap-x-2">
-            <div className="relative">
+          <div className="flex items-center gap-x-2 w-full">
+            <div className="relative shrink-0">
               <CustomAvatar
-                src="/images/beautiful-image.webp"
+                src={featuredLivestreamData?.host?.profile_picture}
                 className="border-2 size-12"
                 name="John Doe"
               />
@@ -39,9 +60,13 @@ const LiveFeaturedPreviewCard = () => {
                 Live
               </div>
             </div>
-            <div className="flex flex-col">
-              <p className="font-medium text-sm">John Doe</p>
-              <p className="text-muted-foreground text-xs">@micheal_jord</p>
+            <div className="flex flex-col min-w-0 flex-1">
+              <p className="font-medium text-sm truncate">
+                {featuredLivestreamData?.host?.name}
+              </p>
+              <p className="text-muted-foreground text-xs truncate">
+                @{featuredLivestreamData?.host?.username}
+              </p>
             </div>
           </div>
         </div>

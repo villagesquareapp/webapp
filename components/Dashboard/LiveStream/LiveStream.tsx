@@ -26,11 +26,11 @@ import LiveStreamGift from "./LiveStreamGift";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { Separator } from "components/ui/separator";
 
-const LiveStream = () => {
-  let turnedOffComment = true;
+const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLivestream[] }) => {
+  let turnedOffComment = false;
   let turnOffQuestion = false;
   const [isClient, setIsClient] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
 
@@ -49,6 +49,7 @@ const LiveStream = () => {
   };
 
   let isHost = true;
+  let pausedLivestream = false;
 
   if (!isClient) return null;
 
@@ -63,15 +64,18 @@ const LiveStream = () => {
       <div className="grid grid-cols-8 gap-x-4">
         <div className="col-span-6 gap-y-4 flex flex-col">
           <div className="w-full h-[66dvh] relative">
-            <div className="absolute inset-0 z-30 rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <div className="flex flex-row bg-accent gap-x-2 p-4 glassmorphism rounded-lg max-w-md">
-                <IoIosInformationCircle className="size-5 mt-2 flex shrink-0" />
-                <p className="text-sm flex">
-                  The host has temporarily paused the video. Please wait until the host restart
-                  it.
-                </p>
+            {pausedLivestream && (
+              <div className="absolute inset-0 z-30 rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <div className="flex flex-row bg-accent gap-x-2 p-4 glassmorphism rounded-lg max-w-md">
+                  <IoIosInformationCircle className="size-5 mt-2 flex shrink-0" />
+                  <p className="text-sm flex">
+                    The host has temporarily paused the video. Please wait until the host
+                    restart it.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+
             <div className="absolute z-40 bg-red-600 font-medium text-xs top-4 left-4 rounded-full px-5 flex py-[5px] ">
               Live
             </div>
@@ -183,9 +187,9 @@ const LiveStream = () => {
           <div className="flex flex-col mt-4 gap-y-4">
             <p className="font-semibold">Featured Lives</p>
             <div className="grid lg:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, index) => (
+              {featuredLivestream?.map((featuredLivestreamData, index) => (
                 <div key={index}>
-                  <LiveFeaturedPreviewCard />
+                  <LiveFeaturedPreviewCard featuredLivestreamData={featuredLivestreamData} />
                 </div>
               ))}
             </div>

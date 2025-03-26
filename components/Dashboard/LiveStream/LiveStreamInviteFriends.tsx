@@ -7,61 +7,100 @@ import { useState } from "react";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Button } from "components/ui/button";
 
+interface Friend {
+  id: number;
+  name: string;
+  avatar: string;
+  isInvited: boolean;
+}
+
 const LiveStreamInviteFriends = () => {
   const [searchValue, setSearchValue] = useState("");
-  let questionSent = false;
-  let showQuestionAndAnswer = true;
-  let notInvited = false;
+  const [questionSent, setQuestionSent] = useState(false);
+  const [showQuestionAndAnswer, setShowQuestionAndAnswer] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>(
+    Array.from({ length: 30 }).map((_, index) => ({
+      id: index,
+      name: "Micheal Jordan",
+      avatar: "/images/beautiful-image.webp",
+      isInvited: false,
+    }))
+  );
 
-  // @Todo Are you sure you want to join session?
+  const handleInvite = (friendId: number) => {
+    setFriends((prevFriends) =>
+      prevFriends.map((friend) =>
+        friend.id === friendId ? { ...friend, isInvited: true } : friend
+      )
+    );
+  };
+
+  const handleCancelInvite = (friendId: number) => {
+    setFriends((prevFriends) =>
+      prevFriends.map((friend) =>
+        friend.id === friendId ? { ...friend, isInvited: false } : friend
+      )
+    );
+  };
+
+  const filteredFriends = friends.filter((friend) =>
+    friend.name.toLowerCase().includes(searchValue.toLowerCase())
+  );
 
   return (
     <LiveStreamDialog
-      contentClassName={`${questionSent ? "w-[420px] h-[420px]" : "max-w-[650px]"} ${
-        showQuestionAndAnswer && "h-[80dvh]"
-      }`}
+      contentClassName="w-[650px] h-fit !max-h-[650px] py-6"
       trigger={
-        <div className="bg-white/10 rounded-full flex size-10 place-content-center items-center">
+        <div className="bg-white/10 rounded-full flex size-10 place-content-center items-center cursor-pointer">
           <VSAddPerson className="size-7 flex -mb-1 -mr-1.5" />
         </div>
       }
       title={"Invite Friends"}
     >
-      <div className="h-full overflow-y-auto">
-        <div className="flex  flex-col gap-y-4 pb-10">
-          <div className="w-full relative">
-            <input
-              type="search"
-              placeholder="Search"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="bg-accent h-10 w-full pl-4 pr-12 font-medium rounded-lg !outline-none !border-none !ring-0"
-            />
-            <IoSearch className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none" />
-          </div>
-          <div className="grid grid-cols-4 gap-10">
-            {Array.from({ length: 30 }).map((_, index) => (
-              <div className="flex flex-col w-full gap-y-2 place-items-center">
+      <div className="h-full flex flex-col">
+        <div className="w-full relative mb-4">
+          <input
+            type="search"
+            placeholder="Search"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="bg-accent h-10 w-full pl-4 pr-12 font-medium rounded-lg !outline-none !border-none !ring-0"
+          />
+          <IoSearch className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none" />
+        </div>
+        <div className="overflow-y-auto flex-1">
+          <div className="grid grid-cols-4 gap-6">
+            {filteredFriends.map((friend) => (
+              <div key={friend.id} className="flex flex-col w-full gap-y-2 place-items-center">
                 <CustomAvatar
-                  className="size-24"
-                  src="/images/beautiful-image.webp"
-                  name="CN"
+                  className="size-20"
+                  src={friend.avatar}
+                  name={friend.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
                 />
                 <div className="w-[98%] mx-auto flex">
-                  <p className="text-sm truncate">Micheal Jordan sdkjdnsifdsuojf</p>
+                  <p className="text-sm truncate">{friend.name}</p>
                 </div>
-                {notInvited && (
-                  <Button size={"sm"} className="w-full text-foreground px-5">
+                {!friend.isInvited ? (
+                  <Button
+                    size={"sm"}
+                    className="w-full text-foreground px-5"
+                    onClick={() => handleInvite(friend.id)}
+                  >
                     Invite
                   </Button>
+                ) : (
+                  <Button
+                    variant={"outline"}
+                    size={"sm"}
+                    className="w-full border-2 border-primary/65 text-foreground px-5"
+                    onClick={() => handleCancelInvite(friend.id)}
+                  >
+                    Invited
+                  </Button>
                 )}
-                <Button
-                  variant={"outline"}
-                  size={"sm"}
-                  className="w-full border-2 border-primary/65 text-foreground px-5"
-                >
-                  Invited
-                </Button>
               </div>
             ))}
           </div>

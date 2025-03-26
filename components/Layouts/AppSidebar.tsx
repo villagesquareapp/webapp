@@ -96,7 +96,7 @@ export function AppSidebar() {
           <SidebarGroupContent className="pt-20 px-3">
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
-                const isActive = pathname === item.url;
+                const isActive = pathname.includes(item.url);
                 const isHovered = hoveredItem === item.title;
                 const Icon: any =
                   item.title === "Social" && (isActive || isHovered)
