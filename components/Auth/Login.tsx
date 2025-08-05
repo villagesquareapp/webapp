@@ -132,7 +132,6 @@ export function Login({ className, ...props }: LoginProps) {
                       <FormControl>
                         <Input
                           placeholder="Username / Email Address"
-                          type="email"
                           className="auth_input"
                           autoCapitalize="none"
                           autoComplete="email"
