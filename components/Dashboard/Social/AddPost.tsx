@@ -44,7 +44,7 @@ interface PreviewImage {
 
 interface INewPostState {
   caption: string;
-  media_files: File[];
+  media: File[];
   address: string;
   latitude: string;
   longitude: string;
@@ -93,7 +93,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
   });
   const [newPost, setNewPost] = useState<INewPostState>({
     caption: "",
-    media_files: [],
+    media: [],
     address: "",
     latitude: "",
     longitude: "",
@@ -119,7 +119,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
     if (previewImageForPost.file) {
       if (previewImageForPost.type === "new") {
         // Check if adding a new image would exceed the limit
-        if (newPost.media_files.length >= MAX_FILES) {
+        if (newPost.media.length >= MAX_FILES) {
           // Don't add more images if we already have max files
           setPreviewImageForPost({
             type: "new",
@@ -134,17 +134,17 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
         // Add new image to media_files
         setNewPost({
           ...newPost,
-          media_files: [...newPost.media_files, previewImageForPost.file],
+          media: [...newPost.media, previewImageForPost.file],
         });
       } else if (previewImageForPost.type === "edit" && previewImageForPost.position) {
         // Replace existing image at the specified position
         const position = parseInt(previewImageForPost.position);
-        const updatedFiles = [...newPost.media_files];
+        const updatedFiles = [...newPost.media];
         updatedFiles[position] = previewImageForPost.file;
 
         setNewPost({
           ...newPost,
-          media_files: updatedFiles,
+          media: updatedFiles,
         });
       }
     }
@@ -164,13 +164,13 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
       console.log("🚀 Starting post creation process");
       console.log(
         "📁 Files to upload:",
-        newPost.media_files.map((f) => ({ name: f.name, size: f.size, type: f.type }))
+        newPost.media.map((f) => ({ name: f.name, size: f.size, type: f.type }))
       );
 
       // First upload all media files
       const uploadedFiles = [];
 
-      for (const file of newPost.media_files) {
+      for (const file of newPost.media) {
         try {
           console.log(
             `📤 Processing file: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`
@@ -195,8 +195,8 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
           } else {
             console.log(`🔄 Using chunked upload for large file: ${file.name}`);
             const fileId = `${file.name}-${Date.now()}`;
-            uploadResponse = await handleLargeFileUpload(file, fileId);
-            console.log("✅ Chunked upload response:", uploadResponse);
+            // uploadResponse = await handleLargeFileUpload(file, fileId);
+            // console.log("✅ Chunked upload response:", uploadResponse);
           }
 
           if (!uploadResponse?.status || !uploadResponse?.data) {
@@ -245,7 +245,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
           // Reset the form
           setNewPost({
             caption: "",
-            media_files: [],
+            media: [],
             address: "",
             latitude: "",
             longitude: "",
@@ -263,157 +263,157 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
     }
   };
 
-  const handleLargeFileUpload = async (file: File, fileId: string) => {
-    try {
-      console.log(`🚀 Starting large file upload for: ${file.name}`);
-      console.log(
-        `📊 File details: Size=${(file.size / (1024 * 1024)).toFixed(2)}MB, Type=${file.type}`
-      );
+  // const handleLargeFileUpload = async (file: File, fileId: string) => {
+  //   try {
+  //     console.log(`🚀 Starting large file upload for: ${file.name}`);
+  //     console.log(
+  //       `📊 File details: Size=${(file.size / (1024 * 1024)).toFixed(2)}MB, Type=${file.type}`
+  //     );
 
-      // Start multipart upload
-      const startResponse = await startUploadPostGreaterThan6MB(file.name, file.type);
-      console.log("📤 Start multipart upload response:", startResponse);
+  //     // Start multipart upload
+  //     const startResponse = await startUploadPostGreaterThan6MB(file.name, file.type);
+  //     console.log("📤 Start multipart upload response:", startResponse);
 
-      if (!startResponse?.status || !startResponse?.data) {
-        console.error("❌ Failed to start upload:", startResponse);
-        throw new Error("Failed to start upload");
-      }
+  //     if (!startResponse?.status || !startResponse?.data) {
+  //       console.error("❌ Failed to start upload:", startResponse);
+  //       throw new Error("Failed to start upload");
+  //     }
 
-      const uploadId = startResponse.data.UploadId;
-      console.log("🔑 Upload ID received:", uploadId);
+  //     const uploadId = startResponse.data.UploadId;
+  //     console.log("🔑 Upload ID received:", uploadId);
 
-      if (!uploadId) {
-        console.error("❌ No upload ID in response");
-        throw new Error("No upload ID received");
-      }
+  //     if (!uploadId) {
+  //       console.error("❌ No upload ID in response");
+  //       throw new Error("No upload ID received");
+  //     }
 
-      // Update progress state with upload ID
-      setUploadProgress((prev) => ({
-        ...prev,
-        [fileId]: {
-          ...prev[fileId],
-          uploadId,
-          parts: [],
-        },
-      }));
+  //     // Update progress state with upload ID
+  //     setUploadProgress((prev) => ({
+  //       ...prev,
+  //       [fileId]: {
+  //         ...prev[fileId],
+  //         uploadId,
+  //         parts: [],
+  //       },
+  //     }));
 
-      // Calculate total chunks
-      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-      console.log(`📦 Total chunks to upload: ${totalChunks}`);
+  //     // Calculate total chunks
+  //     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+  //     console.log(`📦 Total chunks to upload: ${totalChunks}`);
 
-      const uploadPromises = [];
-      const uploadedParts: UploadedPart[] = [];
+  //     const uploadPromises = [];
+  //     const uploadedParts: UploadedPart[] = [];
 
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-        const start = chunkIndex * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, file.size);
-        const chunk = file.slice(start, end);
+  //     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+  //       const start = chunkIndex * CHUNK_SIZE;
+  //       const end = Math.min(start + CHUNK_SIZE, file.size);
+  //       const chunk = file.slice(start, end);
 
-        console.log(
-          `📤 Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(
-            (end - start) /
-            (1024 * 1024)
-          ).toFixed(2)}MB)`
-        );
+  //       console.log(
+  //         `📤 Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(
+  //           (end - start) /
+  //           (1024 * 1024)
+  //         ).toFixed(2)}MB)`
+  //       );
 
-        const formData = new FormData();
-        formData.append("file", chunk);
-        formData.append("filename", file.name);
-        formData.append("upload_id", uploadId);
-        formData.append("part_number", (chunkIndex + 1).toString());
-        formData.append("offset", start.toString());
+  //       const formData = new FormData();
+  //       formData.append("file", chunk);
+  //       formData.append("filename", file.name);
+  //       formData.append("upload_id", uploadId);
+  //       formData.append("offset", start.toString());
+  //       formData.append("part_number", (chunkIndex + 1).toString());
 
-        // Calculate checksum for the chunk
-        const checksum = await calculateChecksum(chunk);
-        formData.append("checksum", checksum);
+  //       // Calculate checksum for the chunk
+  //       const checksum = await calculateChecksum(chunk);
+  //       formData.append("checksum", checksum);
 
-        console.log(`📤 Uploading chunk with offset: ${start}, checksum: ${checksum}`);
+  //       console.log(`📤 Uploading chunk with offset: ${start}, checksum: ${checksum}`);
 
-        const uploadPromise = uploadPostMediaGreaterThan6MB(formData).then((response) => {
-          console.log(`✅ Chunk ${chunkIndex + 1} upload response:`, response);
+  //       const uploadPromise = uploadPostMediaGreaterThan6MB(formData).then((response) => {
+  //         console.log(`✅ Chunk ${chunkIndex + 1} upload response:`, response);
 
-          if (response?.status && response?.data) {
-            const { partNumber, eTag } = response.data;
+  //         if (response?.status && response?.data) {
+  //           const { partNumber, eTag } = response.data;
 
-            if (!partNumber || !eTag) {
-              console.error("❌ Invalid chunk upload response format:", response.data);
-              throw new Error("Invalid chunk upload response format");
-            }
+  //           if (!partNumber || !eTag) {
+  //             console.error("❌ Invalid chunk upload response format:", response.data);
+  //             throw new Error("Invalid chunk upload response format");
+  //           }
 
-            uploadedParts.push({
-              partNumber: partNumber,
-              eTag: eTag,
-            });
+  //           uploadedParts.push({
+  //             partNumber: partNumber,
+  //             eTag: eTag,
+  //           });
 
-            // Update progress
-            const progress = (uploadedParts.length / totalChunks) * 100;
-            console.log(`📊 Upload progress: ${progress.toFixed(1)}%`);
-            console.log(`📦 Part uploaded:`, {
-              partNumber,
-              eTag,
-              totalParts: uploadedParts.length,
-            });
+  //           // Update progress
+  //           const progress = (uploadedParts.length / totalChunks) * 100;
+  //           console.log(`📊 Upload progress: ${progress.toFixed(1)}%`);
+  //           console.log(`📦 Part uploaded:`, {
+  //             partNumber,
+  //             eTag,
+  //             totalParts: uploadedParts.length,
+  //           });
 
-            setUploadProgress((prev) => ({
-              ...prev,
-              [fileId]: {
-                ...prev[fileId],
-                progress,
-                parts: [...uploadedParts], // Create a new array to ensure state updates
-              },
-            }));
-          }
-          return response;
-        });
+  //           setUploadProgress((prev) => ({
+  //             ...prev,
+  //             [fileId]: {
+  //               ...prev[fileId],
+  //               progress,
+  //               parts: [...uploadedParts], // Create a new array to ensure state updates
+  //             },
+  //           }));
+  //         }
+  //         return response;
+  //       });
 
-        uploadPromises.push(uploadPromise);
+  //       uploadPromises.push(uploadPromise);
 
-        // If we reach the parallel upload limit or this is the last chunk
-        if (uploadPromises.length >= MAX_PARALLEL_UPLOADS || chunkIndex === totalChunks - 1) {
-          console.log(`⏳ Waiting for ${uploadPromises.length} chunks to complete...`);
-          await Promise.all(uploadPromises);
-          console.log("✅ Chunk batch completed");
-          uploadPromises.length = 0;
-        }
-      }
+  //       // If we reach the parallel upload limit or this is the last chunk
+  //       if (uploadPromises.length >= MAX_PARALLEL_UPLOADS || chunkIndex === totalChunks - 1) {
+  //         console.log(`⏳ Waiting for ${uploadPromises.length} chunks to complete...`);
+  //         await Promise.all(uploadPromises);
+  //         console.log("✅ Chunk batch completed");
+  //         uploadPromises.length = 0;
+  //       }
+  //     }
 
-      console.log("📤 All chunks uploaded, completing multipart upload:", {
-        filename: file.name,
-        upload_id: uploadId,
-        parts: uploadedParts,
-      });
+  //     console.log("📤 All chunks uploaded, completing multipart upload:", {
+  //       filename: file.name,
+  //       upload_id: uploadId,
+  //       parts: uploadedParts,
+  //     });
 
-      // Sort parts by part number before completing
-      const sortedParts = uploadedParts.sort(
-        (a, b) => parseInt(a.partNumber) - parseInt(b.partNumber)
-      );
+  //     // Sort parts by part number before completing
+  //     const sortedParts = uploadedParts.sort(
+  //       (a, b) => parseInt(a.partNumber) - parseInt(b.partNumber)
+  //     );
 
-      // Complete the multipart upload
-      const completeResponse = await completePostMediaGreaterThan6MB({
-        filename: file.name,
-        upload_id: uploadId,
-        parts: sortedParts,
-      });
-      console.log("✅ Complete multipart upload response:", completeResponse);
+  //     // Complete the multipart upload
+  //     const completeResponse = await completePostMediaGreaterThan6MB({
+  //       filename: file.name,
+  //       upload_id: uploadId,
+  //       parts: sortedParts,
+  //     });
+  //     console.log("✅ Complete multipart upload response:", completeResponse);
 
-      return completeResponse;
-    } catch (error) {
-      console.error("❌ Error in large file upload:", error);
-      setUploadProgress((prev) => ({
-        ...prev,
-        [fileId]: {
-          ...prev[fileId],
-          status: "error",
-        },
-      }));
-      throw error;
-    }
-  };
+  //     return completeResponse;
+  //   } catch (error) {
+  //     console.error("❌ Error in large file upload:", error);
+  //     setUploadProgress((prev) => ({
+  //       ...prev,
+  //       [fileId]: {
+  //         ...prev[fileId],
+  //         status: "error",
+  //       },
+  //     }));
+  //     throw error;
+  //   }
+  // };
 
   const handleChangePostImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     // Check if we've already reached the maximum number of images
-    if (newPost.media_files.length >= MAX_FILES) {
+    if (newPost.media.length >= MAX_FILES) {
       return;
     }
 
@@ -430,7 +430,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
 
   const handleFileFromNewSocialField = async (file: File) => {
     // Check if we've already reached the maximum number of images
-    if (newPost.media_files.length >= MAX_FILES) {
+    if (newPost.media.length >= MAX_FILES) {
       return;
     }
 
@@ -464,7 +464,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
       // Remove specific image by index
       setNewPost({
         ...newPost,
-        media_files: newPost.media_files.filter((_, index) => index !== indexToRemove),
+        media: newPost.media.filter((_, index) => index !== indexToRemove),
       });
     } else {
       // Reset preview state when no specific index
@@ -731,7 +731,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
                   </div>
 
                   <div className="flex flex-row gap-4 flex-wrap">
-                    {newPost.media_files.length < MAX_FILES && (
+                    {newPost.media.length < MAX_FILES && (
                       <div className="relative size-32 bg-accent flex rounded-lg">
                         <div className="absolute w-fit gap-y-2 place-items-center inset-0 m-auto flex flex-col justify-center">
                           <TbPlus className="size-8" />
@@ -748,7 +748,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
                       </div>
                     )}
 
-                    {newPost.media_files.length >= MAX_FILES && (
+                    {newPost.media.length >= MAX_FILES && (
                       <div className="relative size-32 bg-accent/50 flex rounded-lg border border-primary/30">
                         <div className="absolute w-fit gap-y-2 place-items-center inset-0 m-auto flex flex-col justify-center text-center px-2">
                           <span className="text-xs font-medium">
@@ -758,7 +758,7 @@ const AddPost = ({ user, addPost }: { user: IUser; addPost: (newPost: IPost) => 
                       </div>
                     )}
 
-                    {newPost?.media_files?.map((file, index) => (
+                    {newPost?.media?.map((file, index) => (
                       <div
                         key={index}
                         className="size-32 bg-accent relative rounded-lg cursor-pointer"

@@ -24,6 +24,8 @@ import { ImSpinner8 } from "react-icons/im";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { RiUserLine } from "react-icons/ri";
 import { toast } from "sonner";
+import { getTimeZone } from "lib/timezone";
+
 
 interface LoginProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -48,9 +50,16 @@ export function Login({ className, ...props }: LoginProps) {
 
     try {
       const result = await signIn("credentials", {
-        email: values.email_or_username,
+        email_or_username: values.email_or_username,
         password: values.password,
+        timezone: getTimeZone(),
         login_type: "password",
+        provider: "default",
+        // provider_token: null,
+        // device_id: null,
+        // device: null,
+        // fcm_token: null,
+        // audience: "web",
         redirect: false,
         callbackUrl: "/dashboard/social",
       });

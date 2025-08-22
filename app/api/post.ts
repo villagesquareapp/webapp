@@ -22,13 +22,24 @@ export async function getPosts(params: GetPostsParams = {}) {
 
     const route = `/posts/social/foryou?${queryParams.toString()}`
 
-    const data = await apiGet<IPostsResponse>(route, token)
-    return data || null
+    const response = await apiGet<IPostsResponse>(route, token)
+    console.log("Response from API: ", response)
+    if (!response.status) {
+        console.error("Error fetching posts:", response.message);
+        return null;
+      }
+    return response.data || null;
 }
 
 export async function createPost(newPost: INewPost) {
     const token = await getToken()
     return await apiPost<INewPostResponse>(`/posts/create`, newPost, token)
+}
+
+export async function getPostDetails(postId: string) {
+    const token = await getToken()
+    const response = await apiGet(`posts/${postId}`, token);
+    return response;
 }
 
 export async function likeOrUnlikePost(postId: string, formData: FormData) {
@@ -54,12 +65,12 @@ export async function sharePost(postId: string) {
 
 export const getPostComments = async (postId: string, page: number = 1) => {
     const token = await getToken()
-    const response = await apiGet<ICommentsResponse>(`posts/${postId}/comments?page=${page}`, token);
+    const response = await apiGet<ICommentsResponse>(`posts/${postId}/replies?page=${page}`, token);
     return response;
 };
 
 export const createComments = async (postId: string, newCommentData: INewComment) => {
-    const token = await getToken()
+    const token = await getToken();
     const response = await apiPost<IPostComment>(`posts/${postId}/comments/add`, newCommentData, token);
     return response;
 };
@@ -98,7 +109,7 @@ export const startUploadPostGreaterThan6MB = async (filename: string, mime_type:
 
 export const uploadPostMediaGreaterThan6MB = async (formData: FormData) => {
     const token = await getToken()
-    const response = await apiPost<IFileUploadChunkResponse>(`posts/upload/start`, { body: formData, isFormData: true }, token);
+    const response = await apiPost<IFileUploadChunkResponse>(`posts/upload/chunk`, { body: formData, isFormData: true }, token);
     return response;
 }
 

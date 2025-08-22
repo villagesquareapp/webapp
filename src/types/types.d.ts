@@ -204,11 +204,11 @@ interface IPost {
   views_count: string;
   shares_count: string;
   likes_count: string;
-  comments_count: string;
-  additional_metadata: any; 
+  replies_count: string;
+  additional_metadata: any;
   created_at: Date;
   updated_at: Date;
-  user: IPostUser
+  user: IPostUser;
   media: IPostMedia[];
   is_saved: boolean;
   is_liked: boolean;
@@ -219,7 +219,6 @@ interface IPaginatedResponse<T> {
   data: T[];
   per_page: number;
   total: number;
-  extras?: any;
   last_page: number;
 }
 

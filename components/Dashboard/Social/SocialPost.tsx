@@ -17,6 +17,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const [loadingMorePost, setLoadingMorePost] = useState(false);
   const [currentVideoPlaying, setCurrentVideoPlaying] = useState("");
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [isExplore, setIsExplore] = useState<boolean>(true);
+  const [isConnection, setIsConnection] = useState<boolean>(false);
 
   const likeUnlikePost = async (postId: string) => {
     const formData = new FormData();
@@ -74,7 +76,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
         page: pageNumber,
       });
 
-      const newPosts = response?.data?.data;
+      console.log("Response:", response);
+
+      const newPosts = response?.data;
+      console.log(newPosts)
       if (Array.isArray(newPosts)) {
         if (pageNumber === 1) {
           setPosts(newPosts);
@@ -83,12 +88,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
         }
 
         // Check if we have more posts to load
-        const totalPosts = response?.data?.total || 0;
+        const totalPosts = response?.total || 0;
         const currentTotal =
-          (pageNumber - 1) * (response?.data?.per_page || 10) + newPosts.length;
+          (pageNumber - 1) * (response?.per_page || 10) + newPosts.length;
         setHasMore(currentTotal < totalPosts);
       } else {
-        toast.error(response?.message);
+        // toast.error(response?.message);
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -145,7 +150,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
         <div className="border-b-[1.5px] flex justify-between">
           <div className="flex flex-row">
             <span className="py-3 px-5 text-lg border-b-4 border-primary">Explore</span>
-            <span className="py-3 px-5 text-lg">Connections</span>
+            <span className="py-3 px-5 text-lg">Connection</span>
           </div>
           <SocialPostFilterDialog />
         </div>

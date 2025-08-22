@@ -295,7 +295,7 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
         setPosts((prev) =>
           prev.map((p) =>
             p.uuid === post.uuid
-              ? { ...p, comments_count: (parseInt(p.comments_count) + 1).toString() }
+              ? { ...p, comments_count: (parseInt(p.replies_count) + 1).toString() }
               : p
           )
         );

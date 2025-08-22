@@ -19,6 +19,7 @@ export const loginSchema = z.object({
     ),
   password: z.string().min(6, "Password must be at least 6 characters"),
   login_type: z.string().default("password"),
+  provider: z.string().default("default")
 });
 
 export const registerSchema = z.object({

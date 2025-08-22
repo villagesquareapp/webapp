@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export const PostText = ({ text }: { text: string }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const renderTextWithHashtags = (text: string) => {
     const words = text.split(" ");

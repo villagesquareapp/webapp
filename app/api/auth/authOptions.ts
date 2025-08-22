@@ -24,9 +24,10 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        email_or_username: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
         login_type: { label: "Login Type", type: "text" },
+        provider: { label: "Provider", type: "text" },
       },
       async authorize(credentials, _req) {
         try {
@@ -38,10 +39,16 @@ export const authOptions: NextAuthOptions = {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                email_or_username: credentials?.email,
+                email_or_username: credentials?.email_or_username,
                 password: credentials?.password,
                 login_type: credentials?.login_type,
+                provider: credentials?.provider,
+                provider_token: null,
+                device_id: null,
+                device: null,
+                fcm_token: null,
                 timezone: getTimeZone(),
+                audience: "web",
               }),
             }
           );
