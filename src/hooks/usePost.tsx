@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  createComments,
+  // createComments,
   getCommentReplies,
   getPostComments,
   likeOrUnlikeComments,
@@ -29,67 +29,67 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
   const [loadingReplies, setLoadingReplies] = useState<Record<string, boolean>>({});
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
-  const fetchComments = async (pageNumber: number) => {
-    try {
-      if (pageNumber === 1) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
+  // const fetchComments = async (pageNumber: number) => {
+  //   try {
+  //     if (pageNumber === 1) {
+  //       setLoading(true);
+  //     } else {
+  //       setLoadingMore(true);
+  //     }
 
-      const response = await getPostComments(post?.uuid, pageNumber);
+  //     const response = await getPostComments(post?.uuid, pageNumber);
 
-      if (response?.status && response.data) {
-        const allComments = response.data.data;
+  //     if (response?.status && response.data) {
+  //       const allComments = response.data.data;
 
-        // Separate top-level comments and replies
-        const topLevelComments = allComments.filter((comment) => !comment.parent_id);
-        const replies = allComments.filter((comment) => comment.parent_id);
+  //       // Separate top-level comments and replies
+  //       const topLevelComments = allComments.filter((comment) => !comment.parent_post_id);
+  //       const replies = allComments.filter((comment) => comment.parent_post_id);
 
-        // Group replies by their parent comment
-        const repliesByParent = replies.reduce((acc, reply) => {
-          const parentId = reply.parent_id!;
-          if (!acc[parentId]) {
-            acc[parentId] = {
-              loadedReplies: [],
-              hasMoreReplies: false,
-              replyPage: 1,
-            };
-          }
-          acc[parentId].loadedReplies.push(reply);
-          return acc;
-        }, {} as Record<string, CommentWithReplies>);
+  //       // Group replies by their parent comment
+  //       const repliesByParent = replies.reduce((acc, reply) => {
+  //         const parentId = reply.parent_post_id!;
+  //         if (!acc[parentId]) {
+  //           acc[parentId] = {
+  //             loadedReplies: [],
+  //             hasMoreReplies: false,
+  //             replyPage: 1,
+  //           };
+  //         }
+  //         acc[parentId].loadedReplies.push(reply);
+  //         return acc;
+  //       }, {} as Record<string, CommentWithReplies>);
 
-        if (pageNumber === 1) {
-          setComments(topLevelComments);
-          setCommentsWithReplies(repliesByParent);
-        } else {
-          setComments((prev) => [...prev, ...topLevelComments]);
-          setCommentsWithReplies((prev) => ({
-            ...prev,
-            ...repliesByParent,
-          }));
-        }
+  //       if (pageNumber === 1) {
+  //         setComments(topLevelComments);
+  //         setCommentsWithReplies(repliesByParent);
+  //       } else {
+  //         setComments((prev) => [...prev, ...topLevelComments]);
+  //         setCommentsWithReplies((prev) => ({
+  //           ...prev,
+  //           ...repliesByParent,
+  //         }));
+  //       }
 
-        const currentTotal =
-          pageNumber === 1
-            ? topLevelComments.length
-            : comments.length + topLevelComments.length;
-        setHasMore(currentTotal < response.data.total);
-      } else {
-        toast.error("Failed to fetch comments");
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-      toast.error("An error occurred while fetching comments");
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setInitialFetchDone(true);
-    }
-  };
+  //       const currentTotal =
+  //         pageNumber === 1
+  //           ? topLevelComments.length
+  //           : comments.length + topLevelComments.length;
+  //       setHasMore(currentTotal < response.data.total);
+  //     } else {
+  //       toast.error("Failed to fetch comments");
+  //       setHasMore(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching comments:", error);
+  //     toast.error("An error occurred while fetching comments");
+  //     setHasMore(false);
+  //   } finally {
+  //     setLoading(false);
+  //     setLoadingMore(false);
+  //     setInitialFetchDone(true);
+  //   }
+  // };
 
   const fetchReplies = async (commentId: string, page: number = 1) => {
     if (loadingReplies[commentId]) return;
@@ -97,7 +97,10 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
     try {
       setLoadingReplies((prev) => ({ ...prev, [commentId]: true }));
 
-      const response = await getCommentReplies(post?.uuid, commentId, page);
+      const response = await getPostComments(post?.uuid, page);
+
+      console.log("Replies response:", response);
+      
 
       if (response?.status && response.data?.data) {
         const replies = response.data.data;
@@ -232,13 +235,13 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
       setHasMore(true);
       setInitialFetchDone(false);
       setExpandedComments(new Set());
-      fetchComments(1);
+      // fetchComments(1);
     }
   }, [post?.uuid]);
 
   useEffect(() => {
     if (page > 1) {
-      fetchComments(page);
+      // fetchComments(page);
     }
   }, [page]);
 
@@ -246,67 +249,74 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
     setNewComment((prev) => prev + emoji);
   };
 
-  const handleSubmitComment = async () => {
-    if (postCommentLoading) return;
-    const newCommentData: INewComment = {
-      comment: newComment,
-    };
+  // const handleSubmitComment = async () => {
+  //   if (postCommentLoading) return;
+  //   const newCommentData: INewComment = {
+  //     comment: newComment,
+  //   };
 
-    if (replyingTo) newCommentData.parent_id = replyingTo.uuid;
+  //   if (replyingTo) newCommentData.parent_id = replyingTo.uuid;
 
-    try {
-      setPostCommentLoading(true);
-      const response = await createComments(post.uuid, newCommentData);
+  //   try {
+  //     setPostCommentLoading(true);
+  //     const response = await createComments(post.uuid, newCommentData);
 
-      if (response?.status) {
-        const newCommentObj = response.data as IPostComment;
-        setNewComment("");
+  //     if (response?.status) {
+  //       const newCommentObj = response.data as IPostComment;
+  //       setNewComment("");
 
-        if (replyingTo) {
-          // Update the reply count of the parent comment
-          setComments((prev) =>
-            prev.map((comment) => {
-              if (comment.uuid === replyingTo.uuid) {
-                return {
-                  ...comment,
-                  reply_count: comment.reply_count + 1,
-                };
-              }
-              return comment;
-            })
-          );
+  //       if (replyingTo) {
+  //         // Update the reply count of the parent comment
+  //         setComments((prev) =>
+  //           prev.map((comment) => {
+  //             if (comment.uuid === replyingTo.uuid) {
+  //               if(typeof comment.replies_count === 'number') {
+  //                 return {
+  //                   ...comment,
+  //                   replies_count: comment.replies_count + 1,
+  //                 };
+  //               } else if (typeof comment.replies_count === 'string') {
+  //                 return {
+  //                   ...comment,
+  //                   replies_count: (parseInt(comment.replies_count) + 1).toString(),
+  //                 };
+  //               }
+  //             }
+  //             return comment;
+  //           })
+  //         );
 
-          // Add the new reply to commentsWithReplies
-          setCommentsWithReplies((prev) => ({
-            ...prev,
-            [replyingTo.uuid]: {
-              ...prev[replyingTo.uuid],
-              loadedReplies: [newCommentObj, ...(prev[replyingTo.uuid]?.loadedReplies || [])],
-            },
-          }));
-        } else {
-          // Add new top-level comment
-          setComments((prev) => [newCommentObj, ...prev]);
-        }
+  //         // Add the new reply to commentsWithReplies
+  //         setCommentsWithReplies((prev) => ({
+  //           ...prev,
+  //           [replyingTo.uuid]: {
+  //             ...prev[replyingTo.uuid],
+  //             loadedReplies: [newCommentObj, ...(prev[replyingTo.uuid]?.loadedReplies || [])],
+  //           },
+  //         }));
+  //       } else {
+  //         // Add new top-level comment
+  //         setComments((prev) => [newCommentObj, ...prev]);
+  //       }
 
-        setReplyingTo(null);
+  //       setReplyingTo(null);
 
-        // Update the total comment count in the post
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.uuid === post.uuid
-              ? { ...p, comments_count: (parseInt(p.replies_count) + 1).toString() }
-              : p
-          )
-        );
-      } else {
-        toast.error(response?.message);
-      }
-    } catch (error) {
-      console.error("Error creating comment:", error);
-      toast.error("An error occurred while posting comment");
-    }
-  };
+  //       // Update the total comment count in the post
+  //       setPosts((prev) =>
+  //         prev.map((p) =>
+  //           p.uuid === post.uuid
+  //             ? { ...p, comments_count: (parseInt(p.replies_count) + 1).toString() }
+  //             : p
+  //         )
+  //       );
+  //     } else {
+  //       toast.error(response?.message);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error creating comment:", error);
+  //     toast.error("An error occurred while posting comment");
+  //   }
+  // };
 
   return {
     replyingTo,
@@ -321,7 +331,7 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
     setComments,
     commentsWithReplies,
     handleEmojiClick,
-    handleSubmitComment,
+    // handleSubmitComment,
     setCommentsWithReplies,
     toggleReplies,
     loadMoreReplies,

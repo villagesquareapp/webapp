@@ -28,16 +28,30 @@ interface IFileUploadCompleteBody {
   parts: IFileUploadCompleteBodyPart[];
 }
 
+// interface INewPost {
+//   media?: {
+//     key: string;
+//     mime_type: string;
+//   }[]; // Optional
+//   caption: string;
+//   address?: string;
+//   latitude?: Number;
+//   longitude?: Number;
+//   privacy: string;
+// }
+
 interface INewPost {
-  uploaded_files?: {
-    key: string;
-    mime_type: string;
-  }[]; // Optional
-  caption: string;
-  address?: string;
-  latitude?: Number;
-  longitude?: Number;
-  privacy: string;
+  posts: {
+    media?: {
+      key: string;
+      mime_type: string;
+    }[];
+    caption: string;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    privacy: string;
+  }[];
 }
 
 interface IVerifyOtpBody {
@@ -164,6 +178,39 @@ interface INotifications {
 
 interface INotificationsResponse extends IPaginatedResponse<INotifications> {}
 
+interface IVflix {
+  uuid: string;
+  user_id: string;
+  caption: string;
+  parent_post_id: null;
+  root_post_id: string;
+  quote_post_id: null;
+  thread_id: number;
+  address: string;
+  latitude: number;
+  longitude: number;
+  privacy: string;
+  status: string;
+  views_count: string;
+  shares_count: string;
+  likes_count: string;
+  impressions: string;
+  unique_views: string;
+  clicks: number;
+  engagements: number;
+  additional_metadata: null;
+  created_at: string;
+  updated_at: string;
+  user: IPostUser;
+  media: IPostMedia;
+  replies_count: string | undefined;
+  comments_count: string | number;
+  formatted_date: string;
+  is_liked: boolean;
+  is_followed: boolean;
+  is_giftable: boolean;
+}
+
 interface IPostMedia {
   uuid: string;
   post_id: string;
@@ -224,26 +271,47 @@ interface IPaginatedResponse<T> {
 
 interface IPostsResponse extends IPaginatedResponse<IPost> {}
 
+interface IVFlixResponse extends IPaginatedResponse<IVflix> {}
+
 interface ICommentsResponse extends IPaginatedResponse<IPostComment> {}
 
 interface IPostComment {
   uuid: string;
-  post_id: string;
   user_id: string;
+  caption: string;
+  parent_post_id: string;
+  root_post_id: string;
+  quote_post_id: null;
+  thread_id: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  privacy: string;
+  status: string;
+  views_count: string;
+  shares_count: string;
   likes_count: string;
-  is_liked: boolean;
-  comment: string;
-  parent_id?: string;
+  replies_count: string | number;
+  impressions: string;
+  additional_metadata: null;
   created_at: Date;
   updated_at: Date;
+  deleted_at: Date | null;
   user: IPostUser;
+  media: IPostMedia[];
   formatted_time: string;
-  reply_count: number;
+  is_saved: boolean;
+  is_liked: boolean;
+  is_thread_continuation: boolean;
 }
 
 interface INewPostResponse extends IPost {}
 
 interface ILikeOrUnlikePostResponse {
+  is_liked: boolean;
+}
+
+interface ILikeOrUnlikeVflixResponse {
   is_liked: boolean;
 }
 

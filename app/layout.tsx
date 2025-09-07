@@ -18,7 +18,7 @@ const albertSans = Albert_Sans({
 });
 
 export const metadata: Metadata = {
-  title: `Village Square Dashboard`,
+  title: `Village Square`,
   description: "",
 };
 

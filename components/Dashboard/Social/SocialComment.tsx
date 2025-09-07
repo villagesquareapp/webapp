@@ -48,12 +48,12 @@ const SocialComment = ({
         const allComments = response.data.data;
 
         // Separate top-level comments and replies
-        const topLevelComments = allComments.filter((comment) => !comment.parent_id);
-        const replies = allComments.filter((comment) => comment.parent_id);
+        const topLevelComments = allComments.filter((comment) => !comment.parent_post_id);
+        const replies = allComments.filter((comment) => comment.parent_post_id);
 
         // Group replies by their parent comment
         const repliesByParent = replies.reduce((acc, reply) => {
-          const parentId = reply.parent_id!;
+          const parentId = reply.parent_post_id!;
           if (!acc[parentId]) {
             acc[parentId] = {
               loadedReplies: [],
@@ -277,12 +277,12 @@ const SocialComment = ({
             onLike={() => handleCommentLike(comment)}
           />
 
-          {comment?.reply_count > 0 && (
+          {Number(comment?.replies_count) > 0 && (
             <div
               className="ml-16 text-sm text-primary cursor-pointer"
               onClick={() => toggleReplies(comment.uuid)}
             >
-              {expandedComments.has(comment.uuid) ? "Hide" : "Show"} {comment.reply_count}{" "}
+              {expandedComments.has(comment.uuid) ? "Hide" : "Show"} {comment.replies_count}{" "}
               replies
             </div>
           )}
