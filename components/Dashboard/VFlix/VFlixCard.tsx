@@ -19,29 +19,46 @@ import PostText from "../Social/PostText";
 import VflixText from "./VflixText";
 import { PiHeartFill } from "react-icons/pi";
 import VflixActionButtons from "./VflixActionButtons";
+import LoadingSpinner from "../Reusable/LoadingSpinner";
 
 interface Props {
   post: IVflix;
   user: IUser;
   setVideos: React.Dispatch<React.SetStateAction<IVflix[]>>;
   likeUnlikeVflix: (postId: string) => void;
+  onCommentClick: () => void;
 }
 
-export default function VflixCard({ post, user, setVideos, likeUnlikeVflix }: Props) {
+export default function VflixCard({
+  post,
+  user,
+  setVideos,
+  likeUnlikeVflix,
+  onCommentClick,
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [muted, setMuted] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
+  const [isBuffering, setIsBuffering] = useState<boolean>(false);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
+    if (videoRef.current.paused) {
+      videoRef.current.play().catch((error) => {
+        // Handle potential play() promise rejection (e.g., due to user interaction)
+        console.error("Video playback failed:", error);
+      });
     } else {
-      videoRef.current.play();
+      videoRef.current.pause();
     }
-    setIsPlaying(!isPlaying);
+  };
+
+  // This function now only controls the video, not the state
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
   };
 
   // Format time as mm:ss
@@ -59,23 +76,78 @@ export default function VflixCard({ post, user, setVideos, likeUnlikeVflix }: Pr
     const video = videoRef.current;
     if (!video) return;
 
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleVolumeChange = () => setMuted(video.muted);
     const handleTimeUpdate = () => setCurrentTime(video.currentTime);
-    const handleLoadedMetadata = () => setDuration(video.duration);
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+      video.play().catch((error) => {
+        console.log("Autoplay was prevented:", error);
+      });
+    };
 
+    const handleWaiting = () => setIsBuffering(true);
+    const handlePlaying = () => setIsBuffering(false);
+
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("volumechange", handleVolumeChange);
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
+    video.addEventListener("waiting", handleWaiting);
+    video.addEventListener("playing", handlePlaying);
 
     return () => {
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("volumechange", handleVolumeChange);
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("waiting", handleWaiting);
+      video.removeEventListener("playing", handlePlaying);
+      video.pause();
     };
   }, []);
 
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !muted; // update actual video element
-    setMuted(!muted); // update state for UI
-  };
+  // const toggleMute = () => {
+  //   if (!videoRef.current) return;
+  //   videoRef.current.muted = !muted; // update actual video element
+  //   setMuted(!muted); // update state for UI
+  // };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleVolumeChange = () => setMuted(video.muted);
+    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
+    const handleLoadedMetadata = () => setDuration(video.duration);
+
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("volumechange", handleVolumeChange);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    video.play().catch((error) => {
+      // Autoplay may be blocked by the browser. The user can manually play.
+      console.log("Autoplay was prevented:", error);
+      setIsPlaying(false);
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("volumechange", handleVolumeChange);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.pause(); // Pause the video when the component is removed
+    };
+  }, []);
 
   const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
 
@@ -116,6 +188,11 @@ export default function VflixCard({ post, user, setVideos, likeUnlikeVflix }: Pr
       {/* Overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
+      {isBuffering && (
+        <div className="absolute inset-0 flex items-center justify-center z-30">
+          <LoadingSpinner />
+        </div>
+      )}
       {/* Controls */}
 
       <button
@@ -127,6 +204,7 @@ export default function VflixCard({ post, user, setVideos, likeUnlikeVflix }: Pr
         ) : (
           <CirclePlay className="w-8 h-8 text-white/80" />
         )}
+        {/* {!isPlaying && <CirclePlay className="w-8 h-8 text-white/80" />} */}
       </button>
 
       {/* Bottom info */}
@@ -168,27 +246,21 @@ export default function VflixCard({ post, user, setVideos, likeUnlikeVflix }: Pr
         )}
 
         {/* Caption */}
-        <div onClick={(e) => handlePostClickWithVideoPause(e)} className="cursor-pointer">
+        <div
+          onClick={(e) => handlePostClickWithVideoPause(e)}
+          className="cursor-pointer"
+        >
           {post?.caption && <VflixText text={post.caption} />}
         </div>
 
         {/* Actions row */}
-        {/* <div className="flex items-center gap-8 mt-4 text-sm">
-          <button className="flex items-center gap-1 hover:opacity-80">
-            <PiHeartFill className="w-5 h-5" /> {post?.likes_count ?? 0}
-          </button>
-          <button className="flex items-center gap-1 hover:opacity-80">
-            <MessageCircle className="w-5 h-5" /> {post?.comments_count ?? 0}
-          </button>
-          <button className="flex items-center gap-1 hover:opacity-80">
-            <Share2 className="w-5 h-5" /> {post?.shares_count ?? 0}
-          </button>
-          <button className="flex items-center gap-1 hover:opacity-80">
-            <Gift className="w-5 h-5" />
-          </button>
-        </div> */}
 
-        <VflixActionButtons setVideos={setVideos} likeUnlikeVflix={likeUnlikeVflix} post={post} />
+        <VflixActionButtons
+          setVideos={setVideos}
+          likeUnlikeVflix={likeUnlikeVflix}
+          post={post}
+          onCommentClick={onCommentClick}
+        />
 
         {/* Progress + volume + timer */}
         <div className="flex items-center gap-2 text-xs text-gray-300">
@@ -214,30 +286,6 @@ export default function VflixCard({ post, user, setVideos, likeUnlikeVflix }: Pr
           </div>
         </div>
       </div>
-
-      {/* <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-        <CustomAvatar
-          src={post?.user?.profile_picture || ""}
-          name={post?.user?.name || ""}
-          className="size-12 border-foreground border-[1.5px]"
-        />
-        <div className="text-white">
-          {post.caption && (
-            <p className="text-sm text-gray-200 line-clamp-2">{post.caption}</p>
-          )}
-        </div>
-
-        <div className="flex flex-col items-center space-y-4">
-          <button className="flex flex-col items-center text-white hover:scale-110">
-            <Heart className="w-6 h-6" />
-            <span className="text-xs">{post.likes_count ?? 0}</span>
-          </button>
-          <button className="flex flex-col items-center text-white hover:scale-110">
-            <MessageCircle className="w-6 h-6" />
-            <span className="text-xs">{post.comments_count ?? 0}</span>
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 }

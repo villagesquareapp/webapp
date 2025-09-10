@@ -65,7 +65,7 @@ interface ICreatePostToReplyBody {
     latitude: number | null;
     longitude: number | null;
     privacy: string;
-    parent_post_id: string
+    parent_post_id: string;
   }[];
 }
 
@@ -320,6 +320,24 @@ interface IPostComment {
   is_liked: boolean;
   is_thread_continuation: boolean;
 }
+
+interface IGetVflixComments {
+  uuid: string;
+  post_id: string;
+  user_id: string;
+  likes_count: string;
+  comment: string;
+  parent_id: string | null;
+  created_at: string;
+  updated_at: string;
+  user: IPostUser;
+  is_liked: boolean;
+  formatted_time: string;
+  reply_count: number;
+}
+
+interface IGetVflixCommentResponse extends IPaginatedResponse<IGetVflixComments> {}
+
 
 interface INewPostResponse extends IPost {}
 

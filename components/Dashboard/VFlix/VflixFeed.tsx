@@ -7,6 +7,7 @@ import { getVflixPosts, likeOrUnlikeVflix } from "api/vflix";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
+import VflixComments from "./VflixComments";
 
 interface Props {
   activeTab: "for-you" | "following";
@@ -18,6 +19,19 @@ export default function VflixFeed({ activeTab, user }: Props) {
   const [page, setPage] = useState<number>(1);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState<boolean>(false);
+  const [activePostId, setActivePostId] = useState<string | null>(null);
+
+  const toggleComments = (postId: string | null = null) => {
+    // If the panel is open, close it. Otherwise, open it for the given postId.
+    if (isCommentsOpen) {
+      setIsCommentsOpen(false);
+      setActivePostId(null);
+    } else {
+      setIsCommentsOpen(true);
+      setActivePostId(postId);
+    }
+  };
 
   const likeUnlikeVflix = async (postId: string) => {
     const formData = new FormData();
@@ -81,6 +95,8 @@ export default function VflixFeed({ activeTab, user }: Props) {
     );
   }
 
+  const currentPost = videos[currentIndex];
+
   return (
     <div className="flex items-center gap-6">
       {/* Left Arrow */}
@@ -101,6 +117,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
             user={user}
             setVideos={setVideos}
             likeUnlikeVflix={likeUnlikeVflix}
+            onCommentClick={() => toggleComments(currentPost.uuid)}
           />
         )}
         {loading && <LoadingSpinner />}
@@ -114,6 +131,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
       >
         {loading ? null : <ChevronRight className="w-6 h-6 text-white" />}
       </button>
+      <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} user={user} />
     </div>
   );
 }

@@ -24,3 +24,12 @@ export async function likeOrUnlikeVflix(postId: string, formData: FormData) {
         isFormData: true
     }, token)
 };
+
+export const getVflixComments = async (postId: string, page: number = 1) => {
+  const token = await getToken();
+  const response = await apiGet<IGetVflixCommentResponse>(
+    `posts/vflix/${postId}/comments?page=${page}`,
+    token
+  );
+  return response;
+};
