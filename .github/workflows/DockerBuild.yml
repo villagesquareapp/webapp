@@ -1,0 +1,122 @@
+name: DEPLOY-workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'kubernetes/deployment.yml'  
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+
+    # Step 2: Run Unit Tests
+    # - name: Run Unit Tests
+    #   run: |
+    #     echo "Running unit tests..."
+    #     npm install
+    #     npm test -- --coverage
+
+    # # Step 3: Run SonarQube Code Analysis using npx sonar-scanner
+    # - name: SonarQube Scan
+    #   uses: SonarSource/sonarqube-scan-action@v5
+    #   with:
+    #     projectBaseDir: '.'  # Optional, sets project root
+    #     args: >
+    #       -Dsonar.projectKey=villagesquareapp_api-v2
+    #       -Dsonar.organization=villagesquare
+    #       -Dsonar.host.url=https://sonarcloud.io
+    #   env:
+    #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
+
+    # Step 4: Configure AWS credentials
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: af-south-1
+
+    # Step 5: Configure kubeconfig for EKS
+    - name: Configure kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig --region af-south-1 --name kitops-eks
+
+    # Step 6: Log in to Amazon ECR
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      run: |
+        aws ecr get-login-password --region af-south-1 | docker login --username AWS --password-stdin 606802968668.dkr.ecr.af-south-1.amazonaws.com
+
+    # Step 7: Generate Docker Image Tag
+    - name: Generate Image Tag
+      run: |
+        IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+    # Step 8: Build Docker Image
+    - name: Build Docker Image
+      run: |
+        docker build -t webapps:${{ env.IMAGE_TAG }} .
+      shell: bash
+
+    #Step 9: Trivy Security Scan on Docker Image
+    # - name: Trivy Image Scan
+    #   uses: aquasecurity/trivy-action@master
+    #   with:
+    #     image-ref: 'villagesquare-server:${{ env.IMAGE_TAG }}'
+    #     format: 'table'
+    #     exit-code: '1'
+    #     ignore-unfixed: true
+    #     severity: 'CRITICAL,HIGH'
+
+    # Step 10: Tag Docker Image for ECR
+    - name: Tag Docker Image
+      run: |
+        docker tag webapps:${{ env.IMAGE_TAG }} 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+
+    # Step 11: Push Docker Image to ECR
+    - name: Push Docker Image to ECR
+      run: |
+        docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+
+#     # Step 12: Output the ECR image URI
+#     - name: Output Image URI
+#       run: |
+#         echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
+
+#     # Step 13: Update Kubernetes deployment image
+#     - name: Update Kubernetes manifests with new image tag
+#       run: |
+#         sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/deployment.yml
+
+#     # Step 14: Commit and Push Updated Deployment
+#     - name: Commit and Push Changes
+#       run: |
+#         git config --global user.name "villagesquareltd"
+#         git config --global user.email "villagesquare130@gmail.com"
+#         git add kubernetes/deployment.yml
+#         git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
+#         git push
+# #     # Step 15: Apply Kubernetes deployment
+#     - name: Apply Kubernetes deployment
+#       run: |
+#         kubectl apply -f kubernetes/deployment.yml
+
+#     # Step 16: Verify deployment
+#     - name: Verify deployment
+#       run: |
+#         kubectl rollout status deployment/social-media-app -n default
+
