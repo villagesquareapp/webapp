@@ -5,12 +5,12 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies based on the lockfile
-COPY package.json bun.lockb* ./
-RUN corepack enable && yarn install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Copy the rest of the application code and build it
 COPY . .
-RUN yarn build
+RUN npm run build
 
 # Production image
 FROM node:20-alpine AS runner
@@ -25,4 +25,4 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
-CMD ["yarn", "start"]
+CMD ["npm", "start"]
