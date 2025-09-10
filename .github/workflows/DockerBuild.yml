@@ -1,5 +1,4 @@
-name: DEPLOY-workflow
-
+name: Webapp-CI
 on:
   push:
     branches:
