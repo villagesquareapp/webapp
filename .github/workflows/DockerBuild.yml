@@ -1,95 +1,106 @@
-name: Webapp-CI
+name: CI
+
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - 'kubernetes/deployment.yml'  
+    branches: [ main ]
   pull_request:
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
-  build_and_push:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    # Step 1: Checkout the repository
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GH_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    # Step 2: Run Unit Tests
-    # - name: Run Unit Tests
-    #   run: |
-    #     echo "Running unit tests..."
-    #     npm install
-    #     npm test -- --coverage
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-    # # Step 3: Run SonarQube Code Analysis using npx sonar-scanner
-    # - name: SonarQube Scan
-    #   uses: SonarSource/sonarqube-scan-action@v5
-    #   with:
-    #     projectBaseDir: '.'  # Optional, sets project root
-    #     args: >
-    #       -Dsonar.projectKey=villagesquareapp_api-v2
-    #       -Dsonar.organization=villagesquare
-    #       -Dsonar.host.url=https://sonarcloud.io
-    #   env:
-    #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Install dependencies
+        run: npm ci
 
+      - name: Lint
+        run: npm run lint --if-present
 
+      - name: Build
+        run: npm run build --if-present
 
-    # Step 4: Configure AWS credentials
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v3
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: af-south-1
+      - name: Test
+        run: npm test --if-present
 
-    # Step 5: Configure kubeconfig for EKS
-    - name: Configure kubeconfig for EKS
-      run: |
-        aws eks update-kubeconfig --region af-south-1 --name kitops-eks
+      # Step 2: Run Unit Tests
+      # - name: Run Unit Tests
+      #   run: |
+      #     echo "Running unit tests..."
+      #     npm install
+      #     npm test -- --coverage
 
-    # Step 6: Log in to Amazon ECR
-    - name: Log in to Amazon ECR
-      id: login-ecr
-      run: |
-        aws ecr get-login-password --region af-south-1 | docker login --username AWS --password-stdin 606802968668.dkr.ecr.af-south-1.amazonaws.com
+      # # Step 3: Run SonarQube Code Analysis using npx sonar-scanner
+      # - name: SonarQube Scan
+      #   uses: SonarSource/sonarqube-scan-action@v5
+      #   with:
+      #     projectBaseDir: '.'  # Optional, sets project root
+      #     args: >
+      #       -Dsonar.projectKey=villagesquareapp_api-v2
+      #       -Dsonar.organization=villagesquare
+      #       -Dsonar.host.url=https://sonarcloud.io
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-    # Step 7: Generate Docker Image Tag
-    - name: Generate Image Tag
-      run: |
-        IMAGE_TAG=$(date +%Y%m%d%H%M%S)
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+      # Step 4: Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: af-south-1
 
-    # Step 8: Build Docker Image
-    - name: Build Docker Image
-      run: |
-        docker build -t webapps:${{ env.IMAGE_TAG }} .
-      shell: bash
+      # Step 5: Configure kubeconfig for EKS
+      - name: Configure kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --region af-south-1 --name kitops-eks
 
-    #Step 9: Trivy Security Scan on Docker Image
-    # - name: Trivy Image Scan
-    #   uses: aquasecurity/trivy-action@master
-    #   with:
-    #     image-ref: 'villagesquare-server:${{ env.IMAGE_TAG }}'
-    #     format: 'table'
-    #     exit-code: '1'
-    #     ignore-unfixed: true
-    #     severity: 'CRITICAL,HIGH'
+      # Step 6: Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region af-south-1 | docker login --username AWS --password-stdin 606802968668.dkr.ecr.af-south-1.amazonaws.com
 
-    # Step 10: Tag Docker Image for ECR
-    - name: Tag Docker Image
-      run: |
-        docker tag webapps:${{ env.IMAGE_TAG }} 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+      # Step 7: Generate Docker Image Tag
+      - name: Generate Image Tag
+        run: |
+          IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-    # Step 11: Push Docker Image to ECR
-    - name: Push Docker Image to ECR
-      run: |
-        docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+      # Step 8: Build Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -t webapps:${{ env.IMAGE_TAG }} .
+        shell: bash
+
+      #Step 9: Trivy Security Scan on Docker Image
+      # - name: Trivy Image Scan
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: 'villagesquare-server:${{ env.IMAGE_TAG }}'
+      #     format: 'table'
+      #     exit-code: '1'
+      #     ignore-unfixed: true
+      #     severity: 'CRITICAL,HIGH'
+
+      # Step 10: Tag Docker Image for ECR
+      - name: Tag Docker Image
+        run: |
+          docker tag webapps:${{ env.IMAGE_TAG }} 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+
+      # Step 11: Push Docker Image to ECR
+      - name: Push Docker Image to ECR
+        run: |
+          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
 
 #     # Step 12: Output the ECR image URI
 #     - name: Output Image URI
