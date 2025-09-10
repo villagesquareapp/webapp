@@ -56,9 +56,10 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}            
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions  
           aws-region: af-south-1
-
+          audience: sts.amazonaws.com
       # Step 5: Configure kubeconfig for EKS
       - name: Configure kubeconfig for EKS
         run: |
