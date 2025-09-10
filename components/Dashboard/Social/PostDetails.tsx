@@ -5,8 +5,8 @@ import EachSocialPost from "./EachSocialPost";
 import usePost from "src/hooks/usePost";
 import SocialPostDetails from "./SocialPostDetails";
 import CustomAvatar from "components/ui/custom/custom-avatar";
-import { useEffect, useState } from "react";
-import { getPostComments } from "api/post";
+import { useCallback, useEffect, useState } from "react";
+import { getPostComments, likeOrUnlikePost, saveOrUnsavePost } from "api/post";
 import Image from "next/image";
 import PostVideo from "./PostVideo";
 import {
@@ -17,7 +17,8 @@ import {
   CarouselPrevious,
 } from "components/ui/carousel";
 import SocialPostActionButtons from "./SocialPostActionButtons";
-
+import ReplyPostActionButtons from "./ReplyPostActionButtons";
+import ReplyToPostModal from "./ReplyToPostModal";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -30,6 +31,8 @@ interface PostDetailsProps {
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
   initialMediaIndex?: number;
+  isReplyModalOpen: boolean;
+  setIsReplyModalOpen: (open: boolean) => void;
 }
 
 const PostDetails = ({
@@ -41,6 +44,8 @@ const PostDetails = ({
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
+  isReplyModalOpen,
+  setIsReplyModalOpen,
 }: PostDetailsProps) => {
   const {
     replyingTo,
@@ -67,13 +72,61 @@ const PostDetails = ({
   // State to track the active item in the replies carousel
   const [activeReplyCarouselIndex, setActiveReplyCarouselIndex] = useState(0);
 
-  // ---------------------------------------------
-  // THE NEW CODE TO FIX THE VIDEO PLAYBACK ISSUE
-  // ---------------------------------------------
+  const refetchReplies = useCallback(async () => {
+    setIsLoadingReplies(true);
+    try {
+      const response = await getPostComments(post.uuid, 1);
+      if (response?.status && response.data) {
+        setReplies(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching replies:", error);
+    } finally {
+      setIsLoadingReplies(false);
+    }
+  }, [post.uuid]);
+
+  const handlePostReplySuccess = () => {
+    refetchReplies(); // Refetch all replies
+    handleCloseReplyModal(); // Close the modal
+  };
+  
+  useEffect(() => {
+    if (isReplyModalOpen && post) {
+      setReplyingTo(post);
+    }
+  }, [isReplyModalOpen, post, setReplyingTo]);
+
+   // Function to open the modal and set who we are replying to
+  const handleOpenReplyModal = (replyTo?: IPostComment) => {
+    if (replyTo) {
+      setReplyingTo(replyTo);
+    } else {
+      // If no replyTo is provided, we are replying to the main post
+      setReplyingTo(post);
+    }
+    setIsReplyModalOpen(true);
+  };
+
+  // Function to close the modal and reset state
+  const handleCloseReplyModal = () => {
+    setIsReplyModalOpen(false);
+    setNewComment("");
+    setReplyingTo(null);
+  };
+
+  // New function to handle the reply submission from the modal
+  const handlePostReply = () => {
+    // Add your reply submission logic here
+    console.log("Submitting reply:", newComment, "to:", replyingTo?.user?.username);
+    // You would call your API endpoint here
+    handleCloseReplyModal();
+  };
+
   useEffect(() => {
     // Check if the main post has a video
     const mainPostMedia = post?.media?.[0];
-    if (mainPostMedia && mainPostMedia.media_type === 'video') {
+    if (mainPostMedia && mainPostMedia.media_type === "video") {
       // If it's a video, set the state to play it immediately
       setCurrentVideoPlaying(mainPostMedia.uuid);
       setIsPlayingVideo(true);
@@ -116,8 +169,8 @@ const PostDetails = ({
           post={post}
           setPosts={setPosts}
           user={user}
-          likeUnlikePost={() => {}}
-          saveUnsavePost={() => {}}
+          likeUnlikePost={likeOrUnlikePost}
+          saveUnsavePost={saveOrUnsavePost}
           currentVideoPlaying={currentVideoPlaying}
           setCurrentVideoPlaying={setCurrentVideoPlaying}
           isPlayingVideo={isPlayingVideo}
@@ -133,19 +186,26 @@ const PostDetails = ({
           className="size-8 border-foreground border-[1.5px]"
         />
         <div className="flex-1">
-          <textarea
-            className="w-full bg-transparent italic resize-none border-b border-gray-700 focus:outline-none focus:border-gray-500 text-sm"
-            rows={2}
-            placeholder={
-              replyingTo
-                ? `Replying to ${replyingTo.user?.username}`
-                : "Reply to post"
-            }
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
+          <button
+            onClick={() => handleOpenReplyModal()}
+            className="w-full text-left text-sm italic text-gray-400 bg-gray-900 rounded-full px-4 py-2"
+          >
+            Reply to post
+          </button>
         </div>
       </div>
+
+      {/* This is the new, cleaned up modal component */}
+      <ReplyToPostModal
+        isOpen={isReplyModalOpen}
+        onClose={handleCloseReplyModal}
+        replyingTo={replyingTo}
+        newComment={newComment}
+        setNewComment={setNewComment}
+        user={user}
+        onPostReply={handlePostReply}
+        onPostReplySuccess={handlePostReplySuccess}
+      />
 
       {/* Comments */}
       {replies.length > 0 ? (
@@ -181,11 +241,28 @@ const PostDetails = ({
                   {reply.media?.length > 0 && (
                     <div className="mt-2">
                       <Carousel
-                        // onSelect={(api) => {
-                        //   if (api) {
-                        //     setActiveReplyCarouselIndex(api.selectedScrollSnap());
-                        //   }
-                        // }}
+                        onSelect={(api) => {
+                          // Cast the api object to 'any' to bypass the TypeScript error
+                          const carouselApi = api as any;
+
+                          if (
+                            carouselApi &&
+                            typeof carouselApi.selectedScrollSnap === "function"
+                          ) {
+                            const newIndex = carouselApi.selectedScrollSnap();
+                            setActiveReplyCarouselIndex(newIndex);
+                            const newMedia = reply.media[newIndex];
+
+                            // Update the main video state based on the selected reply video
+                            if (newMedia.media_type === "video") {
+                              setCurrentVideoPlaying(newMedia.uuid);
+                              setIsPlayingVideo(true);
+                            } else {
+                              setCurrentVideoPlaying("");
+                              setIsPlayingVideo(false);
+                            }
+                          }
+                        }}
                       >
                         <CarouselContent>
                           {reply.media.map((media, index) => (
@@ -203,14 +280,17 @@ const PostDetails = ({
                                   media={media}
                                   src={media.media_url}
                                   currentVideoPlaying={currentVideoPlaying}
-                                  setCurrentVideoPlaying={setCurrentVideoPlaying}
+                                  setCurrentVideoPlaying={
+                                    setCurrentVideoPlaying
+                                  }
                                   isPlayingVideo={
-                                    activeReplyCarouselIndex === index && isPlayingVideo
+                                    activeReplyCarouselIndex === index &&
+                                    isPlayingVideo
                                   }
                                   setIsPlayingVideo={setIsPlayingVideo}
                                   isGloballyMuted={isMuted}
                                   setGlobalMuteState={setIsMuted}
-                                  showEchoButtons={false}
+                                  // showEchoButtons={false}
                                   className="rounded-xl aspect-[4/5] max-h-[400px]"
                                 />
                               )}
@@ -223,11 +303,13 @@ const PostDetails = ({
                     </div>
                   )}
 
-                  <SocialPostActionButtons
+                  <ReplyPostActionButtons
                     setPosts={setPosts}
-                    likeUnlikePost={() => {}}
-                    saveUnsavePost={() => {}}
-                    post={post}
+                    likeUnlikePost={likeOrUnlikePost}
+                    saveUnsavePost={saveOrUnsavePost}
+                    reply={reply}
+                    onOpenReplyModal={() => handleOpenReplyModal(reply)}
+                    // onOpenReplyModal={onOpenReplyModal}
                   />
                 </div>
               </div>
@@ -393,14 +475,12 @@ export default PostDetails;
 //           <div key={comment.uuid} className="p-4">
 //             <p className="text-sm">{comment.caption}</p>
 
-            
 //             {commentsWithReplies[comment.uuid]?.loadedReplies?.map((reply) => (
 //               <div key={reply.uuid} className="ml-8 mt-2 text-sm text-gray-300">
 //                 {reply.caption}
 //               </div>
 //             ))}
 
-            
 //             {Number(comment.replies_count) > 0 && (
 //               <button
 //                 onClick={() => toggleReplies(comment.uuid)}

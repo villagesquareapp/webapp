@@ -73,7 +73,7 @@ const SocialPostDetails = ({
                         currentVideoPlaying={currentVideoPlaying}
                         setCurrentVideoPlaying={setCurrentVideoPlaying}
                         src={media.media_url}
-                        showEchoButtons={false}
+                        // showEchoButtons={false}
                         // This logic ensures only the active carousel video can play
                         isPlayingVideo={
                           activeMediaCarouselIndex === index && isPlayingVideo
@@ -105,6 +105,7 @@ const SocialPostDetails = ({
         likeUnlikePost={likeUnlikePost}
         saveUnsavePost={saveUnsavePost}
         post={post}
+        user={user}
       />
       <Separator className="my-2" />
     </div>

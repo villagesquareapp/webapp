@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPost[]>>) => {
-  const [replyingTo, setReplyingTo] = useState<IPostComment | null>(null);
+  const [replyingTo, setReplyingTo] = useState<IPostComment | IPost | null>(null);
   const [newComment, setNewComment] = useState("");
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
   const [postCommentLoading, setPostCommentLoading] = useState(false);

@@ -7,6 +7,7 @@ import SocialPostActionButtons from "./SocialPostActionButtons";
 import { useState } from "react";
 import PostDetails from "./PostDetails";
 import { ArrowLeft } from "lucide-react";
+import { on } from "events";
 
 const EachSocialPost = ({
   post,
@@ -18,7 +19,8 @@ const EachSocialPost = ({
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
-  onOpenPostDetails
+  onOpenPostDetails,
+  onOpenReplyModal
 }: {
   post: IPost;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
@@ -30,6 +32,7 @@ const EachSocialPost = ({
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
   onOpenPostDetails: () => void; 
+  onOpenReplyModal: () => void;
 }) => {
   const [showPostDetails, setShowPostDetails] = useState(false);
   const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
@@ -144,6 +147,8 @@ const EachSocialPost = ({
         likeUnlikePost={likeUnlikePost}
         saveUnsavePost={saveUnsavePost}
         post={post}
+        user={user}
+        onOpenReplyModal={onOpenReplyModal}
       />
       <Separator className="my-2" />
     </div>

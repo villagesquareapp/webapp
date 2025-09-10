@@ -42,7 +42,7 @@ export async function getPostDetails(postId: string) {
   return response;
 }
 
-export async function likeOrUnlikePost(postId: string, formData: FormData) {
+export async function likeOrUnlikePost(postId: string, formData?: FormData) {
   const token = await getToken();
   return await apiPost<ILikeOrUnlikePostResponse>(
     `/posts/${postId}/like`,
@@ -54,7 +54,7 @@ export async function likeOrUnlikePost(postId: string, formData: FormData) {
   );
 }
 
-export async function saveOrUnsavePost(postId: string, formData: FormData) {
+export async function saveOrUnsavePost(postId: string, formData?: FormData) {
   const token = await getToken();
   return await apiPost<ISaveOrUnsavePostResponse>(
     `/posts/${postId}/save`,

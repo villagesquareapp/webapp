@@ -54,6 +54,21 @@ interface INewPost {
   }[];
 }
 
+interface ICreatePostToReplyBody {
+  posts: {
+    media?: {
+      key: string;
+      mime_type: string;
+    }[];
+    caption: string;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    privacy: string;
+    parent_post_id: string
+  }[];
+}
+
 interface IVerifyOtpBody {
   email: string;
   otp: string;
@@ -243,20 +258,21 @@ interface IPost {
   uuid: string;
   user_id: string;
   caption: string;
-  address: string;
-  latitude: string;
-  longitude: string;
+  address: string | null;
+  latitude: string | null;
+  longitude: string | null;
   privacy: PrivacyType;
   status: "active" | "inactive";
   views_count: string;
   shares_count: string;
   likes_count: string;
-  replies_count: string;
+  replies_count: string | number;
   additional_metadata: any;
   created_at: Date;
   updated_at: Date;
   user: IPostUser;
   media: IPostMedia[];
+  formatted_time: string;
   is_saved: boolean;
   is_liked: boolean;
 }
@@ -284,10 +300,10 @@ interface IPostComment {
   quote_post_id: null;
   thread_id: string;
   address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  privacy: string;
-  status: string;
+  latitude: string | null;
+  longitude: string | null;
+  privacy: PrivacyType;
+  status: "active" | "inactive";
   views_count: string;
   shares_count: string;
   likes_count: string;

@@ -137,12 +137,13 @@ export default function ReplyCard({
         )}
 
         {/* Actions */}
-        <SocialPostActionButtons
+        {/* <SocialPostActionButtons
           setPosts={setPosts}
           likeUnlikePost={() => {}}
           saveUnsavePost={() => {}}
           post={post}
-        />
+          user={user}
+        /> */}
       </div>
     </div>
   );

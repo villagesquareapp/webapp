@@ -20,11 +20,11 @@ const SocialPost = ({ user }: { user: IUser }) => {
   // Single source-of-truth for playback
   const [currentVideoPlaying, setCurrentVideoPlaying] = useState<string>("");
   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
-
+  
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
   const scrollRef = useRef(0);
 
-  /* ---------- POSTS API ---------- */
   const likeUnlikePost = async (postId: string) => {
     const formData = new FormData();
     const result = await likeOrUnlikePost(postId, formData);
@@ -135,8 +135,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
     };
   }, [hasMore, isPostLoading, loadingMorePost]);
 
-  /* ---------- CENTRALIZED VIDEO VISIBILITY OBSERVER ---------- */
-  // Keep refs to all registered video containers (keyed by media uuid)
   const videoElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const visibilityMapRef = useRef<Map<string, number>>(new Map());
   const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
@@ -189,25 +187,22 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, []); // run once
 
   // Register / unregister video container elements from children
-  const registerVideoRef = useCallback(
-    (id: string, el: HTMLElement | null) => {
-      const observer = intersectionObserverRef.current;
-      if (el) {
-        // Attach data attribute for lookup
-        el.setAttribute("data-media-id", id);
-        videoElementsRef.current.set(id, el);
-        visibilityMapRef.current.set(id, 0);
-        if (observer) observer.observe(el);
-      } else {
-        // unmounting: unobserve and clear state
-        const prev = videoElementsRef.current.get(id);
-        if (prev && observer) observer.unobserve(prev);
-        videoElementsRef.current.delete(id);
-        visibilityMapRef.current.delete(id);
-      }
-    },
-    []
-  );
+  const registerVideoRef = useCallback((id: string, el: HTMLElement | null) => {
+    const observer = intersectionObserverRef.current;
+    if (el) {
+      // Attach data attribute for lookup
+      el.setAttribute("data-media-id", id);
+      videoElementsRef.current.set(id, el);
+      visibilityMapRef.current.set(id, 0);
+      if (observer) observer.observe(el);
+    } else {
+      // unmounting: unobserve and clear state
+      const prev = videoElementsRef.current.get(id);
+      if (prev && observer) observer.unobserve(prev);
+      videoElementsRef.current.delete(id);
+      visibilityMapRef.current.delete(id);
+    }
+  }, []);
 
   /* ---------- Open details helper ---------- */
   const handleOpenPost = (post: IPost) => {
@@ -226,6 +221,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
     }, 0);
   };
 
+   const handleOpenReplyModal = (post: IPost) => {
+    setIsPlayingVideo(false);
+    setCurrentVideoPlaying("");
+    scrollRef.current = window.scrollY;
+    setSelectedPost(post);
+    setIsReplyModalOpen(true);
+  };
+
   return (
     <>
       {selectedPost ? (
@@ -240,12 +243,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setCurrentVideoPlaying={setCurrentVideoPlaying}
           isPlayingVideo={isPlayingVideo}
           setIsPlayingVideo={setIsPlayingVideo}
+          isReplyModalOpen={isReplyModalOpen}
+          setIsReplyModalOpen={setIsReplyModalOpen}
         />
       ) : (
         <>
           <AddPost
             user={user}
-            addPost={(newPost: IPost) => setPosts((prev) => [newPost, ...prev])}
+            // addPost={(newPost: IPost) => setPosts((prev) => [newPost, ...prev])}
             onRefreshPosts={() => fetchPosts(1)}
           />
 
@@ -277,6 +282,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
                     isPlayingVideo={isPlayingVideo}
                     setIsPlayingVideo={setIsPlayingVideo}
                     onOpenPostDetails={() => handleOpenPost(post)}
+                    onOpenReplyModal={() => handleOpenReplyModal(post)}
                   />
                 ))}
 
@@ -290,7 +296,9 @@ const SocialPost = ({ user }: { user: IUser }) => {
             )}
 
             {!isPostLoading && posts?.length === 0 && (
-              <NotFoundResult content={<span>No posts available at the moment.</span>} />
+              <NotFoundResult
+                content={<span>No posts available at the moment.</span>}
+              />
             )}
 
             {!isPostLoading && !hasMore && posts?.length > 0 && (
@@ -306,8 +314,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
 };
 
 export default SocialPost;
-
-
 
 // "use client";
 
@@ -333,7 +339,7 @@ export default SocialPost;
 //   const [isConnection, setIsConnection] = useState<boolean>(false);
 //   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
 
-//     const scrollRef = useRef(0); 
+//     const scrollRef = useRef(0);
 
 //   const likeUnlikePost = async (postId: string) => {
 //     const formData = new FormData();
@@ -470,7 +476,6 @@ export default SocialPost;
 //       window.scrollTo(0, scrollRef.current); // restore scroll
 //     }, 0);
 //   };
-
 
 //   return (
 //     <>
