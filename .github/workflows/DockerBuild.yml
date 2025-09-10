@@ -9,9 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # permissions:
+    permissions:
     #   id-token: write
-    #   contents: read    
+      contents: read    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
