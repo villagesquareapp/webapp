@@ -627,14 +627,6 @@ const AddPost = ({
                                         />
                                       </div>
                                     )}
-
-                                    {/* {progress > 0 && progress < 100 && (
-                                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                        <div className="w-20">
-                                          <ProgressBar progress={progress} />
-                                        </div>
-                                      </div>
-                                    )} */}
                                   </div>
                                 );
                               })}
@@ -742,7 +734,7 @@ const AddPost = ({
                 <div>
                   <Button
                     onClick={localCreatePostFunc}
-                    disabled={isPosting}
+                    disabled={isPostInitiated && isPosting}
                     className={`w-full mt-6 h-[52px] bg-blue-600 hover:bg-blue-700 text-white rounded-xl ${
                       isPosting
                         ? "bg-background cursor-not-allowed opacity-50"
