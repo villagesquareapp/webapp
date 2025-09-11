@@ -123,7 +123,9 @@ jobs:
             git push
 #     # Step 15: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
+        env:
+          AWS_REGION: af-south-1
         run: |
-            kubectl apply -f kubernetes/webapp.yml --validate=false
-
-
+            aws eks update-kubeconfig --region $AWS_REGION --name kitops-eks
+            TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name kitops-eks --query 'status.token' --output text)
+            kubectl apply -f kubernetes/webapp.yml --validate=false --token "$TOKEN"
