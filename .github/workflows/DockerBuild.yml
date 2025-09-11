@@ -121,7 +121,7 @@ jobs:
             git add kubernetes/webapp.yml
             git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
             git push
-#     # Step 15: Apply Kubernetes deployment
+    # Step 15: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
         run: |
           aws eks update-kubeconfig --region af-south-1 --name kitops-eks
