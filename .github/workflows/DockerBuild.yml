@@ -124,7 +124,6 @@ jobs:
 #     # Step 15: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
         run: |
-            kubectl apply -f kubernetes/webapp.yml
-
+            kubectl apply -f kubernetes/webapp.yml --validate=false
 
 
