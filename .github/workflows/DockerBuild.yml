@@ -103,31 +103,28 @@ jobs:
         run: |
           docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
 
-#     # Step 12: Output the ECR image URI
-#     - name: Output Image URI
-#       run: |
-#         echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
+    # Step 12: Output the ECR image URI
+      - name: Output Image URI
+        run: |
+            echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
-#     # Step 13: Update Kubernetes deployment image
-#     - name: Update Kubernetes manifests with new image tag
-#       run: |
-#         sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/deployment.yml
+    # Step 13: Update Kubernetes deployment image
+      - name: Update Kubernetes manifests with new image tag
+        run: |
+            sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
 
-#     # Step 14: Commit and Push Updated Deployment
-#     - name: Commit and Push Changes
-#       run: |
-#         git config --global user.name "villagesquareltd"
-#         git config --global user.email "villagesquare130@gmail.com"
-#         git add kubernetes/deployment.yml
-#         git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
-#         git push
-# #     # Step 15: Apply Kubernetes deployment
-#     - name: Apply Kubernetes deployment
-#       run: |
-#         kubectl apply -f kubernetes/deployment.yml
+    # Step 14: Commit and Push Updated Deployment
+      - name: Commit and Push Changes
+        run: |
+            git config --global user.name "villagesquareltd"
+            git config --global user.email "villagesquare130@gmail.com"
+            git add kubernetes/webapp.yml
+            git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
+            git push
+#     # Step 15: Apply Kubernetes deployment
+      - name: Apply Kubernetes deployment
+        run: |
+            kubectl apply -f kubernetes/webapp.yml
 
-#     # Step 16: Verify deployment
-#     - name: Verify deployment
-#       run: |
-#         kubectl rollout status deployment/social-media-app -n default
+
 
