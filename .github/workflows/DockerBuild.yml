@@ -63,7 +63,7 @@ jobs:
       # Step 5: Configure kubeconfig for EKS
       - name: Configure kubeconfig for EKS
         run: |
-          aws eks update-kubeconfig --region af-south-1 --name kitops-eks
+          aws eks update-kubeconfig --region af-south-1 --name kitops-eks --role-arn arn:aws:iam::606802968668:role/GitHubOIDCRole
 
       # Step 6: Log in to Amazon ECR
       - name: Log in to Amazon ECR
