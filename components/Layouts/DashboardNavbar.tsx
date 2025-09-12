@@ -17,6 +17,15 @@ const DashboardNavbar = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
+  function getInitials(name: string) {
+    return name
+    .split(" ")
+    .filter(Boolean)
+    .map(word => word[0]?.toUpperCase())
+    .slice(0, 2)
+    .join("")
+  }
+
   return (
     <div className="flex fixed w-full h-16 z-50 border-b bg-background">
       <div className="w-[280px] flex items-center pl-8">
@@ -77,12 +86,12 @@ const DashboardNavbar = () => {
           <PopoverTrigger>
             <CustomAvatar
               src={user?.profile_picture || ""}
-              name={user?.name || ""}
+              name={getInitials(user?.name || "")}
               className="size-11 border-foreground border-2"
             />
           </PopoverTrigger>
           <PopoverContent>
-            <Button variant="outline" onClick={() => signOut()}>
+            <Button variant="outline" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
               Logout
             </Button>
           </PopoverContent>

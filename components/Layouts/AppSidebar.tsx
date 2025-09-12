@@ -38,7 +38,7 @@ const items = [
   },
   {
     title: "Vflix",
-    url: "#",
+    url: "/dashboard/vflix",
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },

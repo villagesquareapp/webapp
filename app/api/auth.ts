@@ -17,6 +17,7 @@ export async function register(data: Omit<RegisterData, 'registration_type' | 't
 interface SocialRegisterData {
     provider: "google" | "apple";
     provider_id: string;
+    provider_token: string;
     device_id?: string;
     device?: string;
 }
@@ -31,12 +32,12 @@ export async function socialRegister(data: SocialRegisterData) {
         ...data,
     }
 
-    return apiPost<AuthResponse>(`${route}/register`, registerData)
+    return apiPost<AuthResponse>(`${route}/social-account`, registerData)
 }
 
 
 export const forgotPassword = async (email: string) => {
-    const response = await apiPost<ApiResponse>(`${route}/forgot-password`, email);
+    const response = await apiPost<ApiResponse>(`${route}/forgot-password`, {email});
     return response;
 }
 
@@ -47,5 +48,10 @@ export const verifyEmail = async (verifyEmailBody: { email: string, username: st
 
 export const verifyOtp = async (body: IVerifyOtpBody) => {
     const response = await apiPost<ApiResponse>(`${route}/verify-otp`, body);
+    return response;
+}
+
+export const resetPassword = async (data: {email: string, new_password: string}) => {
+    const response = await apiPost<ApiResponse>(`${route}/reset-password`, data);
     return response;
 }

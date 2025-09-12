@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export const PostText = ({ text }: { text: string }) => {
+export const VflixText = ({ text }: { text: string }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const renderTextWithHashtags = (text: string) => {
@@ -28,9 +28,9 @@ export const PostText = ({ text }: { text: string }) => {
   const needsTruncation = text.length > 300;
 
   return (
-    <div className="px-4">
+    <div>
       <div
-        className={`whitespace-pre-line ${
+        className={`whitespace-pre-line text-xs ${
           !isExpanded && needsTruncation ? "line-clamp-6" : ""
         }`}
       >
@@ -50,4 +50,4 @@ export const PostText = ({ text }: { text: string }) => {
   );
 };
 
-export default PostText;
+export default VflixText;
