@@ -3,6 +3,7 @@ import { Poppins, Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./Providers";
 import CustomToaster from "components/ui/custom/custom-toaster";
+import { Metadata } from "next";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -15,6 +16,11 @@ const albertSans = Albert_Sans({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-albert-sans",
 });
+
+export const metadata: Metadata = {
+  title: `Village Square`,
+  description: "",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

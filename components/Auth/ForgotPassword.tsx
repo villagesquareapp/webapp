@@ -15,10 +15,14 @@ import AuthBackButton from "./AuthBackButton";
 import { forgotPassword } from "api/auth";
 import { useRouter } from "next/navigation";
 import { AccountVerification } from "./AccountVerification";
+import { useSession } from "next-auth/react";
+import { ForgotPasswordVerification } from "./ForgotPasswordVerification";
 
 interface ForgotPasswordProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function ForgotPassword({ className, ...props }: ForgotPasswordProps) {
+  const { data: session } = useSession();
+  // const user = session?.user;
   const router = useRouter();
   const [isEmailVerified, setIsEmailVerified] = React.useState<boolean>(false);
   const [redirecting, setRedirecting] = React.useState<boolean>(false);
@@ -43,12 +47,13 @@ export function ForgotPassword({ className, ...props }: ForgotPasswordProps) {
         setIsEmailVerified(true);
       } else {
         return toast.error(response?.message);
-        setIsLoading(false);
       }
     } catch (error) {
       console.error("Password reset error:", error);
       toast.error("Failed to send password reset email");
       setIsLoading(false);
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -103,9 +108,9 @@ export function ForgotPassword({ className, ...props }: ForgotPasswordProps) {
           </div>
         </>
       ) : (
-        <AccountVerification
+        <ForgotPasswordVerification
           email={form.getValues().email}
-          username={"anything"} //@Todo
+          username={session?.user.username ?? ""} //@Todo
           goBack={() => setIsEmailVerified(false)}
         />
       )}

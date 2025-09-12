@@ -1,4 +1,5 @@
 import CustomAvatar from "components/ui/custom/custom-avatar";
+import Image from "next/image";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { PiHeartFill } from "react-icons/pi";
@@ -36,22 +37,62 @@ const Comment = ({
             </span>
             <div className="flex flex-row gap-x-3 items-start w-full justify-between">
               <div className="text-sm w-[85%]">
-                <p className="flex flex-wrap">{comment.comment}</p>
+                <p className="flex flex-wrap">{comment.caption}</p>
               </div>
               <span className="text-sm text-muted-foreground">Report</span>
             </div>
           </div>
         </div>
       </div>
+      {comment.media?.length > 0 && (
+        <div className="flex flex-col gap-y-2">
+          {comment.media.map((mediaItem) => {
+            if (mediaItem.media_type === "image") {
+              return (
+                <div key={mediaItem.uuid} className="relative w-full h-48">
+                  <Image
+                    src={mediaItem.transcoded_media_url || mediaItem.media_url}
+                    alt={"post"}
+                    layout="fill"
+                    objectFit="contain"
+                    className="rounded-lg"
+                  />
+                </div>
+              );
+            } else if (mediaItem.media_type === "video") {
+              return (
+                <div key={mediaItem.uuid} className="relative w-full h-48">
+                  <video
+                    src={mediaItem.media_url}
+                    className="rounded-lg"
+                    controls
+                    loop
+                    autoPlay
+                    playsInline
+                  />
+                </div>
+              );
+            }
+          })}
+        </div>
+      )}
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-x-8 ml-16">
-          <div onClick={onLike} className="flex flex-row gap-x-1 items-center cursor-pointer">
-            <PiHeartFill className={`size-5 ${comment.is_liked ? "text-red-500" : ""}`} />
+          <div
+            onClick={onLike}
+            className="flex flex-row gap-x-1 items-center cursor-pointer"
+          >
+            <PiHeartFill
+              className={`size-5 ${comment.is_liked ? "text-red-500" : ""}`}
+            />
             <p className="text-sm">{comment.likes_count}</p>
           </div>
-          <div onClick={onReply} className="flex flex-row gap-x-1 items-center cursor-pointer">
+          <div
+            onClick={onReply}
+            className="flex flex-row gap-x-1 items-center cursor-pointer"
+          >
             <IoChatbubbleEllipses className="size-5" />
-            <p className="text-sm">{comment.reply_count}</p>
+            <p className="text-sm">{comment.replies_count}</p>
           </div>
         </div>
         <p className="text-muted-foreground">{comment.formatted_time}</p>

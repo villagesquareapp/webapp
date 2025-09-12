@@ -49,7 +49,7 @@ const Chat = ({ removeSelectedChat }: { removeSelectedChat: () => void }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, []); // Scroll to bottom when chat opens
+  }, []);
 
   return (
     <div className="fixed bottom-0 z-50 flex flex-col border rounded-t-2xl right-[350px] w-[320px] bg-background shadow-md animate-in slide-in-from-bottom duration-300">

@@ -44,34 +44,41 @@ const PostHeader = ({
   return (
     <div
       key={`${post.uuid}-${uuidv4()}`}
-      className="flex justify-between items-center h-12  px-4"
+      className="flex justify-between items-center h-12 px-4"
     >
       {/* Post Header */}
       <div className="flex flex-row gap-x-3 items-center">
         <CustomAvatar
           src={post?.user?.profile_picture || ""}
           name={post?.user?.name || ""}
-          className="size-12 border-foreground border-[1.5px]"
+          className="size-8 border-foreground border-[1.5px]"
         />
         <div className="flex flex-col gap-y-1">
-          <span className="flex flex-row gap-x-2 items-center max-w-60">
-            <span className="font-semibold text-sm truncate">{post?.user?.name}</span>
+          <span className="flex flex-row gap-x-2 items-center max-w-80">
+            <span className="font-semibold text-sm truncate">
+              {post?.user?.name}
+            </span>
             {!!post?.user?.verified_status && (
               <HiMiniCheckBadge className="size-5 text-green-600" />
             )}
-          </span>
-          <span className="flex flex-row items-center gap-x-1">
-            {post?.address && (
-              <>
-                <span className="text-xs text-muted-foreground">{post?.address}</span>{" "}
-                <span>
-                  <BsDot />
-                </span>
-              </>
-            )}
+            <span>
+              <BsDot />
+            </span>
             <p className="text-xs text-muted-foreground">
               {dayjs(post?.created_at).fromNow()}
             </p>
+          </span>
+          <span className="text-xs text-gray-400">
+              @{post?.user?.username}
+            </span>
+          <span className="flex flex-row items-center gap-x-1">
+            {post?.address && (
+              <>
+                <span className="text-xs text-muted-foreground">
+                  {post?.address}
+                </span>{" "}
+              </>
+            )}
           </span>
         </div>
       </div>
@@ -82,7 +89,10 @@ const PostHeader = ({
             <PopoverTrigger>
               <IoEllipsisHorizontal className="size-6" />
             </PopoverTrigger>
-            <PopoverContent align="end" className="bg-background w-fit p-0 text-center z-[50]">
+            <PopoverContent
+              align="end"
+              className="bg-background w-fit p-0 text-center z-[50]"
+            >
               <div className="text-sm px-20 py-3">Report</div>
               <Separator className="my-2" />
               <div className="px-20 py-3">Block</div>

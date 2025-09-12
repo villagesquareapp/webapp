@@ -103,7 +103,7 @@ const SocialPage = ({ user }: { user: IUser }) => {
         )}
         {showProfileSearch && !showSearchMain && (
           <div className="px-16 py-6 flex flex-col">
-            <div className="w-full rounded-xl h-[25dvh] relative ">
+            <div className="w-full rounded-xl h-[25dvh] relative">
               <Image
                 src="/images/beautiful-image.webp"
                 alt="profile"

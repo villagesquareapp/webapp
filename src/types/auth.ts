@@ -4,9 +4,9 @@ export interface RegisterData {
     name: string;
     password?: string;
     registration_type: "google" | "apple" | "password";
-    provider?: "google" | "apple";
+    provider?: "default" | "google" | "apple";
     timezone: string;
-    provider_id?: string;
+    provider_token?: string;
     device_id?: string;
     device?: string;
     referrer_code?: string;

@@ -6,6 +6,8 @@ import PostVideo from "./PostVideo";
 import SocialPostActionButtons from "./SocialPostActionButtons";
 import { useState } from "react";
 import PostDetails from "./PostDetails";
+import { ArrowLeft } from "lucide-react";
+import { on } from "events";
 
 const EachSocialPost = ({
   post,
@@ -17,6 +19,8 @@ const EachSocialPost = ({
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
+  onOpenPostDetails,
+  onOpenReplyModal
 }: {
   post: IPost;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
@@ -27,9 +31,13 @@ const EachSocialPost = ({
   setCurrentVideoPlaying: (mediaID: string) => void;
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
+  onOpenPostDetails: () => void; 
+  onOpenReplyModal: () => void;
 }) => {
   const [showPostDetails, setShowPostDetails] = useState(false);
   const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
+
+    const [isGloballyMuted, setIsGloballyMuted] = useState(true);
 
   const handlePostClickWithVideoPause = (e: React.MouseEvent, mediaIndex?: number) => {
     e.stopPropagation();
@@ -41,17 +49,19 @@ const EachSocialPost = ({
         setIsPlayingVideo(false);
         setCurrentVideoPlaying("");
         // Open details after ensuring video is paused
-        setClickedMediaIndex(mediaIndex ?? 0);
-        setShowPostDetails(true);
+        // setClickedMediaIndex(mediaIndex ?? 0);
+        // setShowPostDetails(true);
+        onOpenPostDetails()
       }, 150);
     } else {
+      onOpenPostDetails()
       // No video playing, just open details immediately
-      setClickedMediaIndex(mediaIndex ?? 0);
-      setShowPostDetails(true);
+      // setClickedMediaIndex(mediaIndex ?? 0);
+      // setShowPostDetails(true);
     }
   };
 
-  // Determine if this is a single media post
+
   const isSingleMedia = post?.media?.length === 1;
 
   return (
@@ -116,6 +126,8 @@ const EachSocialPost = ({
                             ? "aspect-[16/9] max-h-[250px]"
                             : "aspect-[4/5]"
                         }
+                        isGloballyMuted={isGloballyMuted}
+                        setGlobalMuteState={setIsGloballyMuted}
                       />
                     </div>
                   )}
@@ -129,27 +141,14 @@ const EachSocialPost = ({
           <PostText text={post?.caption} />
         </div>
       </div>
-      {showPostDetails && (
-        <PostDetails
-          post={post}
-          open={showPostDetails}
-          onClose={() => setShowPostDetails(false)}
-          setPosts={setPosts}
-          user={user}
-          likeUnlikePost={likeUnlikePost}
-          saveUnsavePost={saveUnsavePost}
-          currentVideoPlaying={currentVideoPlaying}
-          setCurrentVideoPlaying={setCurrentVideoPlaying}
-          isPlayingVideo={isPlayingVideo}
-          setIsPlayingVideo={setIsPlayingVideo}
-          initialMediaIndex={clickedMediaIndex}
-        />
-      )}
+
       <SocialPostActionButtons
         setPosts={setPosts}
         likeUnlikePost={likeUnlikePost}
         saveUnsavePost={saveUnsavePost}
         post={post}
+        user={user}
+        onOpenReplyModal={onOpenReplyModal}
       />
       <Separator className="my-2" />
     </div>

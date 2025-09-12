@@ -10,9 +10,18 @@ import { ImSpinner8 } from "react-icons/im";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import Link from "next/link";
 import { VSAuthPadLock } from "components/icons/village-square";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "components/ui/form";
 import * as z from "zod";
 import AuthBackButton from "./AuthBackButton";
+import { useRouter, useSearchParams } from "next/navigation";
+import { resetPassword } from "api/auth";
+import { toast } from "sonner";
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -26,6 +35,11 @@ export function ResetPassword({ className, ...props }: ResetPasswordProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const email = searchParams.get("email") || "";
+
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -37,18 +51,37 @@ export function ResetPassword({ className, ...props }: ResetPasswordProps) {
     setIsLoading(true);
 
     // Add your reset password logic here
-    console.log(values);
+    if (!email) {
+      toast.error("Email not found. Please verify OTP again.");
+      return;
+    }
 
-    setTimeout(() => {
+    try {
+      setIsLoading(true);
+      const res = await resetPassword({
+        email,
+        new_password: values.password,
+      });
+      console.log("RESET RESPONSE", res);
+
+      toast.success(res.data?.message);
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 2000);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to reset password");
+    } finally {
       setIsLoading(false);
-    }, 3000);
+    }
   }
 
   return (
     <>
       <AuthBackButton />
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Reset Password</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Reset Password
+        </h1>
         <p>You can now proceed to set a new password for your account. </p>
       </div>
       <div className={cn("grid gap-6", className)} {...props}>
@@ -91,7 +124,9 @@ export function ResetPassword({ className, ...props }: ResetPasswordProps) {
                 )}
               />
               <Button className="auth_button" disabled={isLoading}>
-                {isLoading && <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && (
+                  <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Reset Password
               </Button>
             </div>
@@ -100,7 +135,10 @@ export function ResetPassword({ className, ...props }: ResetPasswordProps) {
 
         <p className="px-8 text-center text-sm">
           Go back to{" "}
-          <Link href="/auth/login" className="hover:text-foreground font-semibold">
+          <Link
+            href="/auth/login"
+            className="hover:text-foreground font-semibold"
+          >
             Sign in
           </Link>
         </p>

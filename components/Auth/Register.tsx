@@ -4,7 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { register, socialRegister, verifyEmail } from "app/api/auth";
 import { VSAuthPadLock, VSPeopleIcon } from "components/icons/village-square";
 import { Button } from "components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "components/ui/form";
 import { Input } from "components/ui/input";
 import { messageHandler } from "lib/messageHandler";
 import { cn } from "lib/utils";
@@ -21,6 +27,7 @@ import { MdOutlineMail } from "react-icons/md";
 import { RiUserLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { AccountVerification } from "./AccountVerification";
+import { signIn, useSession } from "next-auth/react";
 
 interface RegisterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -42,10 +49,14 @@ interface ISignup {
 }
 
 export function Register({ className, ...props }: RegisterProps) {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [isPasswordAuthLoading, setIsPasswordAuthLoading] = React.useState<boolean>(false);
-  const [isGoogleAuthLoading, setIsGoogleAuthLoading] = React.useState<boolean>(false);
-  const [isAppleAuthLoading, setIsAppleAuthLoading] = React.useState<boolean>(false);
+  const [isPasswordAuthLoading, setIsPasswordAuthLoading] =
+    React.useState<boolean>(false);
+  const [isGoogleAuthLoading, setIsGoogleAuthLoading] =
+    React.useState<boolean>(false);
+  const [isAppleAuthLoading, setIsAppleAuthLoading] =
+    React.useState<boolean>(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [redirecting, setRedirecting] = React.useState<boolean>(false);
   const [isEmailVerified, setIsEmailVerified] = React.useState<boolean>(false);
@@ -100,7 +111,10 @@ export function Register({ className, ...props }: RegisterProps) {
     setIsPasswordAuthLoading(true);
 
     try {
-      const result = await verifyEmail({ email: values.email, username: values.username });
+      const result = await verifyEmail({
+        email: values.email,
+        username: values.username,
+      });
 
       if (!!result?.status) {
         setIsEmailVerified(true);
@@ -116,49 +130,121 @@ export function Register({ className, ...props }: RegisterProps) {
     }
   }
 
-  async function handleSocialSignup(provider: "google" | "apple") {
-    if (provider === "google") {
-      setIsGoogleAuthLoading(true);
-    } else {
-      setIsAppleAuthLoading(true);
-    }
+  // async function handleSocialSignup(provider: "google" | "apple") {
+  //   if (provider === "google") {
+  //     setIsGoogleAuthLoading(true);
+  //   } else {
+  //     setIsAppleAuthLoading(true);
+  //   }
 
+  //   try {
+  //     const response = await socialRegister({
+  //       provider,
+  //       provider_id: "114468729516638108730", // This should come from OAuth
+  //       device_id: "browser",
+  //       device: "web",
+  //     });
+
+  //     if (!response?.status) {
+  //       throw new Error(response?.message || "Social sign-up failed");
+  //     }
+
+  //     toast.success(response.message || "Social sign-up successful!");
+  //   } catch (err) {
+  //     console.error("Social sign-up error:", err);
+  //     toast.error(err instanceof Error ? err.message : "Social sign-up failed");
+  //   } finally {
+  //     if (provider === "google") {
+  //       setIsGoogleAuthLoading(false);
+  //     } else {
+  //       setIsAppleAuthLoading(false);
+  //     }
+  //   }
+  // }
+
+  // async function handleGoogleLogin() {
+  //   setIsGoogleAuthLoading(true);
+  //   try {
+  //     const result = await signIn("google", {
+  //       redirect: false,
+  //       callbackUrl: "/dashboard/social",
+  //     });
+  //     if (result?.error) {
+  //       toast.error(result.error);
+  //     }
+  //   } catch (error) {
+  //     console.error("Google sign-in error:", error);
+  //     toast.error("Failed to sign in with Google.");
+  //   } finally {
+  //     setIsGoogleAuthLoading(false);
+  //   }
+  // }
+
+  const handleGoogleLogin = async () => {
     try {
-      const response = await socialRegister({
-        provider,
-        provider_id: "114468729516638108730", // This should come from OAuth
-        device_id: "browser",
-        device: "web",
+      setIsGoogleAuthLoading(true);
+  
+      const result = await signIn("google", {
+        callbackUrl: "/dashboard/social", 
+        redirect: false,
       });
-
-      if (!response?.status) {
-        throw new Error(response?.message || "Social sign-up failed");
+  
+      if (result?.error) {
+        toast.error(result.error);
       }
-
-      toast.success(response.message || "Social sign-up successful!");
-    } catch (err) {
-      console.error("Social sign-up error:", err);
-      toast.error(err instanceof Error ? err.message : "Social sign-up failed");
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      toast.error("Failed to sign in with Google. Please try again.");
     } finally {
-      if (provider === "google") {
-        setIsGoogleAuthLoading(false);
-      } else {
-        setIsAppleAuthLoading(false);
+      setIsGoogleAuthLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    async function handleSocial() {
+      if (!session?.user?.provider_token) return;
+
+      try {
+        const response = await socialRegister({
+          provider: 'google',
+          provider_id: session.user.provider_id!,
+          provider_token: session.user.provider_token,
+          device_id: 'browser',
+          device: 'web'
+        });
+
+        if (!response?.status) throw new Error(response?.message);
+
+        toast.success('Login successful!');
+        router.replace('/dashboard/social');
+      } catch (err: any) {
+        toast.error(err.message || 'Social login failed');
+        router.replace('/auth/login');
       }
     }
-  }
+
+    handleSocial();
+  }, [session, router]);
 
   return (
     <>
       {!isEmailVerified ? (
         <>
           <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-3xl font-semibold tracking-tight">Create Your Account!</h1>
-            <p>Create your account to connect, share and explore with your magic world</p>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Create Your Account!
+            </h1>
+            <p>
+              Create your account to connect, share and explore with your magic
+              world
+            </p>
           </div>
           <div className={cn("grid gap-6", className)} {...props}>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid gap-4"
+              >
                 <div className="grid gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -350,8 +436,14 @@ export function Register({ className, ...props }: RegisterProps) {
             <Button
               variant="outline"
               className="social_auth_button"
-              disabled={isPasswordAuthLoading || isGoogleAuthLoading || isAppleAuthLoading}
-              onClick={() => handleSocialSignup("google")}
+              disabled={
+                isPasswordAuthLoading ||
+                isGoogleAuthLoading ||
+                isAppleAuthLoading
+              }
+              // onClick={() => handleSocialSignup("google")}
+              // onClick={handleGoogleLogin}
+              onClick={handleGoogleLogin}
             >
               {isGoogleAuthLoading ? (
                 <ImSpinner8 className="h-4 w-4 animate-spin" />
@@ -360,7 +452,7 @@ export function Register({ className, ...props }: RegisterProps) {
               )}{" "}
               <span className="-ml-1 font-semibold text-accent/70">Google</span>
             </Button>
-            <Button
+            {/* <Button
               variant="outline"
               type="button"
               className="social_auth_button"
@@ -373,7 +465,7 @@ export function Register({ className, ...props }: RegisterProps) {
                 <FaApple className="!size-6 text-black" />
               )}{" "}
               <span className="-ml-1.5 font-semibold text-accent/70">Apple</span>
-            </Button>
+            </Button> */}
           </div>
           <p className="px-8 text-center text-sm">
             I don't have an account{" "}

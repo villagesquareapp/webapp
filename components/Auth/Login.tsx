@@ -3,7 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { VSAuthPadLock } from "components/icons/village-square";
 import { Button } from "components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "components/ui/form";
 import { Input } from "components/ui/input";
 import { cn } from "lib/utils";
 import { loginSchema, type LoginFormValues } from "lib/validations/auth";
@@ -18,6 +24,8 @@ import { ImSpinner8 } from "react-icons/im";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { RiUserLine } from "react-icons/ri";
 import { toast } from "sonner";
+import { getTimeZone } from "lib/timezone";
+
 
 interface LoginProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -42,9 +50,16 @@ export function Login({ className, ...props }: LoginProps) {
 
     try {
       const result = await signIn("credentials", {
-        email: values.email_or_username,
+        email_or_username: values.email_or_username,
         password: values.password,
+        timezone: getTimeZone(),
         login_type: "password",
+        provider: "default",
+        // provider_token: null,
+        // device_id: null,
+        // device: null,
+        // fcm_token: null,
+        // audience: "web",
         redirect: false,
         callbackUrl: "/dashboard/social",
       });
@@ -61,7 +76,9 @@ export function Login({ className, ...props }: LoginProps) {
         router.push("/dashboard/social");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Authentication failed");
+      toast.error(
+        error instanceof Error ? error.message : "Authentication failed"
+      );
     } finally {
       if (!isRedirecting) {
         setIsLoading(false);
@@ -69,23 +86,44 @@ export function Login({ className, ...props }: LoginProps) {
     }
   }
 
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     setIsGoogleLoading(true);
+  //     const result = await signIn("google", {
+  //       redirect: false,
+  //       callbackUrl: "/dashboard/social",
+  //     });
+
+  //     if (result?.error) {
+  //       if (result.error.includes("?error=")) {
+  //         const errorMessage = decodeURIComponent(result.error.split("?error=")[1]);
+  //         toast.error(errorMessage);
+  //       } else {
+  //         toast.error(result.error);
+  //       }
+  //     } else if (result?.ok) {
+  //       router.push("/dashboard/social");
+  //     }
+  //   } catch (error) {
+  //     console.error("Google sign-in error:", error);
+  //     toast.error("Failed to sign in with Google. Please try again.");
+  //   } finally {
+  //     setIsGoogleLoading(false);
+  //   }
+  // };
+
   const handleGoogleLogin = async () => {
     try {
       setIsGoogleLoading(true);
+
       const result = await signIn("google", {
-        redirect: false,
-        callbackUrl: "/dashboard/social",
+        callbackUrl: "/dashboard/social", // Where to land after success
+        redirect: false, // Let NextAuth handle redirect
       });
 
+      // Normally, if redirect: true, this part won't run unless there's an error
       if (result?.error) {
-        if (result.error.includes("?error=")) {
-          const errorMessage = decodeURIComponent(result.error.split("?error=")[1]);
-          toast.error(errorMessage);
-        } else {
-          toast.error(result.error);
-        }
-      } else if (result?.ok) {
-        router.push("/dashboard/social");
+        toast.error(result.error);
       }
     } catch (error) {
       console.error("Google sign-in error:", error);
@@ -132,7 +170,6 @@ export function Login({ className, ...props }: LoginProps) {
                       <FormControl>
                         <Input
                           placeholder="Username / Email Address"
-                          type="email"
                           className="auth_input"
                           autoCapitalize="none"
                           autoComplete="email"
@@ -198,7 +235,9 @@ export function Login({ className, ...props }: LoginProps) {
               type="submit"
               size={"lg"}
               className="auth_button"
-              disabled={isLoading || isAppleLoading || isGoogleLoading || isRedirecting}
+              disabled={
+                isLoading || isAppleLoading || isGoogleLoading || isRedirecting
+              }
             >
               {(isLoading || isRedirecting) && (
                 <ImSpinner8 className="mr-2 h-4 w-4 animate-spin" />
@@ -230,7 +269,7 @@ export function Login({ className, ...props }: LoginProps) {
           )}{" "}
           <span className="-ml-1 font-semibold text-accent/70">Google</span>
         </Button>
-        <Button
+        {/* <Button
           variant="outline"
           type="button"
           className="social_auth_button"
@@ -243,11 +282,14 @@ export function Login({ className, ...props }: LoginProps) {
             <FaApple className="!size-6 text-black" />
           )}{" "}
           <span className="-ml-1.5 font-semibold text-accent/70">Apple</span>
-        </Button>
+        </Button> */}
       </div>
       <p className="px-8 text-center text-sm">
         I don't have an account{" "}
-        <Link href="/auth/register" className="hover:text-foreground font-semibold">
+        <Link
+          href="/auth/register"
+          className="hover:text-foreground font-semibold"
+        >
           Register Now
         </Link>
       </p>
