@@ -14,6 +14,7 @@ import {
 } from "components/ui/select";
 import { Switch } from "components/ui/switch";
 import { useState } from "react";
+import { createLivestream } from "api/livestreams";
 import { FaArrowLeft, FaVideo } from "react-icons/fa";
 import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
@@ -30,13 +31,30 @@ const LiveStreamAddInfo = () => {
   });
   const [selectedCohost, setSelectedCohost] = useState<string[] | null>(["John"]);
   const [searchValue, setSearchValue] = useState("");
+  const [obsStreamSource, setObsStreamSource] = useState(false);
+  const [server, setServer] = useState("");
+  const [streamKey, setStreamKey] = useState("");
   let questionSent = false;
   let showQuestionAndAnswer = true;
   let notInvited = false;
 
-  let OBSStreamSource = true;
-
   let sendingGift = false;
+
+  const handleStreamSourceChange = async (value: string) => {
+    const isObs = value === "hp_camera" || value === "obs";
+    setObsStreamSource(isObs);
+
+    if (isObs) {
+      const res = await createLivestream({});
+      if (res?.status && res.data) {
+        setServer(res.data.server || res.data.stream_url || "");
+        setStreamKey(res.data.stream_key);
+      }
+    } else {
+      setServer("");
+      setStreamKey("");
+    }
+  };
 
   const getTitle = () => {
     if (liveStreamInfo.addingLiveStreamInfo || liveStreamInfo.addingLiveStreamCamera)
@@ -187,7 +205,7 @@ const LiveStreamAddInfo = () => {
               <Label htmlFor="category" className="font-semibold">
                 Stream Source
               </Label>
-              <Select>
+              <Select onValueChange={handleStreamSourceChange}>
                 <SelectTrigger className="w-full !border-none !outline-none bg-accent !ring-0">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
@@ -201,13 +219,18 @@ const LiveStreamAddInfo = () => {
                 </SelectContent>
               </Select>
             </div>
-            {OBSStreamSource && (
+            {obsStreamSource && (
               <>
                 <div className="flex flex-col gap-y-2">
                   <Label htmlFor="concern" className="font-semibold ">
                     Server
                   </Label>
-                  <Input className="bg-accent no_input_border" placeholder="Server" />
+                  <Input
+                    className="bg-accent no_input_border"
+                    placeholder="Server"
+                    value={server}
+                    readOnly
+                  />
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <Label htmlFor="concern" className="font-semibold ">
@@ -216,6 +239,8 @@ const LiveStreamAddInfo = () => {
                   <Input
                     className="bg-accent no_input_border"
                     placeholder="Stream Source Key"
+                    value={streamKey}
+                    readOnly
                   />
                 </div>
               </>
