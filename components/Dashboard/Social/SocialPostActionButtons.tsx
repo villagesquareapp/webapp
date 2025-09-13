@@ -22,7 +22,7 @@ const SocialPostActionButtons = ({
   post: IPost;
   user: IUser;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
-  onOpenReplyModal: () => void;
+  onOpenReplyModal?: () => void;
 }) => {
   return (
     <div className="flex flex-row justify-between items-center px-4">
