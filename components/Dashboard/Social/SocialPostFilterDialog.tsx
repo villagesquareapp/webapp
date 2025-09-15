@@ -43,7 +43,6 @@ const SocialPostFilterDialog = () => {
             <span className="border py-1.5 text-sm px-4 rounded-lg text-muted-foreground">
               Latest{" "}
             </span>
-            ReferenceError: google is not defined
             <span className="border border-primary bg-black py-1.5 text-sm px-4 rounded-lg text-muted-foreground">
               New to Old
             </span>
