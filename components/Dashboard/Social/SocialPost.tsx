@@ -9,7 +9,7 @@ import EachSocialPost from "./EachSocialPost";
 import SocialPostFilterDialog from "./SocialPostFilterDialog";
 import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
-import ReplyToPostModal from "./ReplyToPostModal"; // Import the modal component
+import ReplyToPostModal from "./ReplyToPostModal";
 
 const SocialPost = ({ user }: { user: IUser }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -22,7 +22,11 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
   
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
+  
   const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
+  const [postForReplyModal, setPostForReplyModal] = useState<IPost | null>(null);
+
+
   const scrollRef = useRef(0);
 
   const likeUnlikePost = async (postId: string) => {
@@ -198,6 +202,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
     setCurrentVideoPlaying("");
     scrollRef.current = window.scrollY;
     setSelectedPost(post);
+    setPostForReplyModal(null); 
+    setIsReplyModalOpen(false); 
   };
 
   const handleBack = () => {
@@ -207,36 +213,34 @@ const SocialPost = ({ user }: { user: IUser }) => {
     }, 0);
   };
 
-  // UPDATED: This function no longer triggers the full PostDetails view
   const handleOpenReplyModal = (post: IPost) => {
     setIsPlayingVideo(false);
     setCurrentVideoPlaying("");
-    setSelectedPost(post); // Still needed to provide context to the modal
-    setIsReplyModalOpen(true);
+    setPostForReplyModal(post); 
+    setIsReplyModalOpen(true); 
   };
 
-  // NEW: Handler to close the reply modal
   const handleCloseReplyModal = () => {
     setIsReplyModalOpen(false);
-    setSelectedPost(null);
+    setPostForReplyModal(null);
   };
 
   return (
     <>
-      {selectedPost && !isReplyModalOpen ? (
+      
+      {selectedPost ? (
         <PostDetails
           post={selectedPost}
           user={user}
           setPosts={setPosts}
           onBack={handleBack}
           likeUnlikePost={likeUnlikePost}
-          saveUnsavePost={saveUnsavePost}
+          saveOrUnsavePost={saveUnsavePost}
           currentVideoPlaying={currentVideoPlaying}
           setCurrentVideoPlaying={setCurrentVideoPlaying}
           isPlayingVideo={isPlayingVideo}
           setIsPlayingVideo={setIsPlayingVideo}
-          isReplyModalOpen={isReplyModalOpen}
-          setIsReplyModalOpen={setIsReplyModalOpen}
+          onOpenReplyModal={handleOpenReplyModal}
         />
       ) : (
         <>
@@ -301,15 +305,13 @@ const SocialPost = ({ user }: { user: IUser }) => {
         </>
       )}
 
-      {/* NEW: Conditionally render the reply modal outside the main feed structure */}
-      {isReplyModalOpen && selectedPost && (
+      {isReplyModalOpen && postForReplyModal && (
         <ReplyToPostModal
-          post={selectedPost}
-          user={user}
           open={isReplyModalOpen}
           onClose={handleCloseReplyModal}
+          post={postForReplyModal}
+          user={user}
           setPosts={setPosts}
-          // Pass other necessary props to the modal as needed
         />
       )}
     </>

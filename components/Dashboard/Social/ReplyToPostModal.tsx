@@ -18,8 +18,6 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import { IoVideocamOutline } from "react-icons/io5";
 import { toast } from "sonner";
 import { createPost } from "api/post";
-
-// Import the custom hook
 import { usePostUploader } from "src/hooks/usePostUploader";
 import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
 import { Label } from "@radix-ui/react-label";
@@ -27,13 +25,13 @@ import { LiaGlobeAmericasSolid } from "react-icons/lia";
 import { IoIosArrowDown } from "react-icons/io";
 import { Dispatch, SetStateAction } from "react";
 
-// CORRECTED: Updated the props interface to match what's passed from SocialPost.tsx
 interface ReplyModalProps {
   post: IPost;
   user: IUser;
   open: boolean;
   onClose: () => void;
   setPosts: Dispatch<SetStateAction<IPost[]>>;
+  onReplySuccess?: () => void;
 }
 
 interface DraftItem {
@@ -52,6 +50,7 @@ const ReplyModal = ({
   open,
   onClose,
   setPosts,
+  onReplySuccess,
 }: ReplyModalProps) => {
   const [newComment, setNewComment] = useState<string>("");
   const charCount = newComment.length;
@@ -63,6 +62,7 @@ const ReplyModal = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [isAudienceDialogOpen, setIsAudienceDialogOpen] =
     useState<boolean>(false);
@@ -101,16 +101,17 @@ const ReplyModal = ({
         longitude: null,
         privacy: "everyone",
       };
-
+      setIsLoading(true);
       const result = await createPost({ posts: [replyPayload] });
 
       if (result?.status && result?.data) {
         toast.success("Reply created successfully");
+        // onReplySuccess();
+
         setNewComment("");
         setSelectedFile(null);
         setMediaPreviewUrl(null);
-        onClose(); // Close the modal
-        // NEW: Optimistically update the parent post's replies count
+        onClose();
         setPosts((prev) =>
           prev.map((p) =>
             p.uuid === post.uuid
@@ -121,12 +122,15 @@ const ReplyModal = ({
               : p
           )
         );
+        setIsLoading(false);
       } else {
         toast.error(result?.message || "Failed to create reply");
       }
     } catch (error) {
       toast.error("Failed to create reply");
       console.error("Reply creation error:", error);
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -178,8 +182,7 @@ const ReplyModal = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-xl md:max-w-2xl bg-background p-0 rounded-2xl border-gray-800 flex flex-col max-h-[90vh] overflow-hidden">
         <DialogHeader className="p-4 relative">
-          <DialogTitle className="text-center text-white text-lg font-semibold">
-          </DialogTitle>
+          <DialogTitle className="text-center text-white text-lg font-semibold"></DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -450,14 +453,14 @@ const ReplyModal = ({
 
           <button
             onClick={createReplyFunc}
-            disabled={isReplyButtonDisabled || isPosting}
+            disabled={isReplyButtonDisabled || isLoading}
             className={`w-full py-3 rounded-full font-semibold text-white transition-colors duration-200 ${
-              isReplyButtonDisabled || isPosting
+              isReplyButtonDisabled || isLoading
                 ? "bg-blue-800 cursor-not-allowed opacity-50"
                 : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
-            {isPosting ? "Posting..." : "Post Reply"}
+            {isLoading ? "Posting..." : "Post Reply"}
           </button>
         </div>
       </DialogContent>
