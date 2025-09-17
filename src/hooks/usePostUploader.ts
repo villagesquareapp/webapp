@@ -38,7 +38,7 @@ const calculateChecksum = async (chunk: Blob): Promise<string> => {
 };
 
 export const usePostUploader = () => {
-  const [isPosting, setIsPosting] = useState(false);
+  const [isPosting, setIsPosting] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
 
   const handleLargeFileUpload = useCallback(

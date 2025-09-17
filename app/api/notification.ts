@@ -4,12 +4,11 @@ import { apiGet } from 'lib/api';
 import { getToken } from 'lib/getToken';
 
 
-export const getNotifications = async (page: number, limit: number) => {
+export const getNotifications = async (page: number) => {
     const token = await getToken()
 
     const params = new URLSearchParams({
         page: String(page),
-        limit: String(limit)
     })
 
     const response = await apiGet<INotificationsResponse>(

@@ -352,7 +352,6 @@ const AddPost = ({
         addImage={handleFileFromNewSocialField}
       />
 
-       {/* NEW: Render the progress bar conditionally */}
       {isPostInitiated && <ProgressBar progress={overallProgress} onCancel={handleCancelUpload} />}
 
       <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
