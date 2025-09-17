@@ -3,7 +3,6 @@ import { getTimeZone } from "lib/timezone";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { API_URL } from "lib/api/base";
 
 export const authOptions: NextAuthOptions = {
   secret:
@@ -32,7 +31,9 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, _req) {
         try {
-          const authResponse = await fetch(`${API_URL}/auth/login`, {
+          const authResponse = await fetch(
+            `${process.env.API_URL}/auth/login`,
+            {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -75,7 +76,9 @@ export const authOptions: NextAuthOptions = {
         console.log("Google provider_token (ID token):", account.id_token);
 
         try {
-          const res = await fetch(`${API_URL}/auth/social-account`, {
+          const res = await fetch(
+            `${process.env.API_URL}/auth/social-account`,
+            {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

@@ -1,5 +1,4 @@
-export const API_URL =
-  process.env.API_URL || "https://staging-api.villagesquare.io/v2";
+const API_URL = process.env.API_URL || "https://staging-api.villagesquare.io/v2";
 
 export interface ApiResponse<T = any> {
   status: boolean;

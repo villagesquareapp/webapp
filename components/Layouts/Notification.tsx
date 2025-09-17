@@ -28,7 +28,7 @@ const Notification = () => {
   const fetchNotifications = async (pageNumber: number) => {
     try {
       setIsLoading(true);
-      const response = await getNotifications(pageNumber, 15);
+      const response = await getNotifications(pageNumber);
 
       if (response?.status && response?.data?.data) {
         const newNotifications = response.data.data;
@@ -88,7 +88,7 @@ const Notification = () => {
     }
   }, [page]);
 
-  const notificationsCount = 7;
+  const notificationsCount = notifications.length;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -138,7 +138,7 @@ const Notification = () => {
                     )}
                     <div className="flex-1">
                       <div className="text-sm">
-                        <span className="font-medium">John Doe </span>
+                        <span className="font-medium">{notification.subject.name} </span>
                         <span className="text-muted-foreground">
                           {notification?.description}
                         </span>

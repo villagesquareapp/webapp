@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import EachSocialPost from "./EachSocialPost";
 import usePost from "src/hooks/usePost";
 import SocialPostDetails from "./SocialPostDetails";
 import CustomAvatar from "components/ui/custom/custom-avatar";
@@ -18,21 +17,24 @@ import {
 } from "components/ui/carousel";
 import SocialPostActionButtons from "./SocialPostActionButtons";
 import ReplyPostActionButtons from "./ReplyPostActionButtons";
-import ReplyToPostModal from "./ReplyToPostModal";
+import ReplyModal from "./ReplyToPostModal";
+import LoadingSpinner from "../Reusable/LoadingSpinner";
+import NotFoundResult from "../Reusable/NotFoundResult";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   onBack: () => void;
   likeUnlikePost: (postId: string) => void;
-  saveUnsavePost: (postId: string) => void;
+  saveOrUnsavePost: (postId: string) => void;
   currentVideoPlaying: string;
   setCurrentVideoPlaying: (mediaID: string) => void;
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
   initialMediaIndex?: number;
-  isReplyModalOpen: boolean;
-  setIsReplyModalOpen: (open: boolean) => void;
+  onOpenReplyModal: (post: IPost) => void;
+  // isReplyModalOpen: boolean;
+  // setIsReplyModalOpen: (open: boolean) => void;
 }
 
 const PostDetails = ({
@@ -44,8 +46,7 @@ const PostDetails = ({
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
-  isReplyModalOpen,
-  setIsReplyModalOpen,
+  onOpenReplyModal,
 }: PostDetailsProps) => {
   const {
     replyingTo,
@@ -58,7 +59,6 @@ const PostDetails = ({
     setComments,
     commentsWithReplies,
     handleEmojiClick,
-    // handleSubmitComment,
     toggleReplies,
     loadMoreReplies,
     observerTarget,
@@ -68,8 +68,6 @@ const PostDetails = ({
   const [replies, setReplies] = useState<IPostComment[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState(true);
-
-  // State to track the active item in the replies carousel
   const [activeReplyCarouselIndex, setActiveReplyCarouselIndex] = useState(0);
 
   const refetchReplies = useCallback(async () => {
@@ -86,48 +84,13 @@ const PostDetails = ({
     }
   }, [post.uuid]);
 
-  const handlePostReplySuccess = () => {
+  const handleReplySuccess = () => {
     refetchReplies(); // Refetch all replies
-    handleCloseReplyModal(); // Close the modal
-  };
-  
-  useEffect(() => {
-    if (isReplyModalOpen && post) {
-      setReplyingTo(post);
-    }
-  }, [isReplyModalOpen, post, setReplyingTo]);
-
-   // Function to open the modal and set who we are replying to
-  const handleOpenReplyModal = (replyTo?: IPostComment) => {
-    if (replyTo) {
-      setReplyingTo(replyTo);
-    } else {
-      // If no replyTo is provided, we are replying to the main post
-      setReplyingTo(post);
-    }
-    setIsReplyModalOpen(true);
-  };
-
-  // Function to close the modal and reset state
-  const handleCloseReplyModal = () => {
-    setIsReplyModalOpen(false);
-    setNewComment("");
-    setReplyingTo(null);
-  };
-
-  // New function to handle the reply submission from the modal
-  const handlePostReply = () => {
-    // Add your reply submission logic here
-    console.log("Submitting reply:", newComment, "to:", replyingTo?.user?.username);
-    // You would call your API endpoint here
-    handleCloseReplyModal();
   };
 
   useEffect(() => {
-    // Check if the main post has a video
     const mainPostMedia = post?.media?.[0];
     if (mainPostMedia && mainPostMedia.media_type === "video") {
-      // If it's a video, set the state to play it immediately
       setCurrentVideoPlaying(mainPostMedia.uuid);
       setIsPlayingVideo(true);
     }
@@ -187,7 +150,7 @@ const PostDetails = ({
         />
         <div className="flex-1">
           <button
-            onClick={() => handleOpenReplyModal()}
+            onClick={() => onOpenReplyModal(post)}
             className="w-full text-left text-sm italic text-gray-400 bg-gray-900 rounded-full px-4 py-2"
           >
             Reply to post
@@ -195,20 +158,10 @@ const PostDetails = ({
         </div>
       </div>
 
-      {/* This is the new, cleaned up modal component */}
-      <ReplyToPostModal
-        isOpen={isReplyModalOpen}
-        onClose={handleCloseReplyModal}
-        replyingTo={replyingTo}
-        newComment={newComment}
-        setNewComment={setNewComment}
-        user={user}
-        onPostReply={handlePostReply}
-        onPostReplySuccess={handlePostReplySuccess}
-      />
-
       {/* Comments */}
-      {replies.length > 0 ? (
+      {isLoadingReplies ? (
+        <LoadingSpinner />
+      ) : replies.length > 0 ? (
         <div className="flex flex-col divide-y divide-gray-800">
           {replies.map((reply) => {
             return (
@@ -219,7 +172,6 @@ const PostDetails = ({
                   className="size-8 border-foreground border-[1.5px]"
                 />
                 <div className="flex-1">
-                  {/* Header */}
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-white">
@@ -234,15 +186,12 @@ const PostDetails = ({
                     </div>
                   </div>
 
-                  {/* Caption */}
                   <p className="text-sm text-gray-200 mt-4">{reply.caption}</p>
 
-                  {/* Media (Fixed with Carousel index) */}
                   {reply.media?.length > 0 && (
                     <div className="mt-2">
                       <Carousel
                         onSelect={(api) => {
-                          // Cast the api object to 'any' to bypass the TypeScript error
                           const carouselApi = api as any;
 
                           if (
@@ -253,7 +202,6 @@ const PostDetails = ({
                             setActiveReplyCarouselIndex(newIndex);
                             const newMedia = reply.media[newIndex];
 
-                            // Update the main video state based on the selected reply video
                             if (newMedia.media_type === "video") {
                               setCurrentVideoPlaying(newMedia.uuid);
                               setIsPlayingVideo(true);
@@ -290,7 +238,6 @@ const PostDetails = ({
                                   setIsPlayingVideo={setIsPlayingVideo}
                                   isGloballyMuted={isMuted}
                                   setGlobalMuteState={setIsMuted}
-                                  // showEchoButtons={false}
                                   className="rounded-xl aspect-[4/5] max-h-[400px]"
                                 />
                               )}
@@ -308,8 +255,111 @@ const PostDetails = ({
                     likeUnlikePost={likeOrUnlikePost}
                     saveUnsavePost={saveOrUnsavePost}
                     reply={reply}
-                    onOpenReplyModal={() => handleOpenReplyModal(reply)}
-                    // onOpenReplyModal={onOpenReplyModal}
+                    onOpenReplyModal={() => onOpenReplyModal(post)}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <NotFoundResult content={<span>No Replies Yet.</span>} />
+      )}
+      {/* {replies.length > 0 ? (
+        <div className="flex flex-col divide-y divide-gray-800">
+          {replies.map((reply) => {
+            return (
+              <div key={reply.uuid} className="flex gap-3 p-4">
+                <CustomAvatar
+                  src={reply.user?.profile_picture || ""}
+                  name={reply.user?.name || ""}
+                  className="size-8 border-foreground border-[1.5px]"
+                />
+                <div className="flex-1">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-white">
+                        {reply.user?.name}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        · {reply.formatted_time}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-400 my-1">
+                      @{reply.user?.username}
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-gray-200 mt-4">{reply.caption}</p>
+
+                  {reply.media?.length > 0 && (
+                    <div className="mt-2">
+                      <Carousel
+                        onSelect={(api) => {
+                          const carouselApi = api as any;
+
+                          if (
+                            carouselApi &&
+                            typeof carouselApi.selectedScrollSnap === "function"
+                          ) {
+                            const newIndex = carouselApi.selectedScrollSnap();
+                            setActiveReplyCarouselIndex(newIndex);
+                            const newMedia = reply.media[newIndex];
+
+                            if (newMedia.media_type === "video") {
+                              setCurrentVideoPlaying(newMedia.uuid);
+                              setIsPlayingVideo(true);
+                            } else {
+                              setCurrentVideoPlaying("");
+                              setIsPlayingVideo(false);
+                            }
+                          }
+                        }}
+                      >
+                        <CarouselContent>
+                          {reply.media.map((media, index) => (
+                            <CarouselItem key={index}>
+                              {media.media_type === "image" ? (
+                                <Image
+                                  src={media.media_url}
+                                  alt="reply media"
+                                  width={500}
+                                  height={500}
+                                  className="rounded-xl object-contain"
+                                />
+                              ) : (
+                                <PostVideo
+                                  media={media}
+                                  src={media.media_url}
+                                  currentVideoPlaying={currentVideoPlaying}
+                                  setCurrentVideoPlaying={
+                                    setCurrentVideoPlaying
+                                  }
+                                  isPlayingVideo={
+                                    activeReplyCarouselIndex === index &&
+                                    isPlayingVideo
+                                  }
+                                  setIsPlayingVideo={setIsPlayingVideo}
+                                  isGloballyMuted={isMuted}
+                                  setGlobalMuteState={setIsMuted}
+                                  className="rounded-xl aspect-[4/5] max-h-[400px]"
+                                />
+                              )}
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <CarouselPrevious />
+                        <CarouselNext />
+                      </Carousel>
+                    </div>
+                  )}
+
+                  <ReplyPostActionButtons
+                    setPosts={setPosts}
+                    likeUnlikePost={likeOrUnlikePost}
+                    saveUnsavePost={saveOrUnsavePost}
+                    reply={reply}
+                    onOpenReplyModal={() => onOpenReplyModal(post)}
                   />
                 </div>
               </div>
@@ -322,13 +372,345 @@ const PostDetails = ({
         initialFetchDone && (
           <p className="p-4 text-sm text-gray-400">No replies yet.</p>
         )
-      )}
+      )} */}
       <div ref={observerTarget} />
     </div>
   );
 };
 
 export default PostDetails;
+
+// "use client";
+
+// import { ArrowLeft } from "lucide-react";
+// import EachSocialPost from "./EachSocialPost";
+// import usePost from "src/hooks/usePost";
+// import SocialPostDetails from "./SocialPostDetails";
+// import CustomAvatar from "components/ui/custom/custom-avatar";
+// import { useCallback, useEffect, useState } from "react";
+// import { getPostComments, likeOrUnlikePost, saveOrUnsavePost } from "api/post";
+// import Image from "next/image";
+// import PostVideo from "./PostVideo";
+// import {
+//   Carousel,
+//   CarouselContent,
+//   CarouselItem,
+//   CarouselNext,
+//   CarouselPrevious,
+// } from "components/ui/carousel";
+// import SocialPostActionButtons from "./SocialPostActionButtons";
+// import ReplyPostActionButtons from "./ReplyPostActionButtons";
+// import ReplyToPostModal from "./ReplyToPostModal";
+// interface PostDetailsProps {
+//   post: IPost;
+//   user: IUser;
+//   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
+//   onBack: () => void;
+//   likeUnlikePost: (postId: string) => void;
+//   saveUnsavePost: (postId: string) => void;
+//   currentVideoPlaying: string;
+//   setCurrentVideoPlaying: (mediaID: string) => void;
+//   isPlayingVideo: boolean;
+//   setIsPlayingVideo: (playing: boolean) => void;
+//   initialMediaIndex?: number;
+//   isReplyModalOpen: boolean;
+//   setIsReplyModalOpen: (open: boolean) => void;
+// }
+
+// const PostDetails = ({
+//   post,
+//   user,
+//   setPosts,
+//   onBack,
+//   currentVideoPlaying,
+//   setCurrentVideoPlaying,
+//   isPlayingVideo,
+//   setIsPlayingVideo,
+//   isReplyModalOpen,
+//   setIsReplyModalOpen,
+// }: PostDetailsProps) => {
+//   const {
+//     replyingTo,
+//     setReplyingTo,
+//     newComment,
+//     setNewComment,
+//     postCommentLoading,
+//     setCommentsWithReplies,
+//     comments,
+//     setComments,
+//     commentsWithReplies,
+//     handleEmojiClick,
+//     // handleSubmitComment,
+//     toggleReplies,
+//     loadMoreReplies,
+//     observerTarget,
+//     initialFetchDone,
+//   } = usePost(post, setPosts);
+
+//   const [replies, setReplies] = useState<IPostComment[]>([]);
+//   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
+//   const [isMuted, setIsMuted] = useState(true);
+
+//   // State to track the active item in the replies carousel
+//   const [activeReplyCarouselIndex, setActiveReplyCarouselIndex] = useState(0);
+
+//   const refetchReplies = useCallback(async () => {
+//     setIsLoadingReplies(true);
+//     try {
+//       const response = await getPostComments(post.uuid, 1);
+//       if (response?.status && response.data) {
+//         setReplies(response.data.data);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching replies:", error);
+//     } finally {
+//       setIsLoadingReplies(false);
+//     }
+//   }, [post.uuid]);
+
+//   const handlePostReplySuccess = () => {
+//     refetchReplies(); // Refetch all replies
+//     handleCloseReplyModal(); // Close the modal
+//   };
+
+//   useEffect(() => {
+//     if (isReplyModalOpen && post) {
+//       setReplyingTo(post);
+//     }
+//   }, [isReplyModalOpen, post, setReplyingTo]);
+
+//    // Function to open the modal and set who we are replying to
+//   const handleOpenReplyModal = (replyTo?: IPostComment) => {
+//     if (replyTo) {
+//       setReplyingTo(replyTo);
+//     } else {
+//       // If no replyTo is provided, we are replying to the main post
+//       setReplyingTo(post);
+//     }
+//     setIsReplyModalOpen(true);
+//   };
+
+//   // Function to close the modal and reset state
+//   const handleCloseReplyModal = () => {
+//     setIsReplyModalOpen(false);
+//     setNewComment("");
+//     setReplyingTo(null);
+//   };
+
+//   // New function to handle the reply submission from the modal
+//   const handlePostReply = () => {
+//     // Add your reply submission logic here
+//     console.log("Submitting reply:", newComment, "to:", replyingTo?.user?.username);
+//     // You would call your API endpoint here
+//     handleCloseReplyModal();
+//   };
+
+//   useEffect(() => {
+//     // Check if the main post has a video
+//     const mainPostMedia = post?.media?.[0];
+//     if (mainPostMedia && mainPostMedia.media_type === "video") {
+//       // If it's a video, set the state to play it immediately
+//       setCurrentVideoPlaying(mainPostMedia.uuid);
+//       setIsPlayingVideo(true);
+//     }
+//   }, [post.uuid, setCurrentVideoPlaying, setIsPlayingVideo]);
+
+//   useEffect(() => {
+//     const handleFetchReplies = async (page: number) => {
+//       setIsLoadingReplies(true);
+//       try {
+//         const response = await getPostComments(post.uuid, page);
+//         if (response?.status && response.data) {
+//           setReplies(response.data.data);
+//         }
+//       } catch (error) {
+//         console.error("Error fetching replies:", error);
+//       } finally {
+//         setIsLoadingReplies(false);
+//       }
+//     };
+//     handleFetchReplies(1);
+//   }, [post.uuid]);
+
+//   return (
+//     <div className="flex flex-col w-full max-w-2xl mx-auto">
+//       {/* Header */}
+//       <div className="flex items-center gap-6 px-4 py-2 border-b border-gray-800">
+//         <button
+//           onClick={onBack}
+//           className="p-2 rounded-full hover:bg-gray-800 transition"
+//         >
+//           <ArrowLeft className="w-5 h-5 text-white" />
+//         </button>
+//         <h2 className="text-lg font-semibold text-center">Post Details</h2>
+//       </div>
+
+//       {/* Main Post (Fixed) */}
+//       <div className="p-4 border-b border-gray-800">
+//         <SocialPostDetails
+//           post={post}
+//           setPosts={setPosts}
+//           user={user}
+//           likeUnlikePost={likeOrUnlikePost}
+//           saveUnsavePost={saveOrUnsavePost}
+//           currentVideoPlaying={currentVideoPlaying}
+//           setCurrentVideoPlaying={setCurrentVideoPlaying}
+//           isPlayingVideo={isPlayingVideo}
+//           setIsPlayingVideo={setIsPlayingVideo}
+//         />
+//       </div>
+
+//       {/* Reply box */}
+//       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
+//         <CustomAvatar
+//           src={post?.user?.profile_picture || ""}
+//           name={post?.user?.name || ""}
+//           className="size-8 border-foreground border-[1.5px]"
+//         />
+//         <div className="flex-1">
+//           <button
+//             onClick={() => handleOpenReplyModal()}
+//             className="w-full text-left text-sm italic text-gray-400 bg-gray-900 rounded-full px-4 py-2"
+//           >
+//             Reply to post
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* This is the new, cleaned up modal component */}
+//       <ReplyToPostModal
+//         isOpen={isReplyModalOpen}
+//         onClose={handleCloseReplyModal}
+//         replyingTo={replyingTo}
+//         newComment={newComment}
+//         setNewComment={setNewComment}
+//         user={user}
+//         onPostReply={handlePostReply}
+//         onPostReplySuccess={handlePostReplySuccess}
+//       />
+
+//       {/* Comments */}
+//       {replies.length > 0 ? (
+//         <div className="flex flex-col divide-y divide-gray-800">
+//           {replies.map((reply) => {
+//             return (
+//               <div key={reply.uuid} className="flex gap-3 p-4">
+//                 <CustomAvatar
+//                   src={reply.user?.profile_picture || ""}
+//                   name={reply.user?.name || ""}
+//                   className="size-8 border-foreground border-[1.5px]"
+//                 />
+//                 <div className="flex-1">
+//                   {/* Header */}
+//                   <div className="flex flex-col">
+//                     <div className="flex items-center gap-2">
+//                       <span className="font-semibold text-sm text-white">
+//                         {reply.user?.name}
+//                       </span>
+//                       <span className="text-xs text-gray-400">
+//                         · {reply.formatted_time}
+//                       </span>
+//                     </div>
+//                     <div className="text-xs text-gray-400 my-1">
+//                       @{reply.user?.username}
+//                     </div>
+//                   </div>
+
+//                   {/* Caption */}
+//                   <p className="text-sm text-gray-200 mt-4">{reply.caption}</p>
+
+//                   {/* Media (Fixed with Carousel index) */}
+//                   {reply.media?.length > 0 && (
+//                     <div className="mt-2">
+//                       <Carousel
+//                         onSelect={(api) => {
+//                           // Cast the api object to 'any' to bypass the TypeScript error
+//                           const carouselApi = api as any;
+
+//                           if (
+//                             carouselApi &&
+//                             typeof carouselApi.selectedScrollSnap === "function"
+//                           ) {
+//                             const newIndex = carouselApi.selectedScrollSnap();
+//                             setActiveReplyCarouselIndex(newIndex);
+//                             const newMedia = reply.media[newIndex];
+
+//                             // Update the main video state based on the selected reply video
+//                             if (newMedia.media_type === "video") {
+//                               setCurrentVideoPlaying(newMedia.uuid);
+//                               setIsPlayingVideo(true);
+//                             } else {
+//                               setCurrentVideoPlaying("");
+//                               setIsPlayingVideo(false);
+//                             }
+//                           }
+//                         }}
+//                       >
+//                         <CarouselContent>
+//                           {reply.media.map((media, index) => (
+//                             <CarouselItem key={index}>
+//                               {media.media_type === "image" ? (
+//                                 <Image
+//                                   src={media.media_url}
+//                                   alt="reply media"
+//                                   width={500}
+//                                   height={500}
+//                                   className="rounded-xl object-contain"
+//                                 />
+//                               ) : (
+//                                 <PostVideo
+//                                   media={media}
+//                                   src={media.media_url}
+//                                   currentVideoPlaying={currentVideoPlaying}
+//                                   setCurrentVideoPlaying={
+//                                     setCurrentVideoPlaying
+//                                   }
+//                                   isPlayingVideo={
+//                                     activeReplyCarouselIndex === index &&
+//                                     isPlayingVideo
+//                                   }
+//                                   setIsPlayingVideo={setIsPlayingVideo}
+//                                   isGloballyMuted={isMuted}
+//                                   setGlobalMuteState={setIsMuted}
+//                                   // showEchoButtons={false}
+//                                   className="rounded-xl aspect-[4/5] max-h-[400px]"
+//                                 />
+//                               )}
+//                             </CarouselItem>
+//                           ))}
+//                         </CarouselContent>
+//                         <CarouselPrevious />
+//                         <CarouselNext />
+//                       </Carousel>
+//                     </div>
+//                   )}
+
+//                   <ReplyPostActionButtons
+//                     setPosts={setPosts}
+//                     likeUnlikePost={likeOrUnlikePost}
+//                     saveUnsavePost={saveOrUnsavePost}
+//                     reply={reply}
+//                     onOpenReplyModal={() => handleOpenReplyModal(reply)}
+//                     // onOpenReplyModal={onOpenReplyModal}
+//                   />
+//                 </div>
+//               </div>
+//             );
+//           })}
+//         </div>
+//       ) : isLoadingReplies ? (
+//         <p className="p-4 text-sm text-gray-400">Loading replies...</p>
+//       ) : (
+//         initialFetchDone && (
+//           <p className="p-4 text-sm text-gray-400">No replies yet.</p>
+//         )
+//       )}
+//       <div ref={observerTarget} />
+//     </div>
+//   );
+// };
+
+// export default PostDetails;
 
 // "use client";
 

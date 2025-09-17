@@ -28,7 +28,7 @@ const SocialPostComment = ({
   disableCommentButton?: boolean;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   user?: IUser;
-  onOpenReplyModal?: () => void;
+  onOpenReplyModal: () => void;
 }) => {
   const {
     replyingTo,
@@ -50,7 +50,7 @@ const SocialPostComment = ({
   return (
     <div>
       <div
-        className={`flex flex-row gap-x-1 items-center ${onOpenReplyModal ? "cursor-pointer" : ""}`}
+        className="flex flex-row gap-x-1 items-center cursor-pointer"
         onClick={onOpenReplyModal}
       >
         <IoChatbubbleEllipses className="size-6" />

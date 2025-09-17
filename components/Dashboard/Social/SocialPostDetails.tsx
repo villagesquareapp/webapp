@@ -100,13 +100,13 @@ const SocialPostDetails = ({
         {/* Post text with highlighted hashtags */}
         <PostText text={post?.caption} />
       </div>
-      <SocialPostActionButtons
+      {/* <SocialPostActionButtons
         setPosts={setPosts}
         likeUnlikePost={likeUnlikePost}
         saveUnsavePost={saveUnsavePost}
         post={post}
         user={user}
-      />
+      /> */}
       <Separator className="my-2" />
     </div>
   );
