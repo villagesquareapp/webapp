@@ -36,8 +36,8 @@ const SocialPostDetails = ({
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
 }) => {
-  const [isGloballyMuted, setIsGloballyMuted] = useState(true);
-  const [activeMediaCarouselIndex, setActiveMediaCarouselIndex] = useState(0);
+  const [isGloballyMuted, setIsGloballyMuted] = useState<boolean>(true);
+  const [activeMediaCarouselIndex, setActiveMediaCarouselIndex] = useState<number>(0);
 
   return (
     <div className="flex flex-col gap-y-4">

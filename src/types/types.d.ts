@@ -93,6 +93,15 @@ interface IUser {
   bio: string | null;
   timezone: string;
   verified_status: number;
+  checkmark_verification_status: boolean;
+  premium_verification_status: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  has_received_reg_bonus_from_vs?: boolean;
+  has_rated_ios?: boolean;
+  has_rated_android?: boolean;
+  websocket_url?: string;
   online: boolean;
   last_online: string | null;
   is_private: boolean;
@@ -336,8 +345,60 @@ interface IGetVflixComments {
   reply_count: number;
 }
 
-interface IGetVflixCommentResponse extends IPaginatedResponse<IGetVflixComments> {}
+interface INewVflixComment {
+  comment: string;
+  parent_id?: string;
+}
 
+interface INewVflixCommentPost {
+  post: {
+    uuid: string;
+    user_id: string;
+    caption: string;
+    parent_post_id: null;
+    root_post_id: string;
+    quote_post_id: null;
+    thread_id: string;
+    address: string | null;
+    latitude: string | null;
+    longitude: string | null;
+    privacy: string | null;
+    status: string | null;
+    views_count: string ;
+    shares_count: string;
+    likes_count: string;
+    replies_count: string;
+    impressions: string;
+    unique_views: string | null;
+    clicks: string | null;
+    engagements: string | null;
+    additional_metadata: null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: null;
+    user: IUser;
+  };
+}
+
+interface INewVflixCommentResponse {
+  uuid: string;
+  post_id: string;
+  user_id: string;
+  likes_count: string;
+  comment: string;
+  parent_id: string | null;
+  created_at: string;
+  updated_at: string;
+  user: IPostUser;
+  post: INewVflixCommentPost
+  parent_comment: IGetVflixComments | null;
+  is_liked: boolean;
+  formatted_time: string;
+  reply_count: number;
+}
+
+interface IGetVflixCommentResponse
+  extends IPaginatedResponse<IGetVflixComments> {}
 
 interface INewPostResponse extends IPost {}
 

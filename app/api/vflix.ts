@@ -33,3 +33,16 @@ export const getVflixComments = async (postId: string, page: number = 1) => {
   );
   return response;
 };
+
+export const createVflixComment = async (
+  postId: string,
+  newCommentData: INewVflixComment
+) => {
+  const token = await getToken();
+  const response = await apiPost<INewVflixCommentResponse>(
+    `posts/vflix/${postId}/comments/add`,
+    newCommentData,
+    token
+  );
+  return response;
+};

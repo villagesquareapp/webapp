@@ -10,6 +10,7 @@ import SocialPostFilterDialog from "./SocialPostFilterDialog";
 import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
+import { set } from "zod";
 
 const SocialPost = ({ user }: { user: IUser }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -20,12 +21,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   const [currentVideoPlaying, setCurrentVideoPlaying] = useState<string>("");
   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
-  
-  const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
-  
-  const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
-  const [postForReplyModal, setPostForReplyModal] = useState<IPost | null>(null);
 
+  const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
+
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
+  const [postForReplyModal, setPostForReplyModal] = useState<IPost | null>(
+    null
+  );
+  const [replyToReply, setReplyToReply] = useState<IPostComment | null>(null);
 
   const scrollRef = useRef(0);
 
@@ -110,7 +113,16 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, [page]);
 
   const observerTarget = useRef(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
   useEffect(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    if (!selectedPost) {
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (
@@ -128,15 +140,18 @@ const SocialPost = ({ user }: { user: IUser }) => {
         threshold: 0.1,
       }
     );
+    observerRef.current = observer;
 
     const currentTarget = observerTarget.current;
     if (currentTarget) {
       observer.observe(currentTarget);
     }
     return () => {
-      if (currentTarget) observer.unobserve(currentTarget);
+      // if (currentTarget) observer.unobserve(currentTarget);
+      observer.disconnect();
+      observerRef.current = null;
     };
-  }, [hasMore, isPostLoading, loadingMorePost]);
+  }, [hasMore, isPostLoading, loadingMorePost, selectedPost]);
 
   const videoElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const visibilityMapRef = useRef<Map<string, number>>(new Map());
@@ -202,32 +217,47 @@ const SocialPost = ({ user }: { user: IUser }) => {
     setCurrentVideoPlaying("");
     scrollRef.current = window.scrollY;
     setSelectedPost(post);
-    setPostForReplyModal(null); 
-    setIsReplyModalOpen(false); 
+    setPostForReplyModal(null);
+    setIsReplyModalOpen(false);
+    setReplyToReply(null);
   };
 
   const handleBack = () => {
     setSelectedPost(null);
+    setReplyToReply(null);
     setTimeout(() => {
       window.scrollTo(0, scrollRef.current);
     }, 0);
   };
 
-  const handleOpenReplyModal = (post: IPost) => {
+  const handleOpenReplyModal = (post: IPost, replyToComment?: IPostComment) => {
     setIsPlayingVideo(false);
     setCurrentVideoPlaying("");
-    setPostForReplyModal(post); 
-    setIsReplyModalOpen(true); 
+    setPostForReplyModal(post);
+    setReplyToReply(replyToComment || null);
+    setIsReplyModalOpen(true);
   };
 
   const handleCloseReplyModal = () => {
     setIsReplyModalOpen(false);
     setPostForReplyModal(null);
+    setReplyToReply(null);
+  };
+
+  const handleReplySuccess = (newReply: IPostComment) => {
+    // Optimistically update the replies count in the main posts list
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.uuid === postForReplyModal?.uuid
+          ? { ...p, replies_count: (Number(p.replies_count) + 1).toString() }
+          : p
+      )
+    );
+    handleCloseReplyModal();
   };
 
   return (
     <>
-      
       {selectedPost ? (
         <PostDetails
           post={selectedPost}
@@ -241,13 +271,11 @@ const SocialPost = ({ user }: { user: IUser }) => {
           isPlayingVideo={isPlayingVideo}
           setIsPlayingVideo={setIsPlayingVideo}
           onOpenReplyModal={handleOpenReplyModal}
+          onReplySuccess={handleReplySuccess}
         />
       ) : (
         <>
-          <AddPost
-            user={user}
-            onRefreshPosts={() => fetchPosts(1)}
-          />
+          <AddPost user={user} onRefreshPosts={() => fetchPosts(1)} />
 
           <div className="flex flex-col gap-y-4">
             <div className="border-b-[1.5px] flex justify-between">
@@ -312,6 +340,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
           post={postForReplyModal}
           user={user}
           setPosts={setPosts}
+          replyToComment={replyToReply}
+          onReplySuccess={handleReplySuccess}
         />
       )}
     </>
@@ -343,7 +373,7 @@ export default SocialPost;
 //   // Single source-of-truth for playback
 //   const [currentVideoPlaying, setCurrentVideoPlaying] = useState<string>("");
 //   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
-  
+
 //   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
 //   const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
 //   const scrollRef = useRef(0);

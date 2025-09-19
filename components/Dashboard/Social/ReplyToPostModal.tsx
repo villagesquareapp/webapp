@@ -31,7 +31,8 @@ interface ReplyModalProps {
   open: boolean;
   onClose: () => void;
   setPosts: Dispatch<SetStateAction<IPost[]>>;
-  onReplySuccess?: () => void;
+  onReplySuccess?: (newReply: IPostComment) => void;
+  replyToComment?: IPostComment | null;
 }
 
 interface DraftItem {
@@ -51,6 +52,7 @@ const ReplyModal = ({
   onClose,
   setPosts,
   onReplySuccess,
+  replyToComment,
 }: ReplyModalProps) => {
   const [newComment, setNewComment] = useState<string>("");
   const charCount = newComment.length;
@@ -107,6 +109,70 @@ const ReplyModal = ({
       if (result?.status && result?.data) {
         toast.success("Reply created successfully");
         // onReplySuccess();
+        // const newReply: IPostComment = {
+        //   uuid: result.data?.uuid || `temp-${Date.now()}`,
+        //   caption: newComment,
+        //   user: {
+        //     uuid: user.uuid,
+        //     name: user.name,
+        //     username: user.username,
+        //     profile_picture: user.profile_picture,
+        //   },
+        //   likes_count: "0",
+        //   replies_count: "0",
+        //   is_liked: false,
+        //   is_saved: false,
+        //   formatted_time: "now",
+        //   media: uploadedFiles.length > 0 ? [] : [], // You might want to construct media objects here
+        //   created_at: new Date(),
+        // };
+        const newReply: IPostComment = {
+          uuid: result.data?.uuid || `temp-${Date.now()}`,
+          caption: newComment,
+          user_id: user.uuid, // required by IPostComment
+          parent_post_id: "", // set appropriately if available
+          root_post_id: "", // set appropriately if available
+          quote_post_id: null,
+          thread_id: "",
+          address: null,
+          latitude: null,
+          longitude: null,
+          privacy: "everyone",
+          status: "active",
+          views_count: "0",
+          shares_count: "0",
+          likes_count: "0",
+          replies_count: "0",
+          impressions: "0",
+          additional_metadata: null,
+          created_at: new Date(),
+          updated_at: new Date(),
+          deleted_at: null,
+          formatted_time: "now",
+          is_saved: false,
+          is_liked: false,
+          is_thread_continuation: false,
+          media: uploadedFiles.length > 0 ? [] : [],
+
+          // ✅ Now fill user with all required fields from IPostUser
+          user: {
+            uuid: user.uuid,
+            name: user.name,
+            username: user.username,
+            profile_picture: user.profile_picture,
+            email: user.email ?? "", // fallback if not available
+            verified_status: user.verified_status ?? 0,
+            checkmark_verification_status:
+              user.checkmark_verification_status ?? false,
+            premium_verification_status:
+              user.premium_verification_status ?? false,
+            online: user.online ?? false,
+          },
+        };
+
+        if (onReplySuccess) {
+          onReplySuccess(newReply);
+        }
 
         setNewComment("");
         setSelectedFile(null);
@@ -130,7 +196,7 @@ const ReplyModal = ({
       toast.error("Failed to create reply");
       console.error("Reply creation error:", error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -178,6 +244,25 @@ const ReplyModal = ({
     }
   };
 
+  const getReplyContext = () => {
+    if (replyToComment) {
+      return {
+        text: `Replying to @${replyToComment.user?.username}`,
+        content: replyToComment.caption,
+        user: replyToComment.user,
+        media: replyToComment.media,
+      };
+    }
+    return {
+      text: `Replying to @${post?.user?.username}`,
+      content: post.caption,
+      user: post?.user,
+      media: post?.media,
+    };
+  };
+
+  const replyContext = getReplyContext();
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-xl md:max-w-2xl bg-background p-0 rounded-2xl border-gray-800 flex flex-col max-h-[90vh] overflow-hidden">
@@ -187,46 +272,49 @@ const ReplyModal = ({
 
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
           <p className="text-sm text-gray-400 py-4 italic">
-            Replying to{" "}
+            {/* Replying to{" "}
             <span className="font-semibold text text-[#094DB5]">
               @{post?.user?.username}
-            </span>
+            </span> */}
+            {replyContext.text}
           </p>
           {post && (
             <div className="flex flex-col gap-3 mb-4 border-b border-gray-800 pb-4">
               <div className="flex gap-3">
                 <CustomAvatar
-                  src={post?.user?.profile_picture || ""}
-                  name={post?.user?.name || ""}
+                  src={replyContext.user?.profile_picture || ""}
+                  name={replyContext.user?.name || ""}
                   className="size-10 border-foreground border-[1.5px]"
                 />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-white">
-                      {post?.user?.name}
+                      {replyContext.user?.name}
                     </span>
                     <span className="text-xs text-gray-400">
-                      @{post?.user?.username} ·{" "}
-                      {post?.formatted_time || "just now"}
+                      @{replyContext.user?.username} ·{" "}
+                      {replyToComment?.formatted_time ||
+                        post.formatted_time ||
+                        "just now"}
                     </span>
                   </div>
                   <div className="flex items-start justify-between gap-2 mt-2">
                     <p className="flex-1 text-sm text-gray-200">
-                      {post.caption}
+                      {replyContext.content}
                     </p>
-                    {post?.media?.[0] && (
+                    {replyContext.media?.[0] && (
                       <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden relative">
-                        {post.media[0].media_type === "image" ? (
+                        {replyContext.media[0].media_type === "image" ? (
                           <img
-                            src={post.media[0].media_url}
-                            alt={post.media[0].media_filename}
+                            src={replyContext.media[0].media_url}
+                            alt={replyContext.media[0].media_filename}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <>
                             <img
-                              src={post.media[0].media_thumbnail}
-                              alt={post.media[0].media_filename}
+                              src={replyContext.media[0].media_thumbnail}
+                              alt={replyContext.media[0].media_filename}
                               className="w-full h-full object-cover"
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
