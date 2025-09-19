@@ -1,11 +1,11 @@
 "use client";
 
 import { BsBookmarkDashFill } from "react-icons/bs";
-import { CgEyeAlt } from "react-icons/cg";
 import { IoMdShareAlt } from "react-icons/io";
 import { PiHeartFill } from "react-icons/pi";
 import SocialPostComment from "./SocialPostComment";
 import { useEffect } from "react";
+import { BiBarChart } from "react-icons/bi";
 
 const SocialPostActionButtons = ({
   disableCommentButton = false,
@@ -54,7 +54,7 @@ const SocialPostActionButtons = ({
       </div>
       <div className="flex items-center gap-x-1">
         <p className="text-sm">{post?.views_count}</p>
-        <CgEyeAlt className="size-6" />
+        <BiBarChart className="size-6" />
       </div>
     </div>
   );
