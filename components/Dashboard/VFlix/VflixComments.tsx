@@ -1,6 +1,6 @@
 // components/Dashboard/VFlix/VflixComments.tsx
 
-import { getVflixComments } from "api/vflix";
+import { getVflixComments, createVflixComment } from "api/vflix";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useEffect, useState } from "react";
 import { IoClose, IoChatbubbleEllipses } from "react-icons/io5";
@@ -9,8 +9,8 @@ import { HiMiniCheckBadge } from "react-icons/hi2";
 import NotFoundResult from "../Reusable/NotFoundResult";
 import { Loader2 } from "lucide-react";
 import { VSSend } from "components/icons/village-square";
-import { comment } from "postcss";
 import { PiHeartFill } from "react-icons/pi";
+import { toast } from "sonner";
 
 interface Props {
   isOpen: boolean;
@@ -48,6 +48,41 @@ export default function VflixComments({
 
   const handleEmojiClick = (emoji: string) => {
     setCommentContent((prev) => prev + emoji);
+  };
+
+  const onSubmitComment = async () => {
+    if (!commentContent.trim() || !postId || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await createVflixComment(postId, {
+        comment: commentContent,
+      });
+
+      if (response?.status && response.data) {
+        toast.success("Comment added successfully!");
+
+        // Ensure object is correctly typed.
+        setComments((prev) => [
+          {
+            ...response.data,
+            user,
+            formatted_time: "Just now",
+            reply_count: 0,
+          } as IGetVflixComments,
+          ...prev,
+        ]);
+
+        setCommentContent("");
+      } else {
+        toast.error("Failed to add comment. Please try again.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while adding the comment.");
+      console.error("Failed to create comment:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -138,7 +173,6 @@ export default function VflixComments({
             </div>
           )}
         </div>
-        {/* NEW: Input and emoji section fixed at the bottom */}
         <div className="absolute bottom-0 w-full bg-background border-t px-6 h-fit gap-y-4 py-4 flex flex-col">
           <div className="flex h-fit flex-row justify-between items-center">
             {["👍", "❤️", "👏", "😊", "😐", "🤩", "😢"].map((emoji, index) => (
@@ -161,11 +195,14 @@ export default function VflixComments({
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
               placeholder="Add a comment..."
+              disabled={isSubmitting}
               className="flex-1 resize-none h-12 p-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 outline-none"
             />
             <div
-              className="p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex cursor-pointer"
-              //   onClick={onSubmitComment}
+              className={`p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex cursor-pointer ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={onSubmitComment}
             >
               {isSubmitting ? (
                 <Loader2 className="size-6 flex m-auto animate-spin" />
@@ -178,10 +215,4 @@ export default function VflixComments({
       </div>
     </div>
   );
-}
-
-{
-  /* <NotFoundResult
-                content={<span>No posts available at the moment.</span>}
-              /> */
 }
