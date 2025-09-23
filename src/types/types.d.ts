@@ -146,7 +146,8 @@ interface IFeaturedLivestream {
   title: string;
   start_date: string;
   start_time: string;
-  users: Number;
+  end_datetime: string;
+  users: number;
   gifts: Number;
   duration: string;
   category_id: Number;
@@ -240,7 +241,7 @@ interface IPostMedia {
   post_id: string;
   media_filename: string;
   media_url: string;
-  transcoded_media_url: string | null;
+  transcoded_media_url: string;
   media_type: "image" | "video";
   media_size: string;
   media_thumbnail: string;

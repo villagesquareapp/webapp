@@ -2,7 +2,7 @@ import { getFeaturedLivestreams } from "api/livestreams";
 import LiveStream from "components/Dashboard/LiveStream/LiveStream";
 
 const page = async () => {
-  const featuredLivestream = await getFeaturedLivestreams(4, 1);
+  const featuredLivestream = await getFeaturedLivestreams(1, 1);
 
   return (
     <LiveStream

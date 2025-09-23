@@ -149,7 +149,7 @@ const LiveStreamAddInfo = () => {
             </div>
             <div className="grid grid-cols-4 gap-10">
               {Array.from({ length: 30 }).map((_, index) => (
-                <div className="flex flex-col w-full gap-y-2 place-items-center">
+                <div className="flex flex-col w-full gap-y-2 place-items-center" key={index}>
                   <CustomAvatar
                     className="size-24"
                     src="/images/beautiful-image.webp"
