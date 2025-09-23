@@ -281,7 +281,7 @@ const PostDetails = ({
                             <CarouselItem key={index}>
                               {media.media_type === "image" ? (
                                 <Image
-                                  src={media.media_url}
+                                  src={media.transcoded_media_url}
                                   alt="reply media"
                                   width={500}
                                   height={500}
@@ -290,7 +290,7 @@ const PostDetails = ({
                               ) : (
                                 <PostVideo
                                   media={media}
-                                  src={media.media_url}
+                                  src={media.media_url || media.transcoded_media_url}
                                   currentVideoPlaying={currentVideoPlaying}
                                   setCurrentVideoPlaying={
                                     setCurrentVideoPlaying

@@ -53,7 +53,7 @@ const LiveStreamPage = () => {
               <div className="flex flex-col gap-y-5">
                 <p className="font-bold text-">Featured Lives</p>
                 <div className="grid lg:grid-cols-4 gap-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
+                  {Array.from({ length: 2 }).map((_, index) => (
                     <Link
                       href="/dashboard/live-streams/[livestream]"
                       as="/dashboard/live-streams/livestream"
@@ -78,7 +78,7 @@ const LiveStreamPage = () => {
                   ))}
                 </div>
                 <div className="grid lg:grid-cols-4 gap-4">
-                  {Array.from({ length: 30 }).map((_, index) => (
+                  {Array.from({ length: 15 }).map((_, index) => (
                     <Link
                       href="/dashboard/live-streams/[livestream]"
                       as="/dashboard/live-streams/livestream"
