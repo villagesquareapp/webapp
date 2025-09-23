@@ -59,7 +59,7 @@ const SocialPostDetails = ({
                     {media.media_type === "image" ? (
                       <div className="relative w-full aspect-[4/5] max-h-[500px] rounded-xl overflow-hidden">
                         <Image
-                          src={media.media_url}
+                          src={media.transcoded_media_url || media.media_url}
                           alt="post"
                           fill
                           className="object-cover"
@@ -72,7 +72,7 @@ const SocialPostDetails = ({
                         media={media}
                         currentVideoPlaying={currentVideoPlaying}
                         setCurrentVideoPlaying={setCurrentVideoPlaying}
-                        src={media.media_url}
+                        src={media.transcoded_media_url || media.media_url}
                         // showEchoButtons={false}
                         // This logic ensures only the active carousel video can play
                         isPlayingVideo={

@@ -15,7 +15,7 @@ const LiveFeaturedPreviewCard = ({
     <div className="relative bg-muted flex flex-col rounded-xl">
       <span className="bg-white/10 flex absolute top-2 left-2 items-center backdrop-blur-sm rounded-full px-2 py-1 space-x-1">
         <CgEyeAlt className="size-4" />
-        <p className="font-medium text-xs">123</p>
+        <p className="font-medium text-xs">{featuredLivestreamData?.users}</p>
       </span>
       <div className="flex flex-col gap-y-4">
         <div className="w-full h-[280px] relative rounded-xl overflow-hidden">
@@ -54,7 +54,7 @@ const LiveFeaturedPreviewCard = ({
               <CustomAvatar
                 src={featuredLivestreamData?.host?.profile_picture}
                 className="border-2 size-12"
-                name="John Doe"
+                name={featuredLivestreamData?.host?.name || "Host"}
               />
               <div className="absolute bg-red-600 font-medium text-[11px] -bottom-1 inset-x-0 mx-auto rounded-full px-1 w-10 flex py-[1px] place-content-center z-20">
                 Live
