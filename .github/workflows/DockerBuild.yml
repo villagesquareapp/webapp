@@ -126,7 +126,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: villagesquareapp/api-v2
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Needs write access
+          token: ${{ secrets.GITHUB_TOKEN }} # Needs write access
           path: api-v2
 
     # Step 17: Update deployment manifest in api-v2
