@@ -126,6 +126,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: villagesquareapp/api-v2
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }} # Needs write access
           path: api-v2
 
