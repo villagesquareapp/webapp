@@ -121,6 +121,26 @@ jobs:
             git add kubernetes/webapp.yml
             git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
             git push
+    # Step 16: Checkout second repo (api-v2)
+      - name: Checkout api-v2 repo
+        uses: actions/checkout@v4
+        with:
+          repository: villagesquareapp/api-v2
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Needs write access
+          path: api-v2
+
+    # Step 17: Update deployment manifest in api-v2
+      - name: Update manifests in api-v2
+        run: |
+          sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" api-v2/kubernetes/webapp.yml
+          cd api-v2
+          git config --global user.name "villagesquareltd"
+          git config --global user.email "villagesquare130@gmail.com"
+          git add kubernetes/webapp.yml
+          git commit -m "Update webapp image tag to ${{ env.IMAGE_TAG }}"
+          git push
+
+            
     # Step 15: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
         run: |
