@@ -4,6 +4,11 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
+const API_URL =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://staging-api.villagesquare.io/v2";
+
 export const authOptions: NextAuthOptions = {
   secret:
     process.env.NEXTAUTH_SECRET ||
@@ -32,7 +37,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials, _req) {
         try {
           const authResponse = await fetch(
-            `${process.env.API_URL}/auth/login`,
+            `${API_URL}/auth/login`,
             {
               method: "POST",
               headers: {
@@ -77,7 +82,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.API_URL}/auth/social-account`,
+            `${API_URL}/auth/social-account`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
