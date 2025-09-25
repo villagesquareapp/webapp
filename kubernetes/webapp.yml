@@ -22,7 +22,7 @@ spec:
             - containerPort: 3000
           env:
             - name: API_URL
-              value: "https://staging-api.villagesquare.io"
+              value: "https://staging-api.villagesquare.io/v2"
             - name: NEXTAUTH_SECRET
               value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="
             - name: NEXTAUTH_URL
