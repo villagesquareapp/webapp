@@ -3,6 +3,10 @@ import { getTimeZone } from "lib/timezone";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+const API_BASE_URL =
+  process.env.API_URL && process.env.API_URL.trim().length > 0
+    ? process.env.API_URL.replace(/\/+$/, "")
+    : "https://staging-api.villagesquare.io/v2";
 
 export const authOptions: NextAuthOptions = {
   secret:
@@ -31,27 +35,24 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, _req) {
         try {
-          const authResponse = await fetch(
-            `${process.env.API_URL}/auth/login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email_or_username: credentials?.email_or_username,
-                password: credentials?.password,
-                login_type: credentials?.login_type,
-                provider: credentials?.provider,
-                provider_token: null,
-                device_id: null,
-                device: null,
-                fcm_token: null,
-                timezone: getTimeZone(),
-                audience: "web",
-              }),
-            }
-          );
+          const authResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email_or_username: credentials?.email_or_username,
+              password: credentials?.password,
+              login_type: credentials?.login_type,
+              provider: credentials?.provider,
+              provider_token: null,
+              device_id: null,
+              device: null,
+              fcm_token: null,
+              timezone: getTimeZone(),
+              audience: "web",
+            }),
+          });
 
           const authData = await authResponse.json();
 
@@ -76,23 +77,20 @@ export const authOptions: NextAuthOptions = {
         console.log("Google provider_token (ID token):", account.id_token);
 
         try {
-          const res = await fetch(
-            `${process.env.API_URL}/auth/social-account`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                provider: "google",
-                auth_type: "google",
-                provider_token: account.id_token || account.access_token,
-                timezone: getTimeZone(),
-                device_id: null,
-                fcm_token: null,
-                device: "browser",
-                audience: "web",
-              }),
-            }
-          );
+          const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              provider: "google",
+              auth_type: "google",
+              provider_token: account.id_token || account.access_token,
+              timezone: getTimeZone(),
+              device_id: null,
+              fcm_token: null,
+              device: "browser",
+              audience: "web",
+            }),
+          });
 
           const data = await res.json();
           console.log("Backend response:", data);
