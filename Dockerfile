@@ -16,6 +16,8 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV GOOGLE_CLIENT_ID=1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com
+ENV GOOGLE_CLIENT_SECRET=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
 
 # Copy necessary files from the builder stage
 COPY --from=builder /app/package.json ./package.json
