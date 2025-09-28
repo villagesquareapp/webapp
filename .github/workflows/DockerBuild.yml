@@ -108,12 +108,12 @@ jobs:
         run: |
             echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
-            - name: Checkout API manifests repository
-            uses: actions/checkout@v4
-            with:
-              repository: villagesquareapp/api-v2
-              token: ${{ secrets.GITHUB_TOKEN }}
-              path: api-v2
+      - name: Checkout API manifests repository
+        uses: actions/checkout@v4
+        with:
+          repository: villagesquareapp/api-v2
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: api-v2
     
       - name: Update Kubernetes manifests with new image tag
         working-directory: api-v2
