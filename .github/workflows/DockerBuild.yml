@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: write    
+      contents: write
+    env:
+      API_V2_REPO_TOKEN: ${{ secrets.API_V2_REPO_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -105,39 +107,41 @@ jobs:
 
     # Step 12: Output the ECR image URI
       - name: Output Image URI
-        run: |
-            echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
+        run: echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
     # Step 13: Update Kubernetes deployment image
+      - name: Ensure API manifests token is available
+        if: env.API_V2_REPO_TOKEN == ''
+        run: |
+          echo "The API_V2_REPO_TOKEN secret is not configured. Skipping manifest update."
+
+      - name: Clone API manifests repository
+        if: env.API_V2_REPO_TOKEN != ''
+        run: |
+          git clone https://x-access-token:${API_V2_REPO_TOKEN}@github.com/villagesquareapp/api-v2.git api-v2
+
       - name: Update Kubernetes manifests with new image tag
+        if: env.API_V2_REPO_TOKEN != ''
+        working-directory: api-v2
         run: |
-            sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
+          sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
 
-    # Step 14: Commit and Push Updated Deployment
-      - name: Commit and Push Changes
+      - name: Commit and push manifest update
+        if: env.API_V2_REPO_TOKEN != ''
+        working-directory: api-v2
         run: |
-            git config --global user.name "villagesquareltd"
-            git config --global user.email "villagesquare130@gmail.com"
-            git add kubernetes/webapp.yml
-            git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
-            git push
-#     # Step 15: Apply Kubernetes deployment 
+          if git diff --quiet; then
+            echo "No manifest changes to commit."
+            exit 0
+          fi
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-         token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update manifests in api-v2
-        run: |
-          sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" api-v2/kubernetes/webapp.yml
-          cd api-v2
-          git config --global user.name "villagesquareltd"
-          git config --global user.email "villagesquare130@gmail.com"
+          git config user.name "villagesquareltd"
+          git config user.email "villagesquare130@gmail.com"
           git add kubernetes/webapp.yml
           git commit -m "Update webapp image tag to ${{ env.IMAGE_TAG }}"
-          git push
-         
+          git push https://x-access-token:${API_V2_REPO_TOKEN}@github.com/villagesquareapp/api-v2.git HEAD:main
+#     # Step 15: Apply Kubernetes deployment
+
       - name: Apply Kubernetes deployment
         run: |
           aws eks update-kubeconfig --region af-south-1 --name kitops-eks
