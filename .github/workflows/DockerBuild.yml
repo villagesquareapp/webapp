@@ -105,7 +105,8 @@ jobs:
 
     # Step 12: Output the ECR image URI
       - name: Output Image URI
-        run: echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
+        run: |
+            echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
     # Step 13: Update Kubernetes deployment image
       - name: Prepare manifest credentials
