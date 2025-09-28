@@ -12,10 +12,6 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    env:
-      API_V2_REPO_TOKEN: ${{ secrets.API_V2_REPO_TOKEN }}
-      API_V2_PUSH_TOKEN: ${{ secrets.API_V2_REPO_TOKEN != '' && secrets.API_V2_REPO_TOKEN || github.token }}
-      API_V2_TOKEN_SOURCE: ${{ secrets.API_V2_REPO_TOKEN != '' && 'API_V2_REPO_TOKEN' || 'GITHUB_TOKEN' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -112,12 +108,26 @@ jobs:
         run: echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
     # Step 13: Update Kubernetes deployment image
+      - name: Prepare manifest credentials
+        id: manifest-creds
+        run: |
+          if [ -n "${API_V2_REPO_TOKEN}" ]; then
+            echo "token_source=API_V2_REPO_TOKEN" >> "$GITHUB_OUTPUT"
+            echo "push_token=${API_V2_REPO_TOKEN}" >> "$GITHUB_OUTPUT"
+          else
+            echo "token_source=GITHUB_TOKEN" >> "$GITHUB_OUTPUT"
+            echo "push_token=${GITHUB_TOKEN}" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          API_V2_REPO_TOKEN: ${{ secrets.API_V2_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Announce manifest token source
-        run: echo "Using ${API_V2_TOKEN_SOURCE} to update API manifests"
+        run: echo "Using ${{ steps.manifest-creds.outputs.token_source }} to update API manifests"
 
       - name: Clone API manifests repository
         run: |
-          git clone https://x-access-token:${API_V2_PUSH_TOKEN}@github.com/villagesquareapp/api-v2.git api-v2
+          git clone https://x-access-token:${{ steps.manifest-creds.outputs.push_token }}@github.com/villagesquareapp/api-v2.git api-v2
 
       - name: Update Kubernetes manifests with new image tag
         working-directory: api-v2
@@ -136,7 +146,7 @@ jobs:
           git config user.email "villagesquare130@gmail.com"
           git add kubernetes/webapp.yml
           git commit -m "Update webapp image tag to ${{ env.IMAGE_TAG }}"
-          git push https://x-access-token:${API_V2_PUSH_TOKEN}@github.com/villagesquareapp/api-v2.git HEAD:main
+          git push https://x-access-token:${{ steps.manifest-creds.outputs.push_token }}@github.com/villagesquareapp/api-v2.git HEAD:main
 #     # Step 15: Apply Kubernetes deployment
 
       - name: Apply Kubernetes deployment
