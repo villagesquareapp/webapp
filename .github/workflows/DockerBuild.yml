@@ -109,45 +109,25 @@ jobs:
             echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
     # Step 13: Update Kubernetes deployment image
-      - name: Prepare manifest credentials
-        id: manifest-creds
-        run: |
-          if [ -n "${API_V2_REPO_TOKEN}" ]; then
-            echo "token_source=API_V2_REPO_TOKEN" >> "$GITHUB_OUTPUT"
-            echo "push_token=${API_V2_REPO_TOKEN}" >> "$GITHUB_OUTPUT"
-            echo "can_update=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "token_source=unavailable" >> "$GITHUB_OUTPUT"
-            echo "push_token=" >> "$GITHUB_OUTPUT"
-            echo "can_update=false" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          API_V2_REPO_TOKEN: ${{ secrets.API_V2_REPO_TOKEN }}
-
-      - name: Announce manifest token source
-        run: |
-          if [ "${{ steps.manifest-creds.outputs.can_update }}" = "true" ]; then
-            echo "Using ${{ steps.manifest-creds.outputs.token_source }} to update API manifests"
-          else
-            echo "API_V2_REPO_TOKEN is not configured; skipping manifest update."
-          fi
-
+    # Step 13: Checkout API manifests repository
       - name: Checkout API manifests repository
-        if: steps.manifest-creds.outputs.can_update == 'true'
         uses: actions/checkout@v4
         with:
           repository: villagesquareapp/api-v2
-          token: ${{ steps.manifest-creds.outputs.push_token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: api-v2
+          ref: main   # explicitly set branch
 
+    # Step 14: Update Kubernetes manifests with new image tag
       - name: Update Kubernetes manifests with new image tag
-        if: steps.manifest-creds.outputs.can_update == 'true'
         working-directory: api-v2
         run: |
-          sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
+          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
+          echo "=== File after update ==="
+          cat kubernetes/webapp.yml
 
+    # Step 15: Commit and push manifest update
       - name: Commit and push manifest update
-        if: steps.manifest-creds.outputs.can_update == 'true'
         working-directory: api-v2
         run: |
           if git diff --quiet; then
