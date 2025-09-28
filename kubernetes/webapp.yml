@@ -30,4 +30,7 @@ spec:
             - name: GOOGLE_CLIENT_ID
               value: "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com"
             - name: GOOGLE_CLIENT_SECRET
-              value: "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"              
+              value: "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"             
+
+            - name: FACEBOOK_CLIENT_ID
+              value: "1042025886605241" 
