@@ -115,27 +115,39 @@ jobs:
           if [ -n "${API_V2_REPO_TOKEN}" ]; then
             echo "token_source=API_V2_REPO_TOKEN" >> "$GITHUB_OUTPUT"
             echo "push_token=${API_V2_REPO_TOKEN}" >> "$GITHUB_OUTPUT"
+            echo "can_update=true" >> "$GITHUB_OUTPUT"
           else
-            echo "token_source=GITHUB_TOKEN" >> "$GITHUB_OUTPUT"
-            echo "push_token=${GITHUB_TOKEN}" >> "$GITHUB_OUTPUT"
+            echo "token_source=unavailable" >> "$GITHUB_OUTPUT"
+            echo "push_token=" >> "$GITHUB_OUTPUT"
+            echo "can_update=false" >> "$GITHUB_OUTPUT"
           fi
         env:
           API_V2_REPO_TOKEN: ${{ secrets.API_V2_REPO_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Announce manifest token source
-        run: echo "Using ${{ steps.manifest-creds.outputs.token_source }} to update API manifests"
-
-      - name: Clone API manifests repository
         run: |
-          git clone https://x-access-token:${{ steps.manifest-creds.outputs.push_token }}@github.com/villagesquareapp/api-v2.git api-v2
+          if [ "${{ steps.manifest-creds.outputs.can_update }}" = "true" ]; then
+            echo "Using ${{ steps.manifest-creds.outputs.token_source }} to update API manifests"
+          else
+            echo "API_V2_REPO_TOKEN is not configured; skipping manifest update."
+          fi
+
+      - name: Checkout API manifests repository
+        if: steps.manifest-creds.outputs.can_update == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: villagesquareapp/api-v2
+          token: ${{ steps.manifest-creds.outputs.push_token }}
+          path: api-v2
 
       - name: Update Kubernetes manifests with new image tag
+        if: steps.manifest-creds.outputs.can_update == 'true'
         working-directory: api-v2
         run: |
           sed -i "s|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:.*|606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
 
       - name: Commit and push manifest update
+        if: steps.manifest-creds.outputs.can_update == 'true'
         working-directory: api-v2
         run: |
           if git diff --quiet; then
@@ -147,14 +159,13 @@ jobs:
           git config user.email "villagesquare130@gmail.com"
           git add kubernetes/webapp.yml
           git commit -m "Update webapp image tag to ${{ env.IMAGE_TAG }}"
-          git push https://x-access-token:${{ steps.manifest-creds.outputs.push_token }}@github.com/villagesquareapp/api-v2.git HEAD:main
+          git push origin HEAD:main
 #     # Step 15: Apply Kubernetes deployment
 
       - name: Apply Kubernetes deployment
         run: |
           aws eks update-kubeconfig --region af-south-1 --name kitops-eks
           kubectl apply -f kubernetes/webapp.yml --validate=false
-
 # name: CI
 
 # on:
