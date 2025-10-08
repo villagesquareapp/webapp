@@ -183,6 +183,109 @@ interface IFeaturedLivestream {
 interface IFeaturedLivestreamResponse
   extends IPaginatedResponse<IFeaturedLivestream> {}
 
+interface IStartLivestream {
+  title: string;
+  category_id: number;
+  privacy: PrivacyType;
+  comments_enabled: boolean;
+  questions_enabled: boolean;
+  gifting_enabled: boolean;
+  cover?: string;
+  cohosts?: string[];
+}
+
+interface IStartLivestreamData {
+  title: string;
+  category_id: string;
+  host_id: string;
+  start_date: string;
+  start_time: string;
+  start_datetime: string;
+  privacy: PrivacyType;
+  comments_enabled: boolean;
+  questions_enabled: boolean;
+  gifting_enabled: boolean;
+  duration: string;
+  livestream_room_id: string;
+  livestream_room_stream_id: string;
+  stream_id: string;
+  livestream_room_stream_url: string;
+  cover: string | null;
+  uuid: string;
+  end_datetime: string;
+  users: number;
+  gifts: number;
+  status: "live" | "ended";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+interface IStreamLivestreamResponse
+  extends IPaginatedResponse<IStartLivestreamData> {}
+
+interface ILivestreamDetails {
+  uuid: string;
+  title: string;
+  start_date: string;
+  start_time: string;
+  start_datetime: string;
+  end_datetime: string;
+  users: number;
+  gifts: Number;
+  duration: string;
+  category_id: Number;
+  host_id: string;
+  livestream_room_id: string;
+  livestream_room_stream_id: string;
+  stream_id: string;
+  livestream_room_stream_url: string;
+  status: string;
+  privacy: string;
+  comments_enabled: boolean;
+  questions_enabled: boolean;
+  gifting_enabled: boolean;
+  cover: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  host: {
+    uuid: string;
+    name: string;
+    username: string;
+    email: string;
+    verified_status: number;
+    checkmark_verification_status: boolean;
+    premium_verification_status: boolean;
+    profile_picture: string;
+    online: boolean;
+  };
+  category: {
+    id: Number;
+    name: string;
+  };
+  joined: boolean;
+  role: string;
+  cohosts: {
+    uuid: string;
+    name: string;
+    username: string;
+    email: string;
+    verified_status: number;
+    checkmark_verification_status: boolean;
+    premium_verification_status: boolean;
+    profile_picture: string;
+    online: boolean;
+  }[];
+}
+
+interface IEndLivestream {
+  livestream_duration: string;
+  livestream_users: string;
+  gifts_received: string;
+}
+
+// interface ILivestreamDetailsResponse extends IPaginatedResponse<ILivestreamDetails> {}
 interface INotifications {
   subject: {
     icon: string;
@@ -365,7 +468,7 @@ interface INewVflixCommentPost {
     longitude: string | null;
     privacy: string | null;
     status: string | null;
-    views_count: string ;
+    views_count: string;
     shares_count: string;
     likes_count: string;
     replies_count: string;
@@ -391,7 +494,7 @@ interface INewVflixCommentResponse {
   created_at: string;
   updated_at: string;
   user: IPostUser;
-  post: INewVflixCommentPost
+  post: INewVflixCommentPost;
   parent_comment: IGetVflixComments | null;
   is_liked: boolean;
   formatted_time: string;
