@@ -73,17 +73,11 @@ const StreamHostSetup = ({
   const [comments, setComments] = useState([
     {
       id: 1,
-      user: { name: "John Abraham", avatar: "/images/default-avatar.webp" },
+      user: { name: "John Abraham", avatar: "/images/vs-logo.webp" },
       message:
         "Actually I am waiting for this podcast for so literally like soo long",
       timestamp: Date.now() - 300000,
-    },
-    {
-      id: 2,
-      user: { name: "Michael Jordan", avatar: "/images/default-avatar.webp" },
-      message: "yayyyyyyy beautiful😍",
-      timestamp: Date.now() - 240000,
-    },
+    }
   ]);
 
   // Initialize WebSocket connection
@@ -97,10 +91,10 @@ const StreamHostSetup = ({
     }
 
     try {
-      const streamId = streamData?.stream_id || streamData?.id;
+      const streamId = streamData?.stream_id;
       const wsUrl = `wss://origin-streaming-server.villagesquare.io/Livestream/websocket?stream=${streamId}`;
 
-      //   const wsUrl = getWebSocketURL(streamUuid);
+        // const wsUrl = getWebSocketURL(streamUuid);
       websocketRef.current = new WebSocket(wsUrl);
       console.log("Attempting WebSocket connection to:", wsUrl);
       websocketRef.current = new WebSocket(wsUrl);
@@ -475,7 +469,7 @@ const StreamHostSetup = ({
             );
           }
 
-          toast.success("Stream resumed");
+          // toast.success("Stream resumed");
         }
       }
     };
@@ -645,8 +639,7 @@ const StreamHostSetup = ({
 
         // Stop Ant Media publishing
         if (webRTCAdaptorRef.current) {
-          const streamId =
-            streamData?.livestream_room_stream_id || streamData?.stream_id;
+          const streamId = streamData?.stream_id;
           webRTCAdaptorRef.current.stop(streamId);
           webRTCAdaptorRef.current.closeWebSocket();
         }
@@ -671,6 +664,8 @@ const StreamHostSetup = ({
             JSON.stringify({
               type: "stream_ended",
               stream_id: streamUuid,
+              message: "Host has ended the live stream",
+              ended_at: new Date().toISOString(),
             })
           );
         }
@@ -807,7 +802,7 @@ const StreamHostSetup = ({
           {streamData?.title ||
             "Behind the Scenes: Exclusive Live Tour | Live Discussion"}
         </p>
-        {streamState === "live" && (
+        {/* {streamState === "live" && (
           <div className="flex items-center gap-x-2">
             <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-x-2">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -817,7 +812,7 @@ const StreamHostSetup = ({
               <CgEye /> {viewerCount.toLocaleString()}
             </span>
           </div>
-        )}
+        )} */}
       </div>
 
       <div className="grid grid-cols-8 gap-x-4">
@@ -904,35 +899,12 @@ const StreamHostSetup = ({
                         <FaVolumeUp className="size-4" />
                       )}
                     </Button>
-                    {/* <Button
-                      className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white"
-                      size="sm"
-                    >
-                      ⏸️
-                    </Button> */}
                   </div>
                 )}
 
                 {/* Media Toggles - always available for host */}
                 {isHost && (
                   <div className="flex gap-x-3">
-                    <button
-                      onClick={toggleMic}
-                      className={`p-3 rounded-full transition-colors ${
-                        isMicActive
-                          ? "bg-white/20 text-white hover:bg-white/30"
-                          : "bg-red-600 text-white hover:bg-red-700"
-                      }`}
-                      title={
-                        isMicActive ? "Mute Microphone" : "Unmute Microphone"
-                      }
-                    >
-                      {isMicActive ? (
-                        <FaMicrophone className="size-5" />
-                      ) : (
-                        <FaMicrophoneSlash className="size-5" />
-                      )}
-                    </button>
                     <button
                       onClick={toggleCamera}
                       className={`p-3 rounded-full transition-colors ${
@@ -948,6 +920,23 @@ const StreamHostSetup = ({
                         <FaVideo className="size-5" />
                       ) : (
                         <FaVideoSlash className="size-5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={toggleMic}
+                      className={`p-3 rounded-full transition-colors ${
+                        isMicActive
+                          ? "bg-white/20 text-white hover:bg-white/30"
+                          : "bg-red-600 text-white hover:bg-red-700"
+                      }`}
+                      title={
+                        isMicActive ? "Mute Microphone" : "Unmute Microphone"
+                      }
+                    >
+                      {isMicActive ? (
+                        <FaMicrophone className="size-5" />
+                      ) : (
+                        <FaMicrophoneSlash className="size-5" />
                       )}
                     </button>
                   </div>
