@@ -247,14 +247,28 @@ const ReplyModal = ({
   const getReplyContext = () => {
     if (replyToComment) {
       return {
-        text: `Replying to @${replyToComment.user?.username}`,
+        // text: `Replying to @${replyToComment.user?.username}`,
+        text: (
+          <>
+            Replying to{" "}
+            <span className="text-blue-500">
+              @{replyToComment.user?.username}
+            </span>
+          </>
+        ),
         content: replyToComment.caption,
         user: replyToComment.user,
         media: replyToComment.media,
       };
     }
     return {
-      text: `Replying to @${post?.user?.username}`,
+      // text: `Replying to @${post?.user?.username}`,
+      text:(
+        <>
+          Replying to {" "}
+          <span className="text-blue-500">@{post.user.username}</span>
+        </>
+      ),
       content: post.caption,
       user: post?.user,
       media: post?.media,

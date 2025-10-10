@@ -20,7 +20,7 @@ const EachSocialPost = ({
   isPlayingVideo,
   setIsPlayingVideo,
   onOpenPostDetails,
-  onOpenReplyModal
+  onOpenReplyModal,
 }: {
   post: IPost;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
@@ -31,15 +31,18 @@ const EachSocialPost = ({
   setCurrentVideoPlaying: (mediaID: string) => void;
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
-  onOpenPostDetails: () => void; 
+  onOpenPostDetails: () => void;
   onOpenReplyModal: () => void;
 }) => {
   const [showPostDetails, setShowPostDetails] = useState(false);
   const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
 
-    const [isGloballyMuted, setIsGloballyMuted] = useState(true);
+  const [isGloballyMuted, setIsGloballyMuted] = useState(true);
 
-  const handlePostClickWithVideoPause = (e: React.MouseEvent, mediaIndex?: number) => {
+  const handlePostClickWithVideoPause = (
+    e: React.MouseEvent,
+    mediaIndex?: number
+  ) => {
     e.stopPropagation();
 
     // If a video is playing, pause it before opening the details
@@ -51,16 +54,15 @@ const EachSocialPost = ({
         // Open details after ensuring video is paused
         // setClickedMediaIndex(mediaIndex ?? 0);
         // setShowPostDetails(true);
-        onOpenPostDetails()
+        onOpenPostDetails();
       }, 150);
     } else {
-      onOpenPostDetails()
+      onOpenPostDetails();
       // No video playing, just open details immediately
       // setClickedMediaIndex(mediaIndex ?? 0);
       // setShowPostDetails(true);
     }
   };
-
 
   const isSingleMedia = post?.media?.length === 1;
 
@@ -72,8 +74,19 @@ const EachSocialPost = ({
         className="flex flex-col gap-y-4 cursor-pointer"
         onClick={(e) => handlePostClickWithVideoPause(e)}
       >
+        {/* Post text with highlighted hashtags */}
+        <div
+          onClick={(e) => handlePostClickWithVideoPause(e)}
+          className="cursor-pointer"
+        >
+          <PostText text={post?.caption} />
+        </div>
         {!!post?.media?.length && (
-          <div className={`p-4 ${isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"}`}>
+          <div
+            className={`p-4 ${
+              isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"
+            }`}
+          >
             {post?.media?.map((media, index, array) => {
               // For multiple media posts, check if this is a single item in the last row
               const isLastItem = index === array.length - 1;
@@ -136,10 +149,15 @@ const EachSocialPost = ({
             })}
           </div>
         )}
-        {/* Post text with highlighted hashtags */}
-        <div onClick={(e) => handlePostClickWithVideoPause(e)} className="cursor-pointer">
-          <PostText text={post?.caption} />
-        </div>
+        <span className="flex flex-row items-center gap-x-1 px-4">
+          {post?.address && (
+            <>
+              <span className="text-xs text-muted-foreground">
+                {post?.address}
+              </span>{" "}
+            </>
+          )}
+        </span>
       </div>
 
       <SocialPostActionButtons

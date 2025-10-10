@@ -25,6 +25,7 @@ import LiveStreamReport from "./LiveStreamReport";
 import LiveStreamGift from "./LiveStreamGift";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { Separator } from "components/ui/separator";
+import LiveStreamCard from "./LiveStreamCard";
 
 const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLivestream[] }) => {
   let turnedOffComment = false;
@@ -186,10 +187,11 @@ const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLives
           </div>
           <div className="flex flex-col mt-4 gap-y-4">
             <p className="font-semibold">Featured Lives</p>
-            <div className="grid lg:grid-cols-4 gap-4">
+            <div className="grid lg:grid-cols-4 gap-16">
               {featuredLivestream?.map((featuredLivestreamData, index) => (
                 <div key={index}>
                   <LiveFeaturedPreviewCard featuredLivestreamData={featuredLivestreamData} />
+                  {/* <LiveStreamCard title={featuredLivestreamData.title} username={featuredLivestreamData.host.username} name={featuredLivestreamData.host.name} coverImage={featuredLivestreamData.cover} profilePicture={featuredLivestreamData.host.profile_picture} viewerCount={featuredLivestreamData.users} /> */}
                 </div>
               ))}
             </div>
@@ -203,6 +205,7 @@ const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLives
                 <div className="overflow-x-hidden overflow-y-auto no-scrollbar h-full pb-[100px]">
                   {/* Messages */}
                   <div className="flex flex-col gap-y-4 w-full overflow-x-hidden">
+                    {/* Comments */}
                     {Array.from({ length: 30 }).map((_, index) => (
                       <div key={index}>
                         <div className="flex flex-row gap-x-2 items-start w-full">

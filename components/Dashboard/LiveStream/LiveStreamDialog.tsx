@@ -20,6 +20,8 @@ const LiveStreamDialog = ({
   leftAndRightButton,
   backIcon,
   removeFooterBorder = false,
+  open,
+  onOpenChange
 }: {
   removeFooterBorder?: boolean;
   title?: string | null;
@@ -29,11 +31,17 @@ const LiveStreamDialog = ({
   backIcon?: React.ReactNode | null;
   trigger: React.ReactNode;
   contentClassName?: HTMLAttributes<HTMLDivElement>["className"];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void
 }) => {
-  const [openLiveStreamDialog, setOpenLiveStreamDialog] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const isControlled = open !== undefined;
+  const openState = isControlled ? open : internalOpen;
+  const setOpenState = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
 
   return (
-    <Dialog open={openLiveStreamDialog} onOpenChange={setOpenLiveStreamDialog}>
+    <Dialog open={openState} onOpenChange={setOpenState}>
       <DialogTrigger>{trigger}</DialogTrigger>
       <DialogContent
         className={cn(
@@ -53,7 +61,7 @@ const LiveStreamDialog = ({
                 <Button
                   variant="ghost"
                   className="p-1 px-2.5 rounded-full transition-colors"
-                  onClick={() => setOpenLiveStreamDialog(false)}
+                  onClick={() => setOpenState(false)}
                 >
                   <IoClose className="size-6" />
                 </Button>

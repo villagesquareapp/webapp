@@ -10,7 +10,6 @@ import SocialPostFilterDialog from "./SocialPostFilterDialog";
 import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
-import { set } from "zod";
 
 const SocialPost = ({ user }: { user: IUser }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -32,16 +31,73 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   const scrollRef = useRef(0);
 
-  const likeUnlikePost = async (postId: string) => {
-    const formData = new FormData();
-    const result = await likeOrUnlikePost(postId, formData);
-    if (result?.status) {
+  // const likeUnlikePost = async (postId: string) => {
+  //   const formData = new FormData();
+  //   const result = await likeOrUnlikePost(postId, formData);
+  //   if (result?.status) {
+  //     setPosts((prev) =>
+  //       prev.map((post) =>
+  //         post.uuid === postId
+  //           ? {
+  //               ...post,
+  //               likes_count: result?.data?.is_liked
+  //                 ? (Number(post.likes_count) + 1).toString()
+  //                 : (Number(post.likes_count) - 1).toString(),
+  //               is_liked: !post.is_liked,
+  //             }
+  //           : post
+  //       )
+  //     );
+  //   } else {
+  //     toast.error(result?.message);
+  //   }
+  // };
+
+  const likeUnlikePost = useCallback(async (postId: string) => {
+    // Optimistically update the UI
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.uuid === postId
+          ? {
+              ...post,
+              likes_count: post?.is_liked
+                ? (Number(post.likes_count) - 1).toString()
+                : (Number(post.likes_count) + 1).toString(),
+              is_liked: !post.is_liked,
+            }
+          : post
+      )
+    );
+
+    try {
+      // Make API call
+      const formData = new FormData();
+      const result = await likeOrUnlikePost(postId, formData);
+
+      if (!result?.status) {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.uuid === postId
+              ? {
+                  ...post,
+                  likes_count: post.is_liked
+                    ? (Number(post.likes_count) + 1).toString()
+                    : (Number(post.likes_count) - 1).toString(),
+                  is_liked: !post.is_liked,
+                }
+              : post
+          )
+        );
+        toast.error(result?.message || "Failed to update like");
+      }
+    } catch (error) {
+      // Revert optimistic update on error
       setPosts((prev) =>
         prev.map((post) =>
           post.uuid === postId
             ? {
                 ...post,
-                likes_count: result?.data?.is_liked
+                likes_count: post.is_liked
                   ? (Number(post.likes_count) + 1).toString()
                   : (Number(post.likes_count) - 1).toString(),
                 is_liked: !post.is_liked,
@@ -49,10 +105,9 @@ const SocialPost = ({ user }: { user: IUser }) => {
             : post
         )
       );
-    } else {
-      toast.error(result?.message);
+      console.error("Error liking post:", error);
     }
-  };
+  }, []);
 
   const saveUnsavePost = async (postId: string) => {
     const formData = new FormData();
@@ -256,6 +311,17 @@ const SocialPost = ({ user }: { user: IUser }) => {
     handleCloseReplyModal();
   };
 
+  // const handleReplyCountUpdate = (postId: string) => {
+  //   // Optimistically update the replies count in the main posts list
+  //   setPosts((prev) =>
+  //     prev.map((p) =>
+  //       p.uuid === postId
+  //         ? { ...p, replies_count: (Number(p.replies_count) + 1).toString() }
+  //         : p
+  //     )
+  //   );
+  // };
+
   return (
     <>
       {selectedPost ? (
@@ -271,7 +337,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           isPlayingVideo={isPlayingVideo}
           setIsPlayingVideo={setIsPlayingVideo}
           onOpenReplyModal={handleOpenReplyModal}
-          onReplySuccess={handleReplySuccess}
+          // onReplySuccess={handleReplySuccess}
         />
       ) : (
         <>
