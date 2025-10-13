@@ -90,17 +90,16 @@ jobs:
           echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
 
       # Step 14: Checkout API manifests repo (api-v2)
-      - name: Checkout API manifests repository
-        uses: actions/checkout@v4
-        with:
-          repository: villagesquareapp/api-v2
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: api-v2
+      # - name: Checkout API manifests repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: villagesquareapp/api-v2
+      #     ref: main
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     path: api-v2
 
       # Step 15: Update Kubernetes manifests with new image tag
       - name: Update Kubernetes manifests with new image tag
-        working-directory: api-v2
         run: |
           sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
           echo "=== File after update ==="
