@@ -123,7 +123,7 @@ jobs:
         run: |
           git config --global user.name "villagesquareltd"
           git config --global user.email "villagesquare130@gmail.com"
-          git add kubernetes/deployment.yml
+          git add kubernetes/webapp.yml
           git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
           git push      
       
