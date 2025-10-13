@@ -107,20 +107,27 @@ jobs:
           cat kubernetes/webapp.yml
 
       # Step 16: Commit and push manifest update
-      - name: Commit and push manifest update
-        working-directory: api-v2
+      # - name: Commit and push manifest update
+      #   working-directory: api-v2
+      #   run: |
+      #     if git diff --quiet; then
+      #       echo "No manifest changes to commit."
+      #       exit 0
+      #     fi
+
+      #     git config user.name "villagesquareltd"
+      #     git config user.email "villagesquare130@gmail.com"
+      #     git add kubernetes/webapp.yml
+      #     git commit -m "Update webapp image tag to ${{ env.IMAGE_TAG }}"
+      #     git push origin HEAD:main
+      - name: Commit and Push Changes
         run: |
-          if git diff --quiet; then
-            echo "No manifest changes to commit."
-            exit 0
-          fi
-
-          git config user.name "villagesquareltd"
-          git config user.email "villagesquare130@gmail.com"
-          git add kubernetes/webapp.yml
-          git commit -m "Update webapp image tag to ${{ env.IMAGE_TAG }}"
-          git push origin HEAD:main
-
+          git config --global user.name "villagesquareltd"
+          git config --global user.email "villagesquare130@gmail.com"
+          git add kubernetes/deployment.yml
+          git commit -m "Updated image tag to ${{ env.IMAGE_TAG }}"
+          git push      
+      
       # Step 17: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
         run: |
