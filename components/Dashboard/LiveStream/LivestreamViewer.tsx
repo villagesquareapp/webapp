@@ -22,6 +22,7 @@ import LiveFeaturedPreviewCard from "./LiveFeaturedPreviewCard";
 import SponsorCard from "../Reusable/SponsorCard";
 import { toast } from "sonner";
 import { CgEye } from "react-icons/cg";
+import { WebRTCAdaptor } from "@antmedia/webrtc_adaptor";
 
 interface LivestreamViewerProps {
   streamData: any;
@@ -37,6 +38,7 @@ const LivestreamViewer = ({
   const router = useRouter();
   const websocketRef = useRef<WebSocket | null>(null);
   const playerRef = useRef<ReactPlayer>(null);
+  const webRTCAdaptorRef = useRef<WebRTCAdaptor | null>(null);
 
   const [isMuted, setIsMuted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -46,6 +48,7 @@ const LivestreamViewer = ({
   const [viewerCount, setViewerCount] = useState(streamData?.users || 0);
   const [streamDuration, setStreamDuration] = useState(0);
   const [newComment, setNewComment] = useState("");
+  const [streamEnded, setStreamEnded] = useState(false);
   const [isStreamPaused, setIsStreamPaused] = useState(false);
   const [comments, setComments] = useState<
     Array<{
@@ -61,7 +64,7 @@ const LivestreamViewer = ({
   /* Initialize chat WebSocket */
   const initializeChatWebSocket = () => {
     try {
-      const streamUuid = streamData?.uuid || streamData?.id;
+      const streamUuid = streamData?.uuid;
       const wsUrl = `wss://origin-streaming-server.villagesquare.io/Livestream/websocket?stream=${streamUuid}`;
       console.log("Viewer connecting to chat:", wsUrl);
 
@@ -85,6 +88,8 @@ const LivestreamViewer = ({
       websocketRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          console.log("Received chat message:", data);
+
           switch (data.type) {
             case "comment":
             case "message":
@@ -101,15 +106,16 @@ const LivestreamViewer = ({
                 },
               ]);
               break;
+
             case "viewer_count":
             case "viewers":
               setViewerCount(data.count || data.viewers || 0);
               break;
+
             case "stream_paused":
               console.log("Stream paused by host");
               setIsStreamPaused(true);
               toast.info("Host paused the stream");
-              // Pause ReactPlayer
               setIsPaused(true);
               break;
 
@@ -117,15 +123,34 @@ const LivestreamViewer = ({
               console.log("Stream resumed by host");
               setIsStreamPaused(false);
               toast.success("Stream resumed!");
-              // Resume ReactPlayer
               setIsPaused(false);
               break;
+
             case "stream_duration":
               setStreamDuration(data.duration || 0);
               break;
+
             case "stream_ended":
-              toast.info("Stream has ended");
-              router.push("/dashboard/live-streams");
+              console.log("Stream ended by host:", data);
+              setStreamEnded(true);
+              toast.info("The host has ended this live stream", {
+                duration: 5000,
+              });
+
+              // Stop WebRTC
+              if (webRTCAdaptorRef.current) {
+                const streamIdToStop = streamData?.stream_id;
+                console.log("Stopping stream:", streamIdToStop);
+                webRTCAdaptorRef.current.stop(streamIdToStop);
+                if (webRTCAdaptorRef.current.closeStream) {
+                  webRTCAdaptorRef.current.closeStream();
+                }
+              }
+
+              // Redirect after a delay
+              setTimeout(() => {
+                router.push("/dashboard/live-streams");
+              }, 3000);
               break;
           }
         } catch (error) {
@@ -218,7 +243,6 @@ const LivestreamViewer = ({
           </span>
         </div>
       </div>
-
       <div className="grid grid-cols-8 gap-x-4">
         <div className="col-span-6 gap-y-4 flex flex-col">
           <div className="w-full h-[66dvh] relative rounded-xl overflow-hidden bg-black">
@@ -440,6 +464,31 @@ const LivestreamViewer = ({
           </div>
         </div>
       </div>
+      {streamEnded && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md text-center">
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Live Stream Ended</h3>
+            <p className="text-muted-foreground mb-6">
+              The host has ended this live stream. Thank you for watching!
+            </p>
+            <Button
+              onClick={() => router.push("/dashboard/live-streams")}
+              className="w-full"
+            >
+              Back to Live Streams
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

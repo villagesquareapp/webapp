@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "components/ui/button";
@@ -19,7 +18,8 @@ const StreamSetupModal = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // State for Form Fields
-  const [showAdditionalSettings, setShowAdditionalSettings] = useState<boolean>(false);
+  const [showAdditionalSettings, setShowAdditionalSettings] =
+    useState<boolean>(false);
   const [titleInput, setTitleInput] = useState<string>("");
   const [category, setCategory] = useState<string | null>(null);
   const [privacy, setPrivacy] = useState<string | null>(null);
@@ -54,58 +54,104 @@ const StreamSetupModal = () => {
     return false;
   }, [currentStep, category, privacy]);
 
+  // const handleGoLive = useCallback(async () => {
+  //   if (!category || !privacy) return;
+
+  //   const { startDate, startTime } = getFormattedDateTime();
+  //   setIsLoading(true);
+
+  //   const formData = new FormData();
+  //   formData.append("title", titleInput || "Untitled Livestream");
+  //   formData.append("category_id", "1");
+  //   formData.append("start_date", startDate);
+  //   formData.append("start_time", startTime);
+  //   formData.append("privacy", privacy);
+  //   formData.append("comments_enabled", commentsEnabled ? "true" : "false");
+  //   formData.append("questions_enabled", questionsEnabled ? "true" : "false");
+  //   formData.append("gifting_enabled", giftingEnabled ? "true" : "false");
+
+  //   try {
+  //     const response = await createLivestream(formData);
+
+  //     console.log("Create Livestream Response: ", response);
+
+  //     if (response.status && response.data) {
+  //       toast.success("Livestream created successfully!");
+
+  //       // Close the modal by resetting state
+  //       setCurrentStep("INFO");
+  //       setTitleInput("");
+  //       setCategory(null);
+  //       setPrivacy(null);
+  //       setStreamSource(null);
+  //       setCommentsEnabled(false);
+  //       setQuestionsEnabled(false);
+  //       setGiftingEnabled(false);
+
+  //       // Redirect to the livestream setup page
+  //       router.push(`/dashboard/live-streams/${response.data.uuid}`);
+  //     } else {
+  //       toast.error(response.message || "Failed to create livestream");
+  //     }
+  //   } catch (error) {
+  //     console.error("API error during Go Live:", error);
+  //     toast.error("An error occurred while creating the livestream");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, [
+  //   titleInput,
+  //   category,
+  //   privacy,
+  //   commentsEnabled,
+  //   questionsEnabled,
+  //   giftingEnabled,
+  //   router,
+  // ]);
+
   const handleGoLive = useCallback(async () => {
-    if (!category || !privacy) return;
+  if (!category || !privacy) return;
 
-    const { startDate, startTime } = getFormattedDateTime();
-    setIsLoading(true);
+  const { startDate, startTime } = getFormattedDateTime();
 
-    const formData = new FormData();
-    formData.append("title", titleInput || "Untitled Livestream");
-    formData.append("category_id", "1");
-    formData.append('privacy', privacy);
-    formData.append('start_date', startDate); 
-    formData.append('start_time', startTime);
-    formData.append('comments_enabled', commentsEnabled ? 'true' : 'false');
-    formData.append('questions_enabled', questionsEnabled ? 'true' : 'false');
-    formData.append('gifting_enabled', giftingEnabled ? 'true' : 'false');
+  // ✅ Create the form data object to store
+  const livestreamData = {
+    title: titleInput || "Untitled Livestream",
+    category_id: "1",
+    start_date: startDate,
+    start_time: startTime,
+    privacy: privacy,
+    comments_enabled: commentsEnabled ? "true" : "false",
+    questions_enabled: questionsEnabled ? "true" : "false",
+    gifting_enabled: giftingEnabled ? "true" : "false",
+  };
 
-    try {
-      const response = await createLivestream(formData);
+  // ✅ Store in localStorage
+  localStorage.setItem("pending_livestream", JSON.stringify(livestreamData));
 
-      if (response.status && response.data) {
-        toast.success("Livestream created successfully!");
-        
-        // Close the modal by resetting state
-        setCurrentStep("INFO");
-        setTitleInput("");
-        setCategory(null);
-        setPrivacy(null);
-        setStreamSource(null);
-        setCommentsEnabled(false);
-        setQuestionsEnabled(false);
-        setGiftingEnabled(false);
-        
-        // Redirect to the livestream setup page
-        router.push(`/dashboard/live-streams/${response.data.uuid}`);
-      } else {
-        toast.error(response.message || "Failed to create livestream");
-      }
-    } catch (error) {
-      console.error("API error during Go Live:", error);
-      toast.error("An error occurred while creating the livestream");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    titleInput,
-    category,
-    privacy,
-    commentsEnabled,
-    questionsEnabled,
-    giftingEnabled,
-    router
-  ]);
+  // ✅ Close the modal
+  setCurrentStep("INFO");
+  setTitleInput("");
+  setCategory(null);
+  setPrivacy(null);
+  setStreamSource(null);
+  setCommentsEnabled(false);
+  setQuestionsEnabled(false);
+  setGiftingEnabled(false);
+
+  // ✅ Redirect to setup page (without uuid since we haven't created it yet)
+  router.push("/dashboard/live-streams/setup");
+  
+  toast.success("Ready to go live! Click 'Start Live Stream' when ready.");
+}, [
+  titleInput,
+  category,
+  privacy,
+  commentsEnabled,
+  questionsEnabled,
+  giftingEnabled,
+  router,
+]);
 
   const footerContent = useMemo(() => {
     if (currentStep === "INFO") {
@@ -182,7 +228,7 @@ const StreamSetupModal = () => {
     questionsEnabled,
     setQuestionsEnabled,
     giftingEnabled,
-    setGiftingEnabled
+    setGiftingEnabled,
   ]);
 
   return (
