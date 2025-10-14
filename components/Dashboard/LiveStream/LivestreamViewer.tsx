@@ -89,6 +89,7 @@ const LivestreamViewer = ({
         try {
           const data = JSON.parse(event.data);
           console.log("Received chat message:", data);
+
           switch (data.type) {
             case "comment":
             case "message":
@@ -105,15 +106,16 @@ const LivestreamViewer = ({
                 },
               ]);
               break;
+
             case "viewer_count":
             case "viewers":
               setViewerCount(data.count || data.viewers || 0);
               break;
+
             case "stream_paused":
               console.log("Stream paused by host");
               setIsStreamPaused(true);
               toast.info("Host paused the stream");
-              // Pause ReactPlayer
               setIsPaused(true);
               break;
 
@@ -121,20 +123,34 @@ const LivestreamViewer = ({
               console.log("Stream resumed by host");
               setIsStreamPaused(false);
               toast.success("Stream resumed!");
-              // Resume ReactPlayer
               setIsPaused(false);
               break;
+
             case "stream_duration":
               setStreamDuration(data.duration || 0);
               break;
+
             case "stream_ended":
+              console.log("Stream ended by host:", data);
               setStreamEnded(true);
-              toast.info("Stream has ended");
+              toast.info("The host has ended this live stream", {
+                duration: 5000,
+              });
+
+              // Stop WebRTC
               if (webRTCAdaptorRef.current) {
-                webRTCAdaptorRef.current.stop(streamData?.stream_id);
-                webRTCAdaptorRef.current.closeStream();
+                const streamIdToStop = streamData?.stream_id;
+                console.log("Stopping stream:", streamIdToStop);
+                webRTCAdaptorRef.current.stop(streamIdToStop);
+                if (webRTCAdaptorRef.current.closeStream) {
+                  webRTCAdaptorRef.current.closeStream();
+                }
               }
-              router.push("/dashboard/live-streams");
+
+              // Redirect after a delay
+              setTimeout(() => {
+                router.push("/dashboard/live-streams");
+              }, 3000);
               break;
           }
         } catch (error) {
