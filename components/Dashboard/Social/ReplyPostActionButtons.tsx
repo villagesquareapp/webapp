@@ -7,6 +7,7 @@ import { PiHeartFill } from "react-icons/pi";
 import SocialPostComment from "./SocialPostComment";
 import { useEffect } from "react";
 import { Reply } from "lucide-react";
+import { BiBarChart } from "react-icons/bi";
 
 const ReplyPostActionButtons = ({
   disableCommentButton = false,
@@ -31,11 +32,11 @@ const ReplyPostActionButtons = ({
         <div className="flex flex-row gap-x-1 items-center">
           <PiHeartFill
             onClick={() => likeUnlikePost(reply.uuid)}
-            className={`size-6 cursor-pointer ${
+            className={`size-6 cursor-pointer text-gray-500 ${
               reply.is_liked && "text-red-600"
             }`}
           />
-          <p className="text-sm">{reply?.likes_count}</p>
+          <p className="text-sm text-gray-400">{reply?.likes_count}</p>
         </div>
         <SocialPostComment
           post={reply}
@@ -45,21 +46,21 @@ const ReplyPostActionButtons = ({
           onOpenReplyModal={onOpenReplyModal}
         />
         <div className="flex flex-row gap-x-1 items-center">
-          <IoMdShareAlt className="size-8" />
-          <p className="text-sm">{reply?.shares_count}</p>
+          <IoMdShareAlt className="size-6 cursor-pointer text-gray-500" />
+          <p className="text-sm text-gray-400">{reply?.shares_count}</p>
         </div>
         <div className="flex flex-row gap-x-1 items-center">
           <BsBookmarkDashFill
             onClick={() => saveUnsavePost(reply.uuid)}
             className={`size-5 ${
               reply?.is_saved && "text-primary"
-            } size-5 cursor-pointer`}
+            } size-5 cursor-pointer text-gray-500`}
           />
         </div>
       </div>
       <div className="flex items-center gap-x-1">
-        <p className="text-sm">{reply?.views_count}</p>
-        <CgEyeAlt className="size-6" />
+        <p className="text-sm text-gray-400">{reply?.views_count}</p>
+        <BiBarChart className="size-6 text-gray-500" />
       </div>
     </div>
   );

@@ -149,7 +149,7 @@ export default function VflixCard({
     };
   }, []);
 
-  const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
+  const [clickedMediaIndex, setClickedMediaIndex] = useState<number>(0);
 
   const handlePostClickWithVideoPause = (
     e: React.MouseEvent,

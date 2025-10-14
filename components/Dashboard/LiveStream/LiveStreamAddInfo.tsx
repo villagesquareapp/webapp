@@ -45,10 +45,17 @@ const LiveStreamAddInfo = () => {
     return null;
   };
 
+  const [category, setCategory] = useState<string | null>(null);
+  const [privacy, setPrivacy] = useState<string | null>(null);
+  const [streamSource, setStreamSource] = useState<string | null>(null);
+
+  const isNextDisabled = liveStreamInfo.addingLiveStreamInfo && (!category || !privacy);
+
   const getFooter = () => {
     if (liveStreamInfo.addingLiveStreamInfo)
       return (
         <Button
+        disabled={isNextDisabled}
           onClick={() =>
             setLiveStreamInfo({
               addingLiveStreamInfo: false,
@@ -62,22 +69,22 @@ const LiveStreamAddInfo = () => {
           Next
         </Button>
       );
-    if (liveStreamInfo.addingLiveStreamCamera)
-      return (
-        <Button
-          onClick={() =>
-            setLiveStreamInfo({
-              addingLiveStreamInfo: false,
-              addingLiveStreamCohost: false,
-              addingLiveStreamCamera: false,
-            })
-          }
-          className="text-foreground"
-          size="lg"
-        >
-          Go Live
-        </Button>
-      );
+    // if (liveStreamInfo.addingLiveStreamCamera)
+    //   return (
+    //     <Button
+    //       onClick={() =>
+    //         setLiveStreamInfo({
+    //           addingLiveStreamInfo: false,
+    //           addingLiveStreamCohost: false,
+    //           addingLiveStreamCamera: false,
+    //         })
+    //       }
+    //       className="text-foreground"
+    //       size="lg"
+    //     >
+    //       Go Live
+    //     </Button>
+    //   );
     if (liveStreamInfo.addingLiveStreamCohost)
       return (
         <Button
@@ -127,7 +134,7 @@ const LiveStreamAddInfo = () => {
       title={getTitle()}
       footer={getFooter()}
     >
-      {liveStreamInfo.addingLiveStreamCohost && (
+      {/* {liveStreamInfo.addingLiveStreamCohost && (
         <div className="h-full overflow-y-auto">
           <div className="flex  flex-col gap-y-4 pb-10">
             <div className="w-full relative">
@@ -156,7 +163,7 @@ const LiveStreamAddInfo = () => {
                     name="CN"
                   />
                   <div className="w-[98%] mx-auto flex">
-                    <p className="text-sm truncate">Micheal Jordan sdkjdnsifdsuojf</p>
+                    <p className="text-sm truncate">Michael Jordan sdkjdnsifdsuojf</p>
                   </div>
                   {notInvited && (
                     <Button size={"sm"} className="w-full text-foreground px-5">
@@ -175,7 +182,7 @@ const LiveStreamAddInfo = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {liveStreamInfo.addingLiveStreamCamera && (
         <div className="h-full overflow-auto">
@@ -187,7 +194,7 @@ const LiveStreamAddInfo = () => {
               <Label htmlFor="category" className="font-semibold">
                 Stream Source
               </Label>
-              <Select>
+              <Select onValueChange={(value) => setStreamSource(value)}>
                 <SelectTrigger className="w-full !border-none !outline-none bg-accent !ring-0">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
@@ -195,13 +202,13 @@ const LiveStreamAddInfo = () => {
                   <SelectGroup>
                     <SelectLabel>Select Stream Source</SelectLabel>
                     <SelectItem value="webcam">Webcam</SelectItem>
-                    <SelectItem value="hp_camera">OBS</SelectItem>
-                    <SelectItem value="external_camera">External Camera</SelectItem>
+                    <SelectItem value="obs">OBS</SelectItem>
+                    {/* <SelectItem value="external_camera">External Camera</SelectItem> */}
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
-            {OBSStreamSource && (
+            {streamSource === "obs" && (
               <>
                 <div className="flex flex-col gap-y-2">
                   <Label htmlFor="concern" className="font-semibold ">
@@ -240,13 +247,13 @@ const LiveStreamAddInfo = () => {
                 <Label htmlFor="category" className="font-semibold">
                   Category
                 </Label>
-                <Select>
+                <Select onValueChange={(value) => setCategory(value)}>
                   <SelectTrigger className="w-full !border-none !outline-none bg-accent !ring-0">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>Fruits</SelectLabel>
+                      <SelectLabel>Categories</SelectLabel>
                       <SelectItem value="category_one">Category one</SelectItem>
                       <SelectItem value="category_two">Category two</SelectItem>
                       <SelectItem value="category_three">Category three</SelectItem>
@@ -254,7 +261,7 @@ const LiveStreamAddInfo = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-y-2">
+              {/* <div className="flex flex-col gap-y-2">
                 <Label htmlFor="concern" className="font-semibold ">
                   Add Cohost <span className="text-muted-foreground">{"(Optional)"}</span>
                 </Label>
@@ -281,12 +288,12 @@ const LiveStreamAddInfo = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="flex flex-col gap-y-2">
                 <Label htmlFor="privacy" className="font-semibold">
                   Privacy Settings
                 </Label>
-                <Select>
+                <Select onValueChange={(value) => setPrivacy(value)}>
                   <SelectTrigger className="w-full !border-none !outline-none bg-accent !ring-0">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>

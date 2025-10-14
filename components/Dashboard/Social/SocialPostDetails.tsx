@@ -44,6 +44,8 @@ const SocialPostDetails = ({
       <PostHeader post={post} />
 
       <div className="flex flex-col gap-y-4">
+        {/* Post text with highlighted hashtags */}
+        <PostText text={post?.caption} />
         {!!post?.media?.length && (
           <div className="p-4 w-full">
             <Carousel
@@ -97,8 +99,15 @@ const SocialPostDetails = ({
             </Carousel>
           </div>
         )}
-        {/* Post text with highlighted hashtags */}
-        <PostText text={post?.caption} />
+        <span className="flex flex-row items-center gap-x-1 px-4 -mt-4">
+          {post?.address && (
+            <>
+              <span className="text-xs text-muted-foreground">
+                {post?.address}
+              </span>{" "}
+            </>
+          )}
+        </span>
       </div>
       {/* <SocialPostActionButtons
         setPosts={setPosts}
@@ -107,6 +116,13 @@ const SocialPostDetails = ({
         post={post}
         user={user}
       /> */}
+      <SocialPostActionButtons
+        setPosts={setPosts}
+        likeUnlikePost={likeUnlikePost}
+        saveUnsavePost={saveUnsavePost}
+        post={post}
+        user={user}
+      />
       <Separator className="my-2" />
     </div>
   );

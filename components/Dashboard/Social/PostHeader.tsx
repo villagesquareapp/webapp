@@ -71,7 +71,7 @@ const PostHeader = ({
           <span className="text-xs text-gray-400">
               @{post?.user?.username}
             </span>
-          <span className="flex flex-row items-center gap-x-1">
+          {/* <span className="flex flex-row items-center gap-x-1">
             {post?.address && (
               <>
                 <span className="text-xs text-muted-foreground">
@@ -79,7 +79,7 @@ const PostHeader = ({
                 </span>{" "}
               </>
             )}
-          </span>
+          </span> */}
         </div>
       </div>
       {/* Post Actions */}
