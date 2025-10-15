@@ -46,3 +46,29 @@ export const createVflixComment = async (
   );
   return response;
 };
+
+export const likeOrUnlikeVflixComment = async (
+  postId: string,
+  uuid: string,
+  formData: FormData
+) => {
+  const token = await getToken();
+  const response = await apiPost<ILikeOrUnlikeVflixCommentResponse>(
+    `posts/vflix/${postId}/comments/${uuid}/like`,
+    {
+      body: formData,
+      isFormData: true,
+    },
+    token
+  );
+  return response;
+};
+
+// export const getVflixReplies = async (commentId: string, page: number = 1) => {
+//   const token = await getToken();
+//   const response = await apiGet<IGetVflixRepliesResponse>(
+//     `posts/vflix/comments/${commentId}/replies?page=${page}`,
+//     token
+//   );
+//   return response;
+// };

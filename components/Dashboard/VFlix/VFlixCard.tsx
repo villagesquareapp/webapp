@@ -1,25 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import ReactPlayer from "react-player";
 import {
-  Play,
-  Pause,
-  Heart,
-  MessageCircle,
-  Gift,
-  Share2,
-  VolumeX,
-  Volume2,
   CirclePause,
   CirclePlay,
+  VolumeX,
+  Volume2,
+  MoreVertical,
 } from "lucide-react";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { HiMiniCheckBadge } from "react-icons/hi2";
-import PostText from "../Social/PostText";
 import VflixText from "./VflixText";
-import { PiHeartFill } from "react-icons/pi";
 import VflixActionButtons from "./VflixActionButtons";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
+import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover";
+import { Button } from "components/ui/button";
+import {Separator} from "components/ui/separator";
+import { FaEllipsisH } from "react-icons/fa";
 
 interface Props {
   post: IVflix;
@@ -36,32 +34,42 @@ export default function VflixCard({
   likeUnlikeVflix,
   onCommentClick,
 }: Props) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const playerRef = useRef<ReactPlayer>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [muted, setMuted] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [isBuffering, setIsBuffering] = useState<boolean>(false);
+  const [showControls, setShowControls] = useState<boolean>(false);
+  const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play().catch((error) => {
-        // Handle potential play() promise rejection (e.g., due to user interaction)
-        console.error("Video playback failed:", error);
-      });
-    } else {
-      videoRef.current.pause();
-    }
+    setIsPlaying(!isPlaying);
   };
 
-  // This function now only controls the video, not the state
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !videoRef.current.muted;
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMuted(!muted);
   };
 
-  // Format time as mm:ss
+    const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add save logic here
+    console.log("Save post:", post.uuid);
+  };
+
+  const handleReport = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add report logic here
+    console.log("Report post:", post.uuid);
+  };
+
+  const handleBlock = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add block logic here
+    console.log("Block user:", post.user.uuid);
+  };
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
       .toString()
@@ -72,82 +80,60 @@ export default function VflixCard({
     return `${minutes}:${seconds}`;
   };
 
+  const handleMouseMove = () => {
+    setShowControls(true);
+    
+    if (hideControlsTimeoutRef.current) {
+      clearTimeout(hideControlsTimeoutRef.current);
+    }
+    
+    hideControlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying) {
+        setShowControls(false);
+      }
+    }, 2000);
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying) {
+      setShowControls(false);
+    }
+  };
+
+  const handleProgress = (state: { played: number; playedSeconds: number }) => {
+    setCurrentTime(state.playedSeconds);
+  };
+
+  const handleDuration = (duration: number) => {
+    setDuration(duration);
+  };
+
+  const handleReady = () => {
+    setIsBuffering(false);
+  };
+
+  const handleBuffer = () => {
+    setIsBuffering(true);
+  };
+
+  const handleBufferEnd = () => {
+    setIsBuffering(false);
+  };
+
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    const handleVolumeChange = () => setMuted(video.muted);
-    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration);
-      video.play().catch((error) => {
-        console.log("Autoplay was prevented:", error);
-      });
-    };
-
-    const handleWaiting = () => setIsBuffering(true);
-    const handlePlaying = () => setIsBuffering(false);
-
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("volumechange", handleVolumeChange);
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("waiting", handleWaiting);
-    video.addEventListener("playing", handlePlaying);
-
     return () => {
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-      video.removeEventListener("volumechange", handleVolumeChange);
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("waiting", handleWaiting);
-      video.removeEventListener("playing", handlePlaying);
-      video.pause();
+      if (hideControlsTimeoutRef.current) {
+        clearTimeout(hideControlsTimeoutRef.current);
+      }
     };
   }, []);
 
-  // const toggleMute = () => {
-  //   if (!videoRef.current) return;
-  //   videoRef.current.muted = !muted; // update actual video element
-  //   setMuted(!muted); // update state for UI
-  // };
-
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    const handleVolumeChange = () => setMuted(video.muted);
-    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
-    const handleLoadedMetadata = () => setDuration(video.duration);
-
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("volumechange", handleVolumeChange);
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-
-    video.play().catch((error) => {
-      // Autoplay may be blocked by the browser. The user can manually play.
-      console.log("Autoplay was prevented:", error);
-      setIsPlaying(false);
-    });
-
-    // Clean up event listeners on unmount
-    return () => {
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-      video.removeEventListener("volumechange", handleVolumeChange);
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.pause(); // Pause the video when the component is removed
-    };
-  }, []);
+    // Show controls when paused
+    if (!isPlaying) {
+      setShowControls(true);
+    }
+  }, [isPlaying]);
 
   const [clickedMediaIndex, setClickedMediaIndex] = useState<number>(0);
 
@@ -157,61 +143,124 @@ export default function VflixCard({
   ) => {
     e.stopPropagation();
 
-    // If a video is playing, pause it before opening the details
     if (isPlaying) {
-      // Small delay to ensure we don't create race conditions
       setTimeout(() => {
         setIsPlaying(false);
-        // setCurrentVideoPlaying("");
-        // Open details after ensuring video is paused
         setClickedMediaIndex(mediaIndex ?? 0);
       }, 150);
     } else {
-      // No video playing, just open details immediately
       setClickedMediaIndex(mediaIndex ?? 0);
     }
   };
 
+  const videoUrl = post.media.transcoded_media_url || post.media.media_url;
+
   return (
-    <div className="relative w-full h-full bg-black rounded-xl overflow-hidden">
-      {/* Video @Note: still gonna change it to ReactPlayer, to support HLS (transcoded media) */}
-      <video
-        ref={videoRef}
-        src={post.media.media_url}
-        poster={post.media.media_thumbnail}
-        className="w-full h-full object-contain"
+    <div 
+      className="relative w-full h-full bg-black rounded-xl overflow-hidden"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <ReactPlayer
+        ref={playerRef}
+        url={videoUrl}
+        playing={isPlaying}
+        muted={muted}
         loop
-        autoPlay
-        playsInline
+        width="100%"
+        height="100%"
+        onProgress={handleProgress}
+        onDuration={handleDuration}
+        onReady={handleReady}
+        onBuffer={handleBuffer}
+        onBufferEnd={handleBufferEnd}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+        config={{
+          file: {
+            attributes: {
+              poster: post.media.media_thumbnail,
+              playsInline: true,
+            },
+            hlsOptions: {
+              forceHLS: true,
+              debug: false,
+              // xhrSetup: function(xhr: XMLHttpRequest, url: string) {
+              //   // You can add custom headers here if needed
+              // }
+            }
+          }
+        }}
       />
 
       {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-4 right-4 z-30">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-10 w-10 p-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FaEllipsisH className="size-5 text-white" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="p-0 w-[200px]"
+            side="bottom"
+            align="end"
+            sideOffset={8}
+          >
+            <div
+              className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
+              onClick={handleSave}
+            >
+              Save
+            </div>
+            <Separator className="bg-gray-700" />
+            <div
+              className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
+              onClick={handleReport}
+            >
+              Report
+            </div>
+            <Separator className="bg-gray-700" />
+            <div
+              className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
+              onClick={handleBlock}
+            >
+              Block
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
 
       {isBuffering && (
         <div className="absolute inset-0 flex items-center justify-center z-30">
           <LoadingSpinner />
         </div>
       )}
-      {/* Controls */}
 
+      {/* Clickable area for play/pause - excludes bottom controls */}
       <button
         onClick={togglePlay}
-        className="absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-200"
       >
-        {isPlaying ? (
-          <CirclePause className="w-8 h-8 text-white/80" />
-        ) : (
-          <CirclePlay className="w-8 h-8 text-white/80" />
+        {(showControls || !isPlaying) && !isBuffering && (
+          <>
+            {isPlaying ? (
+              <CirclePause className="w-8 h-8 text-white/80 drop-shadow-lg" />
+            ) : (
+              <CirclePlay className="w-8 h-8 text-white/80 drop-shadow-lg" />
+            )}
+          </>
         )}
-        {/* {!isPlaying && <CirclePlay className="w-8 h-8 text-white/80" />} */}
       </button>
 
       {/* Bottom info */}
-
-      <div className="absolute bottom-4 left-4 right-4 text-white">
+      <div className="absolute bottom-4 left-4 right-4 text-white z-20 pointer-events-auto">
         {/* User row */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pointer-events-auto">
           <CustomAvatar
             src={post?.user?.profile_picture || ""}
             name={post?.user?.name || ""}
@@ -224,10 +273,9 @@ export default function VflixCard({
             {!!post?.user?.verified_status && (
               <HiMiniCheckBadge className="size-5 text-green-600" />
             )}
-          </span>{" "}
-          {/* Only show Follow button if not the owner */}
+          </span>
           {post?.user.uuid !== user?.uuid && (
-            <button className="ml-2 px-3 py-1 rounded bg-[#0D1E34] text-xs font-medium">
+            <button className="ml-2 px-3 py-1 rounded bg-[#0D1E34] text-xs font-medium hover:bg-[#0D1E34]/80">
               Follow
             </button>
           )}
@@ -236,11 +284,6 @@ export default function VflixCard({
         {/* Date */}
         {post?.created_at && (
           <p className="text-[10px] py-1 text-gray-300 mt-1">
-            {/* {new Date(post.created_at).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })} */}
             {post.formatted_date}
           </p>
         )}
@@ -248,22 +291,23 @@ export default function VflixCard({
         {/* Caption */}
         <div
           onClick={(e) => handlePostClickWithVideoPause(e)}
-          className="cursor-pointer"
+          className="cursor-pointer pointer-events-auto"
         >
           {post?.caption && <VflixText text={post.caption} />}
         </div>
 
         {/* Actions row */}
-
-        <VflixActionButtons
-          setVideos={setVideos}
-          likeUnlikeVflix={likeUnlikeVflix}
-          post={post}
-          onCommentClick={onCommentClick}
-        />
+        <div className="pointer-events-auto">
+          <VflixActionButtons
+            setVideos={setVideos}
+            likeUnlikeVflix={likeUnlikeVflix}
+            post={post}
+            onCommentClick={onCommentClick}
+          />
+        </div>
 
         {/* Progress + volume + timer */}
-        <div className="flex items-center gap-2 text-xs text-gray-300">
+        <div className="flex items-center gap-2 text-xs text-gray-300 pointer-events-auto">
           <div className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
             <div
               className="h-full bg-white"
@@ -273,7 +317,7 @@ export default function VflixCard({
             />
           </div>
           <div className="flex flex-col items-center gap-1">
-            <button onClick={toggleMute}>
+            <button onClick={toggleMute} className="hover:scale-110 transition-transform pointer-events-auto">
               {muted ? (
                 <VolumeX className="w-4 h-4" />
               ) : (
@@ -289,3 +333,5 @@ export default function VflixCard({
     </div>
   );
 }
+
+// postId/comments/uuid/like
