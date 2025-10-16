@@ -1,8 +1,8 @@
 // components/Dashboard/VFlix/VflixComments.tsx
 
-import { getVflixComments, createVflixComment } from "api/vflix";
+import { getVflixComments, createVflixComment, likeOrUnlikeVflixComment } from "api/vflix";
 import CustomAvatar from "components/ui/custom/custom-avatar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IoClose, IoChatbubbleEllipses } from "react-icons/io5";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import { HiMiniCheckBadge } from "react-icons/hi2";
@@ -85,6 +85,66 @@ export default function VflixComments({
     }
   };
 
+  const likeUnlikeComment = useCallback(async (commentId: string) => {
+    if (!postId) return;
+
+    // Optimistically update the UI
+    setComments((prev) =>
+      prev.map((comment) =>
+        comment.uuid === commentId
+          ? {
+              ...comment,
+              likes_count: comment?.is_liked
+                ? (Number(comment.likes_count) - 1).toString()
+                : (Number(comment.likes_count) + 1).toString(),
+              is_liked: !comment.is_liked,
+            }
+          : comment
+      )
+    );
+
+    try {
+      // Make API call
+      const formData = new FormData();
+      const result = await likeOrUnlikeVflixComment(postId, commentId, formData);
+
+      if (!result?.status) {
+        // Revert on failure
+        setComments((prev) =>
+          prev.map((comment) =>
+            comment.uuid === commentId
+              ? {
+                  ...comment,
+                  likes_count: comment.is_liked
+                    ? (Number(comment.likes_count) + 1).toString()
+                    : (Number(comment.likes_count) - 1).toString(),
+                  is_liked: !comment.is_liked,
+                }
+              : comment
+          )
+        );
+        toast.error(result?.message || "Failed to update like");
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.uuid === commentId
+            ? {
+                ...comment,
+                likes_count: comment.is_liked
+                  ? (Number(comment.likes_count) + 1).toString()
+                  : (Number(comment.likes_count) - 1).toString(),
+                is_liked: !comment.is_liked,
+              }
+            : comment
+        )
+      );
+      console.error("Error liking comment:", error);
+      toast.error("An error occurred while liking the comment.");
+    }
+  }, [postId]);
+
   return (
     <div
       className={`fixed inset-0 z-50 transition-all duration-300 ${
@@ -145,22 +205,25 @@ export default function VflixComments({
                       <p className="text-sm text-gray-300 py-1">
                         {comment.comment}
                       </p>
-                      <p className="text-gray-400 text-sm shrink-0">Report</p>
+                      <p className="text-gray-400 text-sm shrink-0 cursor-pointer hover:text-gray-300">
+                        Report
+                      </p>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-row gap-x-7 items-center pl-10">
                   <div className="flex flex-row gap-x-1 items-center">
                     <PiHeartFill
-                      // onClick={() => likeUnlikePost(post.uuid)}
-                      className={`size-4 cursor-pointer`}
+                      onClick={() => likeUnlikeComment(comment.uuid)}
+                      className={`size-4 cursor-pointer transition-colors ${
+                        comment.is_liked ? "text-red-500" : "text-gray-400"
+                      } hover:text-red-500`}
                     />
                     <p className="text-sm">{comment?.likes_count}</p>
                   </div>
                   <div className="flex flex-row gap-x-1 items-center">
                     <IoChatbubbleEllipses
-                      // onClick={() => likeUnlikePost(post.uuid)}
-                      className={`size-4 cursor-pointer`}
+                      className={`size-4 cursor-pointer text-gray-400 hover:text-blue-500 transition-colors`}
                     />
                     <p className="text-sm">{comment.reply_count}</p>
                   </div>
@@ -215,4 +278,4 @@ export default function VflixComments({
       </div>
     </div>
   );
-}
+};

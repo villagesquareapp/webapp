@@ -32,7 +32,8 @@ import {
   saveStreamToPosts,
 } from "api/livestreams";
 import LiveStreamDialog from "./LiveStreamDialog";
-import { init } from "next/dist/compiled/webpack/webpack";
+import LiveStreamInviteFriends from "./LiveStreamInviteFriends";
+import LiveStreamGift from "./LiveStreamGift";
 
 interface StreamHostSetupProps {
   streamData: any;
@@ -67,6 +68,8 @@ const StreamHostSetup = ({
   const [showSummaryDialog, setShowSummaryDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showInviteFriendsDialog, setShowInviteFriendsDialog] = useState(false);
+  const [showGiftDialog, setShowGiftDialog] = useState(false);
   const [streamSummary, setStreamSummary] = useState<IEndLivestream | null>(
     null
   );
@@ -273,7 +276,6 @@ const StreamHostSetup = ({
 
         if (info === "initialized") {
           console.log("Ant Media WebRTC Adaptor initialized");
-          // toast.success("Streaming initialized");
 
           // Join room and publish
           console.log(`Joining room: ${roomId} with stream: ${streamId}`);
@@ -409,31 +411,37 @@ const StreamHostSetup = ({
         websocketRef.current.close();
       }
     };
-  }, []);
+  }, [isHost]);
 
-  useEffect(() => {  
-  if (
-    streamData?.stream_id &&
-    streamData?.livestream_room_id &&
-    streamState === "setup" &&
-    localStream &&
-    isHost
-  ) {
-    console.log("🚀 Auto-starting stream on /:uuid page");
-    console.log("Stream ID:", streamData.stream_id);
-    console.log("Room ID:", streamData.livestream_room_id);
-    
-    // Start the initialization
-    try {
-      initializeWebSocket();
-      initializeAntMediaAdaptor();
-      // Don't set streamState here - let Ant Media callback do it when "publish_started"
-    } catch (error) {
-      console.error("Error auto-starting stream:", error);
-      toast.error("Failed to start stream automatically");
+  useEffect(() => {
+    if (
+      streamData?.stream_id &&
+      streamData?.livestream_room_id &&
+      streamState === "setup" &&
+      localStream &&
+      isHost
+    ) {
+      console.log("🚀 Auto-starting stream on /:uuid page");
+      console.log("Stream ID:", streamData.stream_id);
+      console.log("Room ID:", streamData.livestream_room_id);
+
+      // Start the initialization
+      try {
+        initializeWebSocket();
+        initializeAntMediaAdaptor();
+        // Don't set streamState here - let Ant Media callback do it when "publish_started"
+      } catch (error) {
+        console.error("Error auto-starting stream:", error);
+        toast.error("Failed to start stream automatically");
+      }
     }
-  }
-}, [streamData?.stream_id, streamData?.livestream_room_id, streamState, localStream, isHost]);
+  }, [
+    streamData?.stream_id,
+    streamData?.livestream_room_id,
+    streamState,
+    localStream,
+    isHost,
+  ]);
 
   // Stream duration timer
   useEffect(() => {
@@ -566,23 +574,17 @@ const StreamHostSetup = ({
     const newCameraState = !isCameraActive;
     setIsCameraActive(newCameraState);
 
-    // Toggle in Ant Media stream
-    if (webRTCAdaptorRef.current) {
-      if (newCameraState) {
-        // Turn camera ON
-        webRTCAdaptorRef.current.turnOnLocalCamera(streamData?.stream_id ?? "");
-      } else {
-        // Turn camera OFF
-        webRTCAdaptorRef.current.turnOffLocalCamera(
-          streamData?.stream_id ?? ""
-        );
-      }
-    }
-
-    // Also toggle local preview
+    // Toggle the video track
     const videoTrack = localStream.getVideoTracks()[0];
     if (videoTrack) {
       videoTrack.enabled = newCameraState;
+    }
+
+    // If turning off, also clear the video display
+    if (!newCameraState && videoRef.current) {
+      videoRef.current.style.display = "none";
+    } else if (newCameraState && videoRef.current) {
+      videoRef.current.style.display = "block";
     }
 
     // Notify viewers
@@ -708,7 +710,7 @@ const StreamHostSetup = ({
           await new Promise((resolve) => setTimeout(resolve, 100));
 
           toast.success("Live stream started!");
-          router.push(`/dashboard/live-streams/${response.data.uuid}`)
+          router.push(`/dashboard/live-streams/${response.data.uuid}`);
           // ✅ Initialize WebSocket
           initializeWebSocket();
 
@@ -818,82 +820,91 @@ const StreamHostSetup = ({
   // };
 
   const handleConfirmEndSession = async () => {
-    setShowEndDialog(false);
-    setIsEndingStream(true);
+  setShowEndDialog(false);
+  setIsEndingStream(true);
 
-    try {
-      const streamUuid = streamData?.uuid;
-      const streamId =
-        streamData?.livestream_room_stream_id || streamData?.stream_id;
+  try {
+    const streamUuid = streamData?.uuid;
+    const streamId =
+      streamData?.livestream_room_stream_id || streamData?.stream_id;
 
-      // FIRST: Notify viewers via WebSocket BEFORE doing anything else
-      if (
-        websocketRef.current &&
-        websocketRef.current.readyState === WebSocket.OPEN
-      ) {
-        console.log("Sending stream_ended message to viewers");
-        websocketRef.current.send(
-          JSON.stringify({
-            type: "stream_ended",
-            stream_uuid: streamUuid,
-            stream_id: streamId,
-            message: "The host has ended this live stream",
-            ended_at: new Date().toISOString(),
-          })
-        );
+    // FIRST: Notify viewers via WebSocket
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      console.log("Sending stream_ended message to viewers");
+      websocketRef.current.send(
+        JSON.stringify({
+          type: "stream_ended",
+          stream_uuid: streamUuid,
+          stream_id: streamId,
+          message: "The host has ended this live stream",
+          ended_at: new Date().toISOString(),
+        })
+      );
 
-        // ✅ Wait to ensure message is sent before closing
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
 
-      // Now end the stream via API
-      const response = await endLivestream(streamUuid);
+    // Now end the stream via API
+    const response = await endLivestream(streamUuid);
 
-      if (response.status && response.data) {
-        console.log("Stream ended successfully:", response.data);
-        setStreamSummary(response.data);
+    if (response.status && response.data) {
+      console.log("Stream ended successfully:", response.data);
+      setStreamSummary(response.data);
 
-        // Stop Ant Media publishing
-        if (webRTCAdaptorRef.current) {
+      // ✅ STOP ANT MEDIA FIRST
+      if (webRTCAdaptorRef.current) {
+        try {
           webRTCAdaptorRef.current.stop(streamId);
           webRTCAdaptorRef.current.closeWebSocket();
+        } catch (error) {
+          console.error("Error stopping Ant Media:", error);
         }
-
-        // Stop local media
-        if (localStream) {
-          localStream.getTracks().forEach((track) => {
-            track.stop();
-          });
-          if (videoRef.current) {
-            videoRef.current.srcObject = null;
-          }
-          setLocalStream(null);
-        }
-
-        setStreamState("setup");
-        setStreamDuration(0);
-
-        // Clear localStorage
-        localStorage.removeItem("active_livestream");
-
-        // ✅ Close WebSocket AFTER everything is done
-        if (websocketRef.current) {
-          websocketRef.current.close();
-          websocketRef.current = null;
-        }
-
-        // Show summary dialog
-        setShowSummaryDialog(true);
-      } else {
-        toast.error(response.message || "Failed to end stream");
       }
-    } catch (error) {
-      console.error("Error ending stream:", error);
-      toast.error("Failed to end stream");
-    } finally {
-      setIsEndingStream(false);
+
+      // ✅ STOP LOCAL MEDIA STREAM
+      if (localStream) {
+        localStream.getTracks().forEach((track) => {
+          track.stop(); // Stop the actual track
+          console.log(`Stopped ${track.kind} track`);
+        });
+        setLocalStream(null);
+      }
+
+      // ✅ CLEAR VIDEO ELEMENT
+      if (videoRef.current) {
+        videoRef.current.srcObject = null; // Remove stream reference
+        videoRef.current.style.display = "none"; // Hide video
+      }
+
+      setStreamState("setup");
+      setStreamDuration(0);
+      setIsCameraActive(true); // Reset for next stream
+      setIsMicActive(true); // Reset for next stream
+
+      // Clear localStorage
+      localStorage.removeItem("active_livestream");
+
+      // Close WebSocket
+      if (websocketRef.current) {
+        websocketRef.current.close();
+        websocketRef.current = null;
+      }
+
+      // Show summary dialog
+      setShowSummaryDialog(true);
+    } else {
+      toast.error(response.message || "Failed to end stream");
     }
-  };
+  } catch (error) {
+    console.error("Error ending stream:", error);
+    toast.error("Failed to end stream");
+  } finally {
+    setIsEndingStream(false);
+  }
+};
 
   // Handle discard button click
   const handleDiscardClick = () => {
@@ -1160,7 +1171,10 @@ const StreamHostSetup = ({
                   side="top"
                   align="end"
                 >
-                  <div className="p-4 cursor-pointer hover:bg-accent">
+                  <div
+                    className="p-4 cursor-pointer hover:bg-accent"
+                    onClick={() => setShowInviteFriendsDialog(true)}
+                  >
                     Add Cohost
                   </div>
                   <Separator />
@@ -1289,6 +1303,7 @@ const StreamHostSetup = ({
                           size="sm"
                           variant="ghost"
                           className="p-2 w-8 h-8"
+                          onClick={() => setShowInviteFriendsDialog(true)}
                         >
                           <FaUserPlus className="size-4" />
                         </Button>
@@ -1297,6 +1312,7 @@ const StreamHostSetup = ({
                           size="sm"
                           variant="ghost"
                           className="p-2 w-8 h-8"
+                          onClick={() => setShowGiftDialog(true)}
                         >
                           <BiSolidGift className="size-4" />
                         </Button>
@@ -1524,6 +1540,22 @@ const StreamHostSetup = ({
             </p>
           </div>
         </LiveStreamDialog>
+      )}
+      {/* Invite Friends Dialog */}
+      {showInviteFriendsDialog && (
+        <LiveStreamInviteFriends
+          open={showInviteFriendsDialog}
+          onOpenChange={setShowInviteFriendsDialog}
+          streamData={streamData}
+        />
+      )}
+      {/* Gift Dialog */}
+      {showGiftDialog && (
+        <LiveStreamGift
+          open={showGiftDialog}
+          onOpenChange={setShowGiftDialog}
+          streamData={streamData}
+        />
       )}
     </div>
   );

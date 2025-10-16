@@ -14,7 +14,14 @@ interface Friend {
   isInvited: boolean;
 }
 
-const LiveStreamInviteFriends = () => {
+interface LiveStreamInviteFriendsProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  streamData?: any;
+  onClose?: () => void;
+}
+
+const LiveStreamInviteFriends = ({ open, onOpenChange, streamData, onClose }: LiveStreamInviteFriendsProps) => {
   const [searchValue, setSearchValue] = useState("");
   const [questionSent, setQuestionSent] = useState(false);
   const [showQuestionAndAnswer, setShowQuestionAndAnswer] = useState(false);
@@ -22,7 +29,7 @@ const LiveStreamInviteFriends = () => {
     Array.from({ length: 30 }).map((_, index) => ({
       id: index,
       name: "Micheal Jordan",
-      avatar: "/images/beautiful-image.webp",
+      avatar: "/images/vs-logo.webp",
       isInvited: false,
     }))
   );
@@ -47,6 +54,15 @@ const LiveStreamInviteFriends = () => {
     friend.name.toLowerCase().includes(searchValue.toLowerCase())
   );
 
+  const handleClose = () => {
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <LiveStreamDialog
       contentClassName="w-[650px] h-fit !max-h-[650px] py-6"
@@ -56,6 +72,8 @@ const LiveStreamInviteFriends = () => {
         </div>
       }
       title={"Invite Friends"}
+      open={open}
+      onOpenChange={onOpenChange || handleClose}
     >
       <div className="h-full flex flex-col">
         <div className="w-full relative mb-4">
