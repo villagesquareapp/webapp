@@ -6,7 +6,14 @@ import VSCoin from "components/ui/custom/vs-coin";
 import { IoIosArrowForward } from "react-icons/io";
 import { useState } from "react";
 
-const LiveStreamGift = () => {
+interface LiveStreamGiftProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  streamData?: any;
+  onClose?: () => void;
+}
+
+const LiveStreamGift = ({ open, onOpenChange, streamData, onClose }: LiveStreamGiftProps) => {
   const [sendingGift, setSendingGift] = useState(false);
   const [giftSent, setGiftSent] = useState(false);
   const [balanceInsufficient, setBalanceInsufficient] = useState(false);
@@ -74,6 +81,15 @@ const LiveStreamGift = () => {
     setRecharged(false);
   };
 
+  const handleClose = () => {
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <LiveStreamDialog
       removeFooterBorder={sendingGift ? true : false}
@@ -90,6 +106,8 @@ const LiveStreamGift = () => {
           <BiSolidGift className="size-5 flex mx-auto" />
         </div>
       }
+      open={open}
+      onOpenChange={onOpenChange || handleClose}
       title={getTitle()}
       leftAndRightButton={
         balanceInsufficient ? (

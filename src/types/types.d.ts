@@ -513,6 +513,9 @@ interface ILikeOrUnlikePostResponse {
 interface ILikeOrUnlikeVflixResponse {
   is_liked: boolean;
 }
+interface ILikeOrUnlikeVflixCommentResponse {
+  is_liked: boolean;
+}
 
 interface ISaveOrUnsavePostResponse {
   is_saved: boolean;

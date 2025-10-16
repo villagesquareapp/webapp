@@ -18,7 +18,7 @@ const VFlixPage = ({user}: {user: IUser}) => {
               : "text-gray-400"
           }`}
         >
-          For You
+          Explore
         </button>
         <button
           onClick={() => setActiveTab("following")}
@@ -28,7 +28,7 @@ const VFlixPage = ({user}: {user: IUser}) => {
               : "text-gray-400"
           }`}
         >
-          Following
+          Connections
         </button>
       </div>
 

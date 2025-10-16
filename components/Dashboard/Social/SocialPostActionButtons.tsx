@@ -31,7 +31,7 @@ const SocialPostActionButtons = ({
         <div className="flex flex-row gap-x-1 items-center">
           <PiHeartFill
             onClick={() => likeUnlikePost(post.uuid)}
-            className={`size-6 cursor-pointer text-gray-500 ${post.is_liked && "text-red-600"}`}
+            className={`hover:scale-125 transition-transform pointer-events-auto size-6 cursor-pointer text-gray-500 ${post.is_liked && "text-red-600"}`}
           />
           <p className="text-sm text-gray-400">{post?.likes_count}</p>
         </div>
