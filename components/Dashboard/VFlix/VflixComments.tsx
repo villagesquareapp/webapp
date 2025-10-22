@@ -88,7 +88,6 @@ export default function VflixComments({
   const likeUnlikeComment = useCallback(async (commentId: string) => {
     if (!postId) return;
 
-    // Optimistically update the UI
     setComments((prev) =>
       prev.map((comment) =>
         comment.uuid === commentId
@@ -104,12 +103,10 @@ export default function VflixComments({
     );
 
     try {
-      // Make API call
       const formData = new FormData();
       const result = await likeOrUnlikeVflixComment(postId, commentId, formData);
 
       if (!result?.status) {
-        // Revert on failure
         setComments((prev) =>
           prev.map((comment) =>
             comment.uuid === commentId
@@ -126,7 +123,6 @@ export default function VflixComments({
         toast.error(result?.message || "Failed to update like");
       }
     } catch (error) {
-      // Revert optimistic update on error
       setComments((prev) =>
         prev.map((comment) =>
           comment.uuid === commentId
@@ -179,7 +175,7 @@ export default function VflixComments({
             comments.map((comment) => (
               <div
                 key={comment.uuid}
-                className="flex flex-col gap-2 border-b border-gray-700 pb-4 mb-4"
+                className="flex flex-col gap-2 border-b border-gray-800 pb-4 mb-4"
               >
                 <div className="flex items-start gap-2">
                   <CustomAvatar
@@ -259,7 +255,7 @@ export default function VflixComments({
               onChange={(e) => setCommentContent(e.target.value)}
               placeholder="Add a comment..."
               disabled={isSubmitting}
-              className="flex-1 resize-none h-12 p-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 outline-none"
+              className="flex-1 resize-none h-10 p-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 outline-none"
             />
             <div
               className={`p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex cursor-pointer ${

@@ -48,30 +48,30 @@ const items = [
     icon: <HiOutlineVideoCamera className="!size-[28px] -ml-0.5" />,
     activeIcon: <VSCameraFill className="fill-black !size-[26px] -ml-0.5" />,
   },
-  {
-    title: "Messages",
-    url: "/dashboard/messages",
-    icon: <MdMailOutline className="!size-6 -ml-0.5" />,
-    activeIcon: <VSMailFill className="fill-black !size-6 -ml-0.5" />,
-  },
-  {
-    title: "Wallet",
-    url: "/dashboard/wallet",
-    icon: <VSWalletOutline className="!size-6 mt-2" />,
-    activeIcon: <VSWalletFill className="fill-black !size-6 mt-1" />,
-  },
-  {
-    title: "Profile",
-    url: "/dashboard/profile",
-    icon: <IoPersonOutline className="!size-6 -ml-0.5" />,
-    activeIcon: <IoPersonSharp className="!fill-black !size-6 -ml-0.5" />,
-  },
-  {
-    title: "More Pages",
-    url: "#",
-    icon: <VSMore className="!size-[28px] -mb-2 -ml-0.5" />,
-    activeIcon: <VSMore className="!fill-black !size-6 -ml-0.5" />,
-  },
+  // {
+  //   title: "Messages",
+  //   url: "/dashboard/messages",
+  //   icon: <MdMailOutline className="!size-6 -ml-0.5" />,
+  //   activeIcon: <VSMailFill className="fill-black !size-6 -ml-0.5" />,
+  // },
+  // {
+  //   title: "Wallet",
+  //   url: "/dashboard/wallet",
+  //   icon: <VSWalletOutline className="!size-6 mt-2" />,
+  //   activeIcon: <VSWalletFill className="fill-black !size-6 mt-1" />,
+  // },
+  // {
+  //   title: "Profile",
+  //   url: "/dashboard/profile",
+  //   icon: <IoPersonOutline className="!size-6 -ml-0.5" />,
+  //   activeIcon: <IoPersonSharp className="!fill-black !size-6 -ml-0.5" />,
+  // },
+  // {
+  //   title: "More Pages",
+  //   url: "#",
+  //   icon: <VSMore className="!size-[28px] -mb-2 -ml-0.5" />,
+  //   activeIcon: <VSMore className="!fill-black !size-6 -ml-0.5" />,
+  // },
 ];
 
 const morePageItems = [

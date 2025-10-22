@@ -171,6 +171,7 @@ const LiveStreamDetailPage = async ({
 }) => {
   const session = await getServerSession(authOptions);
   const user = session?.user;
+  console.log(user);
   
   if (!user) {
     // Redirect to login or show error
@@ -260,6 +261,7 @@ const LiveStreamDetailPage = async ({
         streamData={streamData}
         featuredLivestreams={featuredLivestreams}
         isHost={true}
+        user={user}
       />
     );
   } else {
@@ -267,7 +269,7 @@ const LiveStreamDetailPage = async ({
       <LivestreamViewer
         streamData={streamData}
         featuredLivestreams={featuredLivestreams}
-        currentUserId={user.uuid || user.email}
+        user={user}
       />
     );
   }

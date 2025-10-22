@@ -24,7 +24,7 @@ const NewSocialField = ({
             className="size-12 border-foreground border"
           />
         )}
-        <p className="text-sm text-muted-foreground">Write something here...</p>
+        <p className="text-sm text-muted-foreground">What's on your mind?</p>
       </div>
       <Separator />
       <div className="py-3 px-6 flex gap-x-5 items-center">

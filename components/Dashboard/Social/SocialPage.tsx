@@ -35,7 +35,7 @@ const SocialPage = ({ user }: { user: IUser }) => {
       {showHome && !showAccount && !showPostsAndHashtags && (
         <SocialMainWrapper>
           <div className="flex flex-col gap-y-4 w-full">
-            <MessageShortcut user={user} />
+            {/* <MessageShortcut user={user} /> */}
             {/* <SocialFlash /> */}
             <SocialPost user={user} />
           </div>

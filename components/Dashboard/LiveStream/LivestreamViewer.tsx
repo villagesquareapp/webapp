@@ -23,17 +23,18 @@ import SponsorCard from "../Reusable/SponsorCard";
 import { toast } from "sonner";
 import { CgEye } from "react-icons/cg";
 import { WebRTCAdaptor } from "@antmedia/webrtc_adaptor";
+import FloatingHeart from "./FloatingHeart";
 
 interface LivestreamViewerProps {
   streamData: any;
   featuredLivestreams: IFeaturedLivestream[];
-  currentUserId?: string;
+  user: IUser;
 }
 
 const LivestreamViewer = ({
   streamData,
   featuredLivestreams,
-  currentUserId,
+  user,
 }: LivestreamViewerProps) => {
   const router = useRouter();
   const websocketRef = useRef<WebSocket | null>(null);
@@ -58,73 +59,120 @@ const LivestreamViewer = ({
       timestamp: number;
     }>
   >([]);
+  const [hearts, setHearts] = useState<Array<{ id: string | number }>>([]);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLikeAnimating, setIsLikeAnimating] = useState(false);
 
   const hlsUrl = streamData?.livestream_room_stream_url;
+
+  const removeHeart = (id: string | number) => {
+    setHearts((prev) => prev.filter((heart) => heart.id !== id));
+  };
 
   /* Initialize chat WebSocket */
   const initializeChatWebSocket = () => {
     try {
-      const streamUuid = streamData?.uuid;
-      const wsUrl = `wss://origin-streaming-server.villagesquare.io/Livestream/websocket?stream=${streamUuid}`;
+      const wsUrl = `wss://${user.websocket_url}/?token=${user.uuid}&deviceId=null`;
       console.log("Viewer connecting to chat:", wsUrl);
 
       websocketRef.current = new WebSocket(wsUrl);
 
       websocketRef.current.onopen = () => {
-        console.log("✅ Viewer chat connected");
+        console.log("Viewer chat connected");
 
-        if (websocketRef.current?.readyState === WebSocket.OPEN) {
-          websocketRef.current.send(
-            JSON.stringify({
-              type: "viewer_joined",
-              stream_id: streamUuid,
-              user_id: currentUserId || "viewer_" + Date.now(),
-              role: "viewer",
-            })
-          );
-        }
+        // Subscribe as viewer
+        const subscribeMessage = {
+          action: "subscribe",
+          channel: "livestream_room",
+          channelId: streamData?.livestream_room_id,
+          userId: user.uuid,
+          metadata: {
+            role: "viewer",
+            user_type: "user",
+            name: user.name || "Viewer",
+            profile_picture: user.profile_picture || "/images/vs-logo.webp",
+          },
+        };
+        console.log("Sending viewer subscribe:", subscribeMessage);
+        websocketRef.current?.send(JSON.stringify(subscribeMessage));
+
+        setTimeout(() => {
+          if (
+            websocketRef.current &&
+            websocketRef.current.readyState === WebSocket.OPEN
+          ) {
+            const viewMessage = {
+              action: "publish",
+              event: "livestream-views",
+              channelId: streamData?.livestream_room_id,
+              uuid: crypto.randomUUID(),
+              userId: user.uuid,
+            };
+
+            console.log("Publishing view event:", viewMessage);
+            websocketRef.current.send(JSON.stringify(viewMessage));
+          }
+        }, 500);
       };
 
       websocketRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("Received chat message:", data);
+          console.log("Viewer received message:", data);
 
-          switch (data.type) {
-            case "comment":
-            case "message":
+          switch (data.event) {
+            case "livestream-comments":
               setComments((prev) => [
                 ...prev,
                 {
                   id: Date.now(),
                   user: {
-                    name: data.user?.name || data.username || "Anonymous",
-                    avatar: data.user?.avatar || "/images/vs-logo.webp",
+                    name: data.user?.name,
+                    avatar:
+                      data.user?.profile_picture || "/images/vs-logo.webp",
                   },
-                  message: data.message || data.text,
+                  message: data.message,
                   timestamp: Date.now(),
                 },
               ]);
               break;
 
-            case "viewer_count":
-            case "viewers":
-              setViewerCount(data.count || data.viewers || 0);
+            case "livestream-likes":
+              // Handle likes
+              const newHeart = {
+                id: Date.now() + Math.random(),
+              };
+              setHearts((prev) => [...prev, newHeart]);
+              setLikeCount((prev) => prev + 1);
+              console.log("Like from:", data.user?.name);
               break;
 
-            case "stream_paused":
-              console.log("Stream paused by host");
-              setIsStreamPaused(true);
-              toast.info("Host paused the stream");
-              setIsPaused(true);
+            case "livestream-questions":
+              console.log("New question:", data.question);
               break;
 
-            case "stream_resumed":
-              console.log("Stream resumed by host");
-              setIsStreamPaused(false);
-              toast.success("Stream resumed!");
-              setIsPaused(false);
+            case "livestream-views":
+              console.log("Viewer count update:", data.total_count);
+              setViewerCount(data.total_count || 0);
               break;
+
+            case "livestream-gift-notification":
+              toast.success(`Gift sent! 🎁`);
+              break;
+
+            // case "stream_paused":
+            //   console.log("Stream paused by host");
+            //   setIsStreamPaused(true);
+            //   toast.info("Host paused the stream");
+            //   setIsPaused(true);
+            //   break;
+
+            // case "stream_resumed":
+            //   console.log("Stream resumed by host");
+            //   setIsStreamPaused(false);
+            //   toast.success("Stream resumed!");
+            //   setIsPaused(false);
+            //   break;
 
             case "stream_duration":
               setStreamDuration(data.duration || 0);
@@ -152,10 +200,19 @@ const LivestreamViewer = ({
                 router.push("/dashboard/live-streams");
               }, 3000);
               break;
+
+            default:
+              console.log("Unknown event:", data.event);
           }
         } catch (error) {
           console.error("Error parsing chat message:", error);
         }
+      };
+      websocketRef.current.onerror = (error) => {
+        console.error("Websocket error: ", error);
+      };
+      websocketRef.current.onclose = () => {
+        console.log("Websocket closed");
       };
     } catch (error) {
       console.error("Failed to connect chat:", error);
@@ -170,27 +227,98 @@ const LivestreamViewer = ({
   const toggleMute = () => setIsMuted((prev) => !prev);
   const togglePlay = () => setIsPaused((prev) => !prev);
 
+  // const handleCommentSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (newComment.trim() && websocketRef.current) {
+  //     const message = {
+  //       type: "comment",
+  //       stream_id: streamData?.uuid || streamData?.id,
+  //       user_id: user.uuid || "anonymous",
+  //       message: newComment,
+  //       timestamp: Date.now(),
+  //     };
+  //     websocketRef.current.send(JSON.stringify(message));
+  //     setComments((prev) => [
+  //       ...prev,
+  //       {
+  //         id: Date.now(),
+  //         user: { name: "You", avatar: "/images/default-avatar.webp" },
+  //         message: newComment,
+  //         timestamp: Date.now(),
+  //       },
+  //     ]);
+  //     setNewComment("");
+  //   }
+  // };
+
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim() && websocketRef.current) {
-      const message = {
-        type: "comment",
-        stream_id: streamData?.uuid || streamData?.id,
-        user_id: currentUserId || "anonymous",
-        message: newComment,
-        timestamp: Date.now(),
-      };
-      websocketRef.current.send(JSON.stringify(message));
-      setComments((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          user: { name: "You", avatar: "/images/default-avatar.webp" },
-          message: newComment,
-          timestamp: Date.now(),
+
+    if (!newComment.trim()) return;
+
+    const comment = {
+      id: Date.now(),
+      user: { name: "You", avatar: "/images/default-avatar.webp" },
+      message: newComment,
+      timestamp: Date.now(),
+    };
+
+    setComments((prev) => [...prev, comment]);
+    setNewComment("");
+
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      const commentMessage = {
+        action: "publish",
+        channel: "livestream_room",
+        event: "livestream-comments",
+        channelId: streamData?.livestream_room_id,
+        message: comment.message,
+        userId: user.uuid,
+        user: {
+          name: user.name,
+          username: user.username,
+          profile_picture: user.profile_picture,
         },
-      ]);
-      setNewComment("");
+      };
+
+      websocketRef.current.send(JSON.stringify(commentMessage));
+    }
+  };
+
+  // 3. Send like as viewer
+  const handleSendLike = () => {
+    // Add heart animation
+    const newHeart = {
+      id: Date.now() + Math.random(),
+    };
+    setHearts((prev) => [...prev, newHeart]);
+    setLikeCount((prev) => prev + 1);
+
+    // Button animation
+    setIsLikeAnimating(true);
+    setTimeout(() => setIsLikeAnimating(false), 300);
+
+    // Send like via WebSocket
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      const likeMessage = {
+        action: "publish",
+        channel: "livestream_room",
+        event: "livestream-likes",
+        channelId: `livestream_${streamData?.uuid}`,
+        userId: user.uuid,
+        user: {
+          name: user.name,
+          username: user.username,
+        },
+      };
+
+      websocketRef.current.send(JSON.stringify(likeMessage));
     }
   };
 
@@ -347,6 +475,27 @@ const LivestreamViewer = ({
                 </div>
               </div>
             </div>
+
+            {/* Floating Hearts */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
+              {hearts.map((heart) => (
+                <FloatingHeart
+                  key={heart.id}
+                  id={heart.id}
+                  onComplete={removeHeart}
+                />
+              ))}
+            </div>
+
+            {/* Like count */}
+            {/* {likeCount > 0 && (
+              <div className="absolute top-20 right-4 z-30 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
+                <span className="text-white text-sm font-semibold flex items-center gap-1">
+                  <FaHeart className="text-red-500" size={14} />
+                  {likeCount.toLocaleString()}
+                </span>
+              </div>
+            )} */}
           </div>
 
           <div className="flex items-center gap-x-3 px-1">
@@ -448,7 +597,10 @@ const LivestreamViewer = ({
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="p-2"
+                    className={`p-2 ${
+                      isLikeAnimating ? "scale-125" : ""
+                    } transition-transform`}
+                    onClick={handleSendLike}
                   >
                     <FaHeart className="size-4 text-red-500" />
                   </Button>
@@ -457,9 +609,9 @@ const LivestreamViewer = ({
             </div>
 
             <div className="absolute bottom-16 w-full p-4 pointer-events-none">
-              <div className="pointer-events-auto">
+              {/* <div className="pointer-events-auto">
                 <SponsorCard sponsorType="liveStream" />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
