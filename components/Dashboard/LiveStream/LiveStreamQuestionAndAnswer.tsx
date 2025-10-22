@@ -7,7 +7,13 @@ import LiveStreamDialog from "./LiveStreamDialog";
 import QuestionsAndAnswers from "./QuestionsAndAnswers";
 import { useState } from "react";
 
-const LiveStreamQuestionAndAnswer = () => {
+interface LiveStreamQuestionAndAnswerProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  streamData?: any;
+}
+
+const LiveStreamQuestionAndAnswer = ({ open, onOpenChange, streamData }: LiveStreamQuestionAndAnswerProps) => {
   const [questionSent, setQuestionSent] = useState(false);
   const [showQuestionAndAnswer, setShowQuestionAndAnswer] = useState(false);
   const [question, setQuestion] = useState("");
@@ -51,6 +57,8 @@ const LiveStreamQuestionAndAnswer = () => {
           <VSChatAsk className="size-7 flex -mb-1 -mr-1" />
         </div>
       }
+      open={open}
+      onOpenChange={onOpenChange}
       title={!questionSent || showQuestionAndAnswer ? "Question & Answer" : ""}
       footer={
         showQuestionAndAnswer ? (

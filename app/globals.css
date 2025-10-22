@@ -119,3 +119,29 @@
 .glassmorphism {
   @apply !backdrop-filter !backdrop-blur-lg !bg-white !bg-opacity-10 !border-opacity-20 !shadow-lg;
 }
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-500px) scale(1.5);
+  }
+}
+
+@keyframes pulse-heart {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}

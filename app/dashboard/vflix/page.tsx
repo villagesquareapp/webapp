@@ -7,6 +7,9 @@ const Page = async () => {
 
   const user = session?.user;
 
+  console.log(user);
+  
+
   if (!user) return null;
   return <VFlixPage user={user} />
 };

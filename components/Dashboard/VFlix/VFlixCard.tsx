@@ -153,7 +153,7 @@ export default function VflixCard({
     }
   };
 
-  const videoUrl = post.media.transcoded_media_url || post.media.media_url;
+  const videoUrl = post.media?.transcoded_media_url || post.media?.media_url;
 
   return (
     <div 
@@ -178,7 +178,7 @@ export default function VflixCard({
         config={{
           file: {
             attributes: {
-              poster: post.media.media_thumbnail,
+              poster: post.media?.media_thumbnail,
               playsInline: true,
             },
             hlsOptions: {

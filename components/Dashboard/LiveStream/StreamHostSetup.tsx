@@ -34,11 +34,15 @@ import {
 import LiveStreamDialog from "./LiveStreamDialog";
 import LiveStreamInviteFriends from "./LiveStreamInviteFriends";
 import LiveStreamGift from "./LiveStreamGift";
+import FloatingHeart from "./FloatingHeart";
+import { PiHeartFill } from "react-icons/pi";
+import LiveStreamQuestionAndAnswer from "./LiveStreamQuestionAndAnswer";
 
 interface StreamHostSetupProps {
   streamData: any;
   featuredLivestreams: IFeaturedLivestream[];
   isHost: boolean;
+  user: IUser;
 }
 
 // Stream states: 'setup' -> 'live'
@@ -48,6 +52,7 @@ const StreamHostSetup = ({
   streamData: initialStreamData,
   featuredLivestreams,
   isHost,
+  user,
 }: StreamHostSetupProps) => {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -70,6 +75,7 @@ const StreamHostSetup = ({
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showInviteFriendsDialog, setShowInviteFriendsDialog] = useState(false);
   const [showGiftDialog, setShowGiftDialog] = useState(false);
+  const [showQuestionAndAnswerDialog, setShowQuestionAndAnswerDialog] = useState(false);
   const [streamSummary, setStreamSummary] = useState<IEndLivestream | null>(
     null
   );
@@ -83,12 +89,16 @@ const StreamHostSetup = ({
   const [comments, setComments] = useState([
     {
       id: 1,
-      user: { name: "John Abraham", avatar: "/images/vs-logo.webp" },
+      user: { name: "Village Square", avatar: "/images/vs-logo.webp" },
       message:
-        "Actually I am waiting for this podcast for so literally like soo long",
+        "Welcome to the livestream! Engage with your viewers through comments, likes, and more.",
       timestamp: Date.now() - 300000,
     },
   ]);
+
+  const [hearts, setHearts] = useState<Array<{ id: string | number }>>([]);
+  const [likeCount, setLikeCount] = useState<number>(0);
+  const [isLikeAnimating, setIsLikeAnimating] = useState<boolean>(false);
 
   // Load pending livestream data from localStorage
   useEffect(() => {
@@ -101,7 +111,6 @@ const StreamHostSetup = ({
 
   // Initialize WebSocket connection
   const initializeWebSocket = () => {
-    console.log("InitializeWebSocket called");
     console.log("websocket.current: ", websocketRef.current);
 
     if (websocketRef.current) {
@@ -117,9 +126,8 @@ const StreamHostSetup = ({
 
     try {
       const streamId = streamData?.stream_id;
-      const wsUrl = `wss://origin-streaming-server.villagesquare.io/Livestream/websocket?stream=${streamId}`;
+      const wsUrl = `wss://${user.websocket_url}/?token=${user.uuid}&deviceId=null`;
 
-      // const wsUrl = getWebSocketURL(streamUuid);
       websocketRef.current = new WebSocket(wsUrl);
       console.log("Attempting WebSocket connection to:", wsUrl);
       websocketRef.current = new WebSocket(wsUrl);
@@ -130,41 +138,45 @@ const StreamHostSetup = ({
       );
 
       websocketRef.current.onopen = () => {
-        console.log("Websocket OPEN event fired!");
         console.log("WebSocket connected to Villagesquare streaming server");
         console.log("Websocket readyState: ", websocketRef.current?.readyState);
-        console.log("Stream UUID: ", streamData?.uuid);
         console.log("Stream ID: ", streamId);
 
         // toast.success("Connected to chat");
 
         // Send initial connection message
-        const joinMessage = {
-          type: "join",
-          stream_id: streamId,
-          user_id: streamData?.host.uuid || "host",
-          role: "host",
+        const subscribeMessage = {
+          action: "subscribe",
+          channel: "livestream_room",
+          channelId: streamData?.livestream_room_id,
+          userId: user.uuid,
+          metadata: {
+            role: "host",
+            user_type: "user",
+            name: user.name || "Host",
+            profile_picture: user.profile_picture,
+          },
         };
-        console.log("Sending join message:", joinMessage);
+        console.log("Sending subscribe message:", subscribeMessage);
+        websocketRef.current?.send(JSON.stringify(subscribeMessage));
 
-        websocketRef.current?.send(JSON.stringify(joinMessage));
       };
 
       websocketRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("Chat message:", data);
+          console.log("Websocket message received:", data);
 
-          switch (data.type) {
-            case "comment":
-            case "message":
+          switch (data.event) {
+            case "livestream-comments":
               setComments((prev) => [
                 ...prev,
                 {
                   id: Date.now(),
                   user: {
-                    name: data.user?.name || data.username || "Anonymous",
-                    avatar: data.user?.avatar || "/images/vs-logo.webp",
+                    name: data.user?.name,
+                    avatar:
+                      data.user?.profile_picture || "/images/vs-logo.webp",
                   },
                   message: data.message || data.text,
                   timestamp: Date.now(),
@@ -172,23 +184,40 @@ const StreamHostSetup = ({
               ]);
               break;
 
-            case "viewer_count":
-            case "viewers":
-              setViewerCount(data.users || data.viewers || 0);
+            case "livestream-likes":
+              const newHeart = {
+                id: Date.now() + Math.random(),
+              };
+              setHearts((prev) => [...prev, newHeart]);
+              setLikeCount((prev) => prev + 1);
+              console.log("Like from:", data.user?.name);
               break;
 
-            case "viewer_joined":
-              setViewerCount((prev) => prev + 1);
-              toast.info("New viewer joined");
+            case "livestream-questions":
+              console.log("Question from:", data.user?.name, data.question);
+              toast.info(`New question from ${data.user?.name}`);
+              
               break;
 
-            case "viewer_left":
-              setViewerCount((prev) => Math.max(0, prev - 1));
+            case "livestream-answers":
+             
+              console.log("Answer to question:", data.questionId, data.answer);
+             
               break;
 
-            case "gift":
-              toast.success(`${data.sender} sent a gift!`);
+            case "livestream-views":
+              console.log("Viewer count update: ", data.total_count);
+              setViewerCount(data.total_count || 0);
               break;
+
+            case "livestream-gift-notification":
+              console.log("Gift received! Count: ", data.total_count);
+
+              toast.success(`Gift received! 🎁 Total: ${data.total_count}`);
+              break;
+
+            default:
+              console.log("Unknown event type: ", data.event);
           }
         } catch (error) {
           console.error("Error parsing chat message:", error);
@@ -214,6 +243,95 @@ const StreamHostSetup = ({
     } catch (error) {
       console.error("WebSocket connection failed:", error);
       toast.error("Failed to connect to chat server");
+    }
+  };
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newComment.trim()) return;
+
+    const currentUser = streamData?.host;
+
+    // Add to local state immediately
+    const comment = {
+      id: Date.now(),
+      user: {
+        name: currentUser?.name || "Host",
+        avatar: currentUser?.profile_picture || "/images/vs-logo.webp",
+      },
+      message: newComment,
+      timestamp: Date.now(),
+    };
+
+    setComments((prev) => [...prev, comment]);
+    setNewComment("");
+
+    // Publish comment to WebSocket
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      const commentMessage = {
+        action: "publish",
+        channel: "livestream_room",
+        event: "livestream-comments",
+        channelId: streamData?.livestream_room_id,
+        message: comment.message,
+        userId: currentUser?.uuid,
+        user: {
+          name: currentUser?.name || "Host",
+          username: currentUser?.username || "host",
+          profile_picture:
+            currentUser?.profile_picture || "/images/vs-logo.webp",
+        },
+      };
+
+      console.log("Sending comment:", commentMessage);
+      websocketRef.current.send(JSON.stringify(commentMessage));
+    } else {
+      console.warn("WebSocket not connected. Message not sent to server.");
+      toast.error("Not connected to chat. Please refresh.");
+    }
+  };
+
+  const removeHeart = (id: string | number) => {
+    setHearts((prev) => prev.filter((heart) => heart.id !== id));
+  };
+
+  // Send like function
+  const handleSendLike = () => {
+    const currentUser = streamData?.host;
+
+    const newHeart = {
+      id: Date.now() + Math.random(),
+    };
+    setHearts((prev) => [...prev, newHeart]);
+    setLikeCount((prev) => prev + 1);
+
+    // Button pulse animation
+    setIsLikeAnimating(true);
+    setTimeout(() => setIsLikeAnimating(false), 300);
+
+    // Send like via WebSocket
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      const likeMessage = {
+        action: "publish",
+        channel: "livestream_room",
+        event: "livestream-likes",
+        channelId: `livestream_${streamData.uuid}`,
+        userId: currentUser?.uuid,
+        user: {
+          name: currentUser?.name || "Host",
+          username: currentUser?.username || "host",
+        },
+      };
+
+      console.log("Sending like:", likeMessage);
+      websocketRef.current.send(JSON.stringify(likeMessage));
     }
   };
 
@@ -284,7 +402,7 @@ const StreamHostSetup = ({
           }
         } else if (info === "joinedTheRoom") {
           console.log("Joined room successfully:", obj);
-          toast.success("Joined streaming room");
+          // toast.success("Joined streaming room");
 
           // Start publishing to the room
           console.log(`Publishing stream: ${streamId}`);
@@ -676,7 +794,7 @@ const StreamHostSetup = ({
       return;
     }
 
-    // ✅ Check if we have pending data (coming from Go Live modal)
+    // Check if we have pending data (coming from Go Live modal)
     if (!streamData && pendingLivestreamData) {
       console.log("🚀 Starting live stream with pending data...");
 
@@ -687,7 +805,7 @@ const StreamHostSetup = ({
           formData.append(key, pendingLivestreamData[key]);
         });
 
-        // ✅ NOW call /livestreams/start
+        // NOW call /livestreams/start
         const response = await createLivestream(formData); // This calls /livestreams/start
 
         console.log("Start Livestream Response:", response);
@@ -695,13 +813,13 @@ const StreamHostSetup = ({
         if (response.status && response.data) {
           console.log("Stream started! Stream ID:", response.data.stream_id);
 
-          // ✅ Clear localStorage
+          // Clear localStorage
           localStorage.removeItem("pending_livestream");
 
-          // ✅ Set the stream data
+          // Set the stream data
           setStreamData(response.data);
 
-          // ✅ Store active livestream
+          // Store active livestream
           localStorage.setItem(
             "active_livestream",
             JSON.stringify(response.data)
@@ -711,10 +829,10 @@ const StreamHostSetup = ({
 
           toast.success("Live stream started!");
           router.push(`/dashboard/live-streams/${response.data.uuid}`);
-          // ✅ Initialize WebSocket
+          // Initialize WebSocket
           initializeWebSocket();
 
-          // ✅ Initialize Ant Media
+          // Initialize Ant Media
           initializeAntMediaAdaptor();
 
           setStreamState("live");
@@ -726,7 +844,7 @@ const StreamHostSetup = ({
         toast.error("Failed to start stream");
       }
     }
-    // ✅ If streamData already exists (coming from existing stream)
+    // If streamData already exists (coming from existing stream)
     else if (streamData && streamData.stream_id) {
       console.log("🚀 Resuming existing stream...");
       initializeWebSocket();
@@ -820,91 +938,91 @@ const StreamHostSetup = ({
   // };
 
   const handleConfirmEndSession = async () => {
-  setShowEndDialog(false);
-  setIsEndingStream(true);
+    setShowEndDialog(false);
+    setIsEndingStream(true);
 
-  try {
-    const streamUuid = streamData?.uuid;
-    const streamId =
-      streamData?.livestream_room_stream_id || streamData?.stream_id;
+    try {
+      const streamUuid = streamData?.uuid;
+      const streamId =
+        streamData?.livestream_room_stream_id || streamData?.stream_id;
 
-    // FIRST: Notify viewers via WebSocket
-    if (
-      websocketRef.current &&
-      websocketRef.current.readyState === WebSocket.OPEN
-    ) {
-      console.log("Sending stream_ended message to viewers");
-      websocketRef.current.send(
-        JSON.stringify({
-          type: "stream_ended",
-          stream_uuid: streamUuid,
-          stream_id: streamId,
-          message: "The host has ended this live stream",
-          ended_at: new Date().toISOString(),
-        })
-      );
+      // FIRST: Notify viewers via WebSocket
+      if (
+        websocketRef.current &&
+        websocketRef.current.readyState === WebSocket.OPEN
+      ) {
+        console.log("Sending stream_ended message to viewers");
+        websocketRef.current.send(
+          JSON.stringify({
+            type: "stream_ended",
+            stream_uuid: streamUuid,
+            stream_id: streamId,
+            message: "The host has ended this live stream",
+            ended_at: new Date().toISOString(),
+          })
+        );
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
 
-    // Now end the stream via API
-    const response = await endLivestream(streamUuid);
+      // Now end the stream via API
+      const response = await endLivestream(streamUuid);
 
-    if (response.status && response.data) {
-      console.log("Stream ended successfully:", response.data);
-      setStreamSummary(response.data);
+      if (response.status && response.data) {
+        console.log("Stream ended successfully:", response.data);
+        setStreamSummary(response.data);
 
-      // ✅ STOP ANT MEDIA FIRST
-      if (webRTCAdaptorRef.current) {
-        try {
-          webRTCAdaptorRef.current.stop(streamId);
-          webRTCAdaptorRef.current.closeWebSocket();
-        } catch (error) {
-          console.error("Error stopping Ant Media:", error);
+        // ✅ STOP ANT MEDIA FIRST
+        if (webRTCAdaptorRef.current) {
+          try {
+            webRTCAdaptorRef.current.stop(streamId);
+            webRTCAdaptorRef.current.closeWebSocket();
+          } catch (error) {
+            console.error("Error stopping Ant Media:", error);
+          }
         }
+
+        // ✅ STOP LOCAL MEDIA STREAM
+        if (localStream) {
+          localStream.getTracks().forEach((track) => {
+            track.stop(); // Stop the actual track
+            console.log(`Stopped ${track.kind} track`);
+          });
+          setLocalStream(null);
+        }
+
+        // CLEAR VIDEO ELEMENT
+        if (videoRef.current) {
+          videoRef.current.srcObject = null; // Remove stream reference
+          videoRef.current.style.display = "none"; // Hide video
+        }
+
+        setStreamState("setup");
+        setStreamDuration(0);
+        setIsCameraActive(true);
+        setIsMicActive(true);
+
+        // Clear localStorage
+        localStorage.removeItem("active_livestream");
+
+        // Close WebSocket
+        if (websocketRef.current) {
+          websocketRef.current.close();
+          websocketRef.current = null;
+        }
+
+        // Show summary dialog
+        setShowSummaryDialog(true);
+      } else {
+        toast.error(response.message || "Failed to end stream");
       }
-
-      // ✅ STOP LOCAL MEDIA STREAM
-      if (localStream) {
-        localStream.getTracks().forEach((track) => {
-          track.stop(); // Stop the actual track
-          console.log(`Stopped ${track.kind} track`);
-        });
-        setLocalStream(null);
-      }
-
-      // ✅ CLEAR VIDEO ELEMENT
-      if (videoRef.current) {
-        videoRef.current.srcObject = null; // Remove stream reference
-        videoRef.current.style.display = "none"; // Hide video
-      }
-
-      setStreamState("setup");
-      setStreamDuration(0);
-      setIsCameraActive(true); // Reset for next stream
-      setIsMicActive(true); // Reset for next stream
-
-      // Clear localStorage
-      localStorage.removeItem("active_livestream");
-
-      // Close WebSocket
-      if (websocketRef.current) {
-        websocketRef.current.close();
-        websocketRef.current = null;
-      }
-
-      // Show summary dialog
-      setShowSummaryDialog(true);
-    } else {
-      toast.error(response.message || "Failed to end stream");
+    } catch (error) {
+      console.error("Error ending stream:", error);
+      toast.error("Failed to end stream");
+    } finally {
+      setIsEndingStream(false);
     }
-  } catch (error) {
-    console.error("Error ending stream:", error);
-    toast.error("Failed to end stream");
-  } finally {
-    setIsEndingStream(false);
-  }
-};
+  };
 
   // Handle discard button click
   const handleDiscardClick = () => {
@@ -943,43 +1061,6 @@ const StreamHostSetup = ({
   };
 
   // Chat functions
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      const comment = {
-        id: Date.now(),
-        user: {
-          name: streamData?.host?.name || "Host",
-          avatar: streamData?.host?.profile_picture || "/images/vs-logo.webp",
-        },
-        message: newComment,
-        timestamp: Date.now(),
-      };
-
-      // Add to local state immediately for instant feedback
-      setComments((prev) => [...prev, comment]);
-      setNewComment("");
-
-      // Send to WebSocket server for broadcast to viewers
-      if (
-        websocketRef.current &&
-        websocketRef.current.readyState === WebSocket.OPEN
-      ) {
-        websocketRef.current.send(
-          JSON.stringify({
-            type: "comment",
-            stream_id: streamData?.stream_id,
-            user_id: streamData?.host?.id || "host",
-            username: streamData?.host?.username || "host",
-            message: comment.message,
-            timestamp: comment.timestamp,
-          })
-        );
-      } else {
-        console.warn("WebSocket not connected. Message not sent to server.");
-      }
-    }
-  };
 
   // Format duration for display
   const formatDuration = (seconds: number) => {
@@ -1133,6 +1214,27 @@ const StreamHostSetup = ({
                 )}
               </div>
             </div>
+
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
+              {hearts.map((heart) => (
+                <FloatingHeart
+                  key={heart.id}
+                  id={heart.id}
+                  onComplete={removeHeart}
+                />
+                // <HeartAnimation key={heart.id} id={heart.id} onAnimationComplete={removeHeart} />
+              ))}
+            </div>
+
+            {/* Like count display (top right) */}
+            {/* {likeCount > 0 && streamState === "live" && (
+              <div className="absolute top-20 right-4 z-30 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
+                <span className="text-white text-sm font-semibold flex items-center gap-1">
+                  <FaHeart className="text-red-500" size={14} />
+                  {likeCount.toLocaleString()}
+                </span>
+              </div>
+            )} */}
           </div>
 
           {/* Host Info and Actions */}
@@ -1153,7 +1255,7 @@ const StreamHostSetup = ({
                   {/* <HiMiniCheckBadge className="size-5 text-green-600" /> */}
                 </span>
                 <p className="text-muted-foreground text-sm">
-                  @{streamData?.host?.username || "michael_jorddd"}
+                  @{streamData?.host?.username || "michael_jordan"}
                 </p>
               </div>
             </div>
@@ -1295,6 +1397,7 @@ const StreamHostSetup = ({
                           size="sm"
                           variant="ghost"
                           className="p-2 w-8 h-8"
+                          onClick={() => setShowQuestionAndAnswerDialog(true)}
                         >
                           <VSChatAsk className="size-4" />
                         </Button>
@@ -1321,7 +1424,15 @@ const StreamHostSetup = ({
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="p-2"
+                        className={`p-2 transition-transform ${
+                          isLikeAnimating ? "animate-pulse" : ""
+                        }`}
+                        onClick={handleSendLike}
+                        style={{
+                          animation: isLikeAnimating
+                            ? "pulse-heart 0.3s ease-in-out"
+                            : "none",
+                        }}
                       >
                         <FaHeart className="size-4 text-red-500" />
                       </Button>
@@ -1346,7 +1457,7 @@ const StreamHostSetup = ({
       <LiveStreamDialog
         open={showEndDialog}
         onOpenChange={setShowEndDialog}
-        trigger={<span />} // Empty trigger since we control it with state
+        trigger={<span />} 
         title="End Session?"
         contentClassName="max-w-md h-auto"
         footer={
@@ -1554,6 +1665,15 @@ const StreamHostSetup = ({
         <LiveStreamGift
           open={showGiftDialog}
           onOpenChange={setShowGiftDialog}
+          streamData={streamData}
+        />
+      )}
+
+      {/* Question and Answer Dialog */}
+      {showQuestionAndAnswerDialog && (
+        <LiveStreamQuestionAndAnswer
+          open={showQuestionAndAnswerDialog}
+          onOpenChange={setShowQuestionAndAnswerDialog}
           streamData={streamData}
         />
       )}
