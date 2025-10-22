@@ -114,22 +114,22 @@ const StreamSetupModal = () => {
 
   const { startDate, startTime } = getFormattedDateTime();
 
-  // ✅ Create the form data object to store
+  // Create the form data object to store
   const livestreamData = {
     title: titleInput || "Untitled Livestream",
     category_id: "1",
     start_date: startDate,
     start_time: startTime,
     privacy: privacy,
-    comments_enabled: commentsEnabled ? "true" : "false",
-    questions_enabled: questionsEnabled ? "true" : "false",
-    gifting_enabled: giftingEnabled ? "true" : "false",
+    comments_enabled: !!commentsEnabled,
+    questions_enabled: !!questionsEnabled,
+    gifting_enabled: !!giftingEnabled,
   };
 
-  // ✅ Store in localStorage
+  // Store in localStorage
   localStorage.setItem("pending_livestream", JSON.stringify(livestreamData));
 
-  // ✅ Close the modal
+  // Close the modal
   setCurrentStep("INFO");
   setTitleInput("");
   setCategory(null);
@@ -139,10 +139,10 @@ const StreamSetupModal = () => {
   setQuestionsEnabled(false);
   setGiftingEnabled(false);
 
-  // ✅ Redirect to setup page (without uuid since we haven't created it yet)
+  // Redirect to setup page (without uuid since we haven't created it yet)
   router.push("/dashboard/live-streams/setup");
   
-  toast.success("Ready to go live! Click 'Start Live Stream' when ready.");
+  // toast.success("Ready to go live! Click 'Start Live Stream' when ready.");
 }, [
   titleInput,
   category,

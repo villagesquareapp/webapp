@@ -349,7 +349,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <span className="py-3 px-5 text-lg border-b-4 border-primary">
                   Explore
                 </span>
-                <span className="py-3 px-5 text-lg">Connection</span>
+                <span className="py-3 px-5 text-lg">Connections</span>
               </div>
               <SocialPostFilterDialog />
             </div>

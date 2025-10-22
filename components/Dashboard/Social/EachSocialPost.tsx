@@ -67,11 +67,11 @@ const EachSocialPost = ({
   const isSingleMedia = post?.media?.length === 1;
 
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="flex flex-col gap-y-2">
       <PostHeader post={post} />
 
       <div
-        className="flex flex-col gap-y-4 cursor-pointer"
+        className="flex flex-col gap-y-2 cursor-pointer"
         onClick={(e) => handlePostClickWithVideoPause(e)}
       >
         {/* Post text with highlighted hashtags */}

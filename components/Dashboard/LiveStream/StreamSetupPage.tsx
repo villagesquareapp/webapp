@@ -179,7 +179,7 @@ const StreamSetupPage = ({
         localStorage.setItem("active_livestream", JSON.stringify(response.data));
 
         // Redirect to the actual stream page
-        toast.success("Redirecting to live stream...");
+        // toast.success("Redirecting to live stream...");
         router.push(`/dashboard/live-streams/${response.data.uuid}`);
       } else {
         toast.error(response.message || "Failed to start livestream");

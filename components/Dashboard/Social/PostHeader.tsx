@@ -53,13 +53,13 @@ const PostHeader = ({
           name={post?.user?.name || ""}
           className="size-8 border-foreground border-[1.5px]"
         />
-        <div className="flex flex-col gap-y-1">
-          <span className="flex flex-row gap-x-2 items-center max-w-80">
+        <div className="flex flex-col">
+          <span className="flex flex-row items-center max-w-80">
             <span className="font-semibold text-sm truncate">
               {post?.user?.name}
             </span>
             {!!post?.user?.verified_status && (
-              <HiMiniCheckBadge className="size-5 text-green-600" />
+              <HiMiniCheckBadge className="size-5 text-green-600 ml-1" />
             )}
             <span>
               <BsDot />
@@ -93,9 +93,9 @@ const PostHeader = ({
               align="end"
               className="bg-background w-fit p-0 text-center z-[50]"
             >
-              <div className="text-sm px-20 py-3">Report</div>
-              <Separator className="my-2" />
-              <div className="px-20 py-3">Block</div>
+              <div className="text-sm px-20 py-3 cursor-pointer">Report</div>
+              {/* <Separator className="my-2" />
+              <div className="px-20 py-3">Block</div> */}
             </PopoverContent>
           </Popover>
         ) : (
