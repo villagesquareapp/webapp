@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { CgEye } from "react-icons/cg";
 import { WebRTCAdaptor } from "@antmedia/webrtc_adaptor";
 import FloatingHeart from "./FloatingHeart";
+import LiveStreamQuestionAndAnswer from "./LiveStreamQuestionAndAnswer";
 
 interface LivestreamViewerProps {
   streamData: any;
@@ -62,6 +63,8 @@ const LivestreamViewer = ({
   const [hearts, setHearts] = useState<Array<{ id: string | number }>>([]);
   const [likeCount, setLikeCount] = useState(0);
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
+  const [showQuestionAndAnswerDialog, setShowQuestionAndAnswerDialog] = useState(false);
+
 
   const hlsUrl = streamData?.livestream_room_stream_url;
 
@@ -582,6 +585,7 @@ const LivestreamViewer = ({
                     size="sm"
                     variant="ghost"
                     className="p-2"
+                    onClick={() => setShowQuestionAndAnswerDialog(true)}
                   >
                     <VSChatAsk className="size-4" />
                   </Button>
@@ -640,6 +644,14 @@ const LivestreamViewer = ({
             </Button>
           </div>
         </div>
+      )}
+
+      {showQuestionAndAnswerDialog && (
+        <LiveStreamQuestionAndAnswer
+          open={showQuestionAndAnswerDialog}
+          onOpenChange={setShowQuestionAndAnswerDialog}
+          streamData={streamData}
+        />
       )}
     </div>
   );

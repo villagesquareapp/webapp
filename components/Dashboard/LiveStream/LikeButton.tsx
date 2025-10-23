@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaHeart } from "react-icons/fa";
-import HeartAnimation from "./HeartAnimation";
+// import HeartAnimation from "./HeartAnimation";
 import { PiHeartFill } from "react-icons/pi";
 
 interface Heart {
@@ -29,9 +29,9 @@ function LikeButton() {
       </div>
       <div style={{ position: "absolute", top: 0, left: 0 }}>
         <AnimatePresence>
-          {hearts.map((heart) => (
+          {/* {hearts.map((heart) => (
             <HeartAnimation key={heart.id} onAnimationComplete={() => removeHeart(heart.id)} />
-          ))}
+          ))} */}
         </AnimatePresence>
       </div>
     </div>
