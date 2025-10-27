@@ -6,28 +6,62 @@ import { IoMdShareAlt } from "react-icons/io";
 import LiveStreamDialog from "./LiveStreamDialog";
 import QuestionsAndAnswers from "./QuestionsAndAnswers";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface LiveStreamQuestionAndAnswerProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   streamData?: any;
+  user: IUser;
+  websocketRef: React.MutableRefObject<WebSocket | null>;
 }
 
-const LiveStreamQuestionAndAnswer = ({ open, onOpenChange, streamData }: LiveStreamQuestionAndAnswerProps) => {
+const LiveStreamQuestionAndAnswer = ({ open, onOpenChange, streamData, user, websocketRef }: LiveStreamQuestionAndAnswerProps) => {
   const [questionSent, setQuestionSent] = useState(false);
   const [showQuestionAndAnswer, setShowQuestionAndAnswer] = useState(false);
   const [question, setQuestion] = useState("");
 
   const handleSendQuestion = () => {
-    if (question.trim()) {
+    if (!question.trim()) {
+      toast.error("Please enter a question");
+      return;
+    }
+
+    if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
+      toast.error("Not connected to livestream. Please refresh.");
+      return;
+    }
+
+    const questionMessage = {
+      action: "publish",
+      event: "livestream-questions",
+      channelId: streamData?.livestream_room_id,
+      // questionId: crypto.randomUUID(),
+      user: {
+        id: user.uuid,
+        name: user.name,
+        profile_picture: user.profile_picture || "/images/vs-logo.webp",
+      },
+      question: question.trim(),
+    };
+
+    console.log("Sending question:", questionMessage);
+    console.log("WebSocket state:", websocketRef.current.readyState);
+    
+    try {
+      websocketRef.current.send(JSON.stringify(questionMessage));
       setQuestionSent(true);
       setShowQuestionAndAnswer(false);
+      console.log("Question sent successfully!");
+    } catch (error) {
+      console.error("Error sending question:", error);
+      toast.error("Failed to send question");
     }
   };
 
   const handleOkayClick = () => {
     setQuestionSent(false);
-    setShowQuestionAndAnswer(true);
+    setShowQuestionAndAnswer(false);
     setQuestion("");
   };
 
@@ -105,18 +139,6 @@ const LiveStreamQuestionAndAnswer = ({ open, onOpenChange, streamData }: LiveStr
             />
             <p className="text-center font-semibold">Question Sent Successfully</p>
             <p>Your question has been sent to the host. Please wait for their response.</p>
-          </div>
-        )}
-        {showQuestionAndAnswer && (
-          <div className="flex flex-col gap-y-2">
-            <QuestionsAndAnswers />
-            <div className="ml-[57px] flex flex-col gap-y-2">
-              <div className="flex flex-row gap-x-2 items-center">
-                <IoMdShareAlt className="size-6" />
-                <p className="font-semibold text-sm">{"Reply (2)"}</p>
-              </div>
-              <QuestionsAndAnswers />
-            </div>
           </div>
         )}
       </div>

@@ -54,3 +54,12 @@ export const saveStreamToPosts = async (roomId: string) => {
 
   return response;
 };
+
+export const getLivestreamQuestions = async (uuid: string) => {
+  const token = await getToken();
+  const response = await apiGet<ILivestreamQuestion[]>(
+    `livestreams/${uuid}/questions`,
+    token
+  );
+  return response;
+}
