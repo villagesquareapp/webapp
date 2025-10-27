@@ -15,6 +15,7 @@ import {
   FaFlag,
   FaSignOutAlt,
   FaHeart,
+  FaUserPlus,
 } from "react-icons/fa";
 import { BiSolidGift } from "react-icons/bi";
 import { VSChatAsk } from "components/icons/village-square";
@@ -25,6 +26,8 @@ import { CgEye } from "react-icons/cg";
 import { WebRTCAdaptor } from "@antmedia/webrtc_adaptor";
 import FloatingHeart from "./FloatingHeart";
 import LiveStreamQuestionAndAnswer from "./LiveStreamQuestionAndAnswer";
+import LiveStreamDialog from "./LiveStreamDialog";
+import { GoDotFill } from "react-icons/go";
 
 interface LivestreamViewerProps {
   streamData: any;
@@ -63,8 +66,11 @@ const LivestreamViewer = ({
   const [hearts, setHearts] = useState<Array<{ id: string | number }>>([]);
   const [likeCount, setLikeCount] = useState(0);
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
-  const [showQuestionAndAnswerDialog, setShowQuestionAndAnswerDialog] = useState(false);
-
+  const [showQuestionAndAnswerDialog, setShowQuestionAndAnswerDialog] =
+    useState(false);
+  const [showQADialog, setShowQADialog] = useState<boolean>(false);
+  const [questions, setQuestions] = useState<Array<any>>([]);
+  const [hasUnreadQuestions, setHasUnreadQuestions] = useState(false);
 
   const hlsUrl = streamData?.livestream_room_stream_url;
 
@@ -152,6 +158,73 @@ const LivestreamViewer = ({
 
             case "livestream-questions":
               console.log("New question:", data.question);
+              console.log("📝 Viewer received new question:", data);
+
+              if (data.question && data.user) {
+                const newQuestion = {
+                  questionId: data.questionId || crypto.randomUUID(),
+                  question: data.question,
+                  user: {
+                    userId: data.user.id,
+                    name: data.user.name,
+                    profile_picture: data.user.profile_picture,
+                    username: data.user.username,
+                  },
+                  answers: [],
+                };
+
+                setQuestions((prev) => {
+                  const exists = prev.some(
+                    (q) => q.questionId === newQuestion.questionId
+                  );
+                  if (exists) return prev;
+                  return [...prev, newQuestion];
+                });
+              }
+              break;
+
+            case "livestream-answers":
+              // Answer received - update the question
+              console.log(" Viewer received answer:", data);
+              console.log(
+                "Full answer payload: ",
+                JSON.stringify(data, null, 2)
+              );
+
+              if (data.questionId && data.answer) {
+                console.log("Answer has all required fields");
+                setQuestions((prev) =>
+                  prev.map((q) =>
+                    q.questionId === data.questionId
+                      ? {
+                          ...q,
+                          answers: [
+                            ...(q.answers || []),
+                            {
+                              user: {
+                                id: data.user.id,
+                                name: data.user.name,
+                                profile_picture: data.user.profile_picture,
+                              },
+                              answer: data.answer,
+                            },
+                          ],
+                        }
+                      : q
+                  )
+                );
+                setHasUnreadQuestions(true);
+                toast.success("Host replied to a question!");
+                console.log("🔴 Setting hasUnreadQuestions to TRUE");
+              } else {
+                console.error("Backend answer payload is imcomplete.");
+                console.error("Missing fields:");
+                if (!data.questionId) console.error("- questionId");
+                if (!data.answer) console.error("- answer");
+                if (!data.user) console.error("- user");
+
+                toast.error("Received incomplete answer data from server");
+              }
               break;
 
             case "livestream-views":
@@ -291,7 +364,6 @@ const LivestreamViewer = ({
     }
   };
 
-  // 3. Send like as viewer
   const handleSendLike = () => {
     // Add heart animation
     const newHeart = {
@@ -368,9 +440,6 @@ const LivestreamViewer = ({
           <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-x-2">
             <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
             Live
-          </span>
-          <span className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-sm flex items-center gap-x-1">
-            <CgEye /> {viewerCount.toLocaleString()}
           </span>
         </div>
       </div>
@@ -459,36 +528,10 @@ const LivestreamViewer = ({
                     {formatDuration(streamDuration)}
                   </span>
                 </div>
-                <div className="flex items-center gap-x-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-white hover:bg-white/20 px-3 py-1"
-                  >
-                    <FaFlag className="mr-1" /> Report
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="bg-red-600 hover:bg-red-700 px-3 py-1"
-                    onClick={handleLeaveStream}
-                  >
-                    <FaSignOutAlt className="mr-1" /> Leave
-                  </Button>
-                </div>
               </div>
             </div>
 
             {/* Floating Hearts */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
-              {hearts.map((heart) => (
-                <FloatingHeart
-                  key={heart.id}
-                  id={heart.id}
-                  onComplete={removeHeart}
-                />
-              ))}
-            </div>
 
             {/* Like count */}
             {/* {likeCount > 0 && (
@@ -501,27 +544,49 @@ const LivestreamViewer = ({
             )} */}
           </div>
 
-          <div className="flex items-center gap-x-3 px-1">
-            <CustomAvatar
-              src={
-                streamData?.host?.profile_picture ||
-                "/images/default-avatar.webp"
-              }
-              className="border-2 size-[52px]"
-              name={streamData?.host?.name || "Host"}
-            />
-            <div className="flex flex-col">
-              <span className="flex items-center gap-x-2">
-                <p className="font-semibold">
-                  {streamData?.host?.name || "Host Name"}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-3 px-1">
+              <CustomAvatar
+                src={
+                  streamData?.host?.profile_picture ||
+                  "/images/default-avatar.webp"
+                }
+                className="border-2 size-[52px]"
+                name={streamData?.host?.name || "Host"}
+              />
+              <div className="flex flex-col">
+                <span className="flex items-center gap-x-2">
+                  <p className="font-semibold">
+                    {streamData?.host?.name || "Host Name"}
+                  </p>
+                  {streamData?.host?.checkmark_verification_status && (
+                    <HiMiniCheckBadge className="size-5 text-green-600" />
+                  )}
+                </span>
+                <p className="text-muted-foreground text-sm">
+                  @{streamData?.host?.username || "username"}
                 </p>
-                {streamData?.host?.checkmark_verification_status && (
-                  <HiMiniCheckBadge className="size-5 text-green-600" />
-                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-x-4">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/20 px-3 py-1"
+              >
+                <FaFlag className="mr-1" /> Report
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 px-3 py-1"
+                onClick={handleLeaveStream}
+              >
+                <FaSignOutAlt className="mr-1" /> Leave
+              </Button>
+              <span className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-sm flex items-center gap-x-1">
+                <CgEye /> {viewerCount.toLocaleString()}
               </span>
-              <p className="text-muted-foreground text-sm">
-                @{streamData?.host?.username || "username"}
-              </p>
             </div>
           </div>
 
@@ -572,39 +637,71 @@ const LivestreamViewer = ({
             </div>
 
             <div className="p-4 border-t">
-              <form onSubmit={handleCommentSubmit} className="flex gap-x-2">
+              <form onSubmit={handleCommentSubmit} className="space-y-3">
                 <Input
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add comment..."
-                  className="flex-1"
+                  className="w-full"
                 />
-                <div className="flex gap-x-1">
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-x-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="p-2 w-8 h-8 relative"
+                      onClick={() => {
+                        setShowQADialog(true);
+                        setHasUnreadQuestions(false);
+                      }}
+                    >
+                      <VSChatAsk className="size-4" />
+                      {hasUnreadQuestions && (
+                        <GoDotFill className="absolute -top-1 -right-1 size-5 text-red-600" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="p-2 w-8 h-8"
+                      // onClick={() => setShowInviteFriendsDialog(true)}
+                    >
+                      <FaUserPlus className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="p-2 w-8 h-8"
+                      // onClick={() => setShowGiftDialog(true)}
+                    >
+                      <BiSolidGift className="size-4" />
+                    </Button>
+                  </div>
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
+                    {hearts.map((heart) => (
+                      <FloatingHeart
+                        key={heart.id}
+                        id={heart.id}
+                        onComplete={removeHeart}
+                      />
+                    ))}
+                  </div>
                   <Button
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="p-2"
-                    onClick={() => setShowQuestionAndAnswerDialog(true)}
-                  >
-                    <VSChatAsk className="size-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="p-2"
-                  >
-                    <BiSolidGift className="size-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className={`p-2 ${
-                      isLikeAnimating ? "scale-125" : ""
-                    } transition-transform`}
+                    className={`p-2 transition-transform ${
+                      isLikeAnimating ? "animate-pulse" : ""
+                    }`}
                     onClick={handleSendLike}
+                    style={{
+                      animation: isLikeAnimating
+                        ? "pulse-heart 0.3s ease-in-out"
+                        : "none",
+                    }}
                   >
                     <FaHeart className="size-4 text-red-500" />
                   </Button>
@@ -651,7 +748,95 @@ const LivestreamViewer = ({
           open={showQuestionAndAnswerDialog}
           onOpenChange={setShowQuestionAndAnswerDialog}
           streamData={streamData}
+          user={user}
+          websocketRef={websocketRef}
         />
+      )}
+
+      {showQADialog && (
+        <LiveStreamDialog
+          open={showQADialog}
+          onOpenChange={(open) => {
+            setShowQADialog(open);
+            if (!open) setHasUnreadQuestions(false);
+          }}
+          trigger={<span />}
+          title={`Questions & Answers (${questions.length})`}
+          contentClassName="max-w-[650px] h-[600px]"
+          footer={
+            <Button
+              className="text-foreground w-full"
+              size="lg"
+              onClick={() => {
+                setShowQADialog(false);
+                setShowQuestionAndAnswerDialog(true);
+              }}
+            >
+              Ask a Question
+            </Button>
+          }
+        >
+          <div className="h-full flex flex-col overflow-y-auto space-y-4">
+            {questions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <VSChatAsk className="size-12 mb-4 opacity-50" />
+                <p className="font-semibold">No questions yet</p>
+                <p className="text-sm">Be the first to ask a question!</p>
+              </div>
+            ) : (
+              questions.map((question) => (
+                <div
+                  key={question.questionId}
+                  className="flex flex-col gap-y-3"
+                >
+                  {/* Question */}
+                  <div className="flex items-start gap-x-3">
+                    <CustomAvatar
+                      src={question.user.profile_picture}
+                      className="size-12 shrink-0"
+                      name={question.user.name}
+                    />
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm mb-1">
+                        {question.user.name}
+                      </p>
+                      <p className="text-sm">{question.question}</p>
+                    </div>
+                  </div>
+
+                  {/* Answers */}
+                  {question.answers && question.answers.length > 0 && (
+                    <div className="ml-[57px] flex flex-col gap-y-2">
+                      <div className="flex items-center gap-x-2">
+                        <p className="font-semibold text-sm text-muted-foreground">
+                          Reply ({question.answers.length})
+                        </p>
+                      </div>
+                      {question.answers.map((ans: any, idx: number) => (
+                        <div key={idx} className="flex items-start gap-x-3">
+                          <CustomAvatar
+                            src={
+                              ans.user?.profile_picture ||
+                              "/images/vs-logo.webp"
+                            }
+                            className="size-12 shrink-0"
+                            name={ans.user?.name || "Host"}
+                          />
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm mb-1">
+                              {ans.user?.name || "Host"}
+                            </p>
+                            <p className="text-sm">{ans.answer}</p>
+                          </div>
+                        </div>
+                      ))}{" "}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </LiveStreamDialog>
       )}
     </div>
   );

@@ -285,6 +285,18 @@ interface IEndLivestream {
   gifts_received: string;
 }
 
+interface ILivestreamQuestion {
+  questionId: string;
+  question: string;
+  user: {
+    name: string;
+    profile_picture: string;
+    username: string;
+    userId: string;
+  };
+  answers: [];
+}
+
 // interface ILivestreamDetailsResponse extends IPaginatedResponse<ILivestreamDetails> {}
 interface INotifications {
   subject: {
