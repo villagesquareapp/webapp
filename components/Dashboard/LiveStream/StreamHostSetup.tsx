@@ -1466,7 +1466,7 @@ const StreamHostSetup = ({
                 Discard
               </Button>
               <Button
-                onClick={() => toast.success("Coming soon!")}
+                onClick={() => toast.info("Coming soon!")}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Save To Posts
