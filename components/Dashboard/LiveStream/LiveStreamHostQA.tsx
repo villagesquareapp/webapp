@@ -106,13 +106,6 @@ const LiveStreamHostQA = ({
     setReplyText("");
   };
 
-  //   const handleSendReply = () => {
-  //     if (replyText.trim() && selectedQuestion) {
-  //       onSendAnswer(selectedQuestion.user.userId, replyText);
-  //       setSelectedQuestion(null);
-  //       setReplyText("");
-  //     }
-  //   };
   const handleSendReply = () => {
     if (replyText.trim() && selectedQuestion) {
       onSendAnswer(selectedQuestion.questionId, replyText);

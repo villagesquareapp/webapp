@@ -1,50 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { PiHeartFill } from "react-icons/pi";
-
-// interface FloatingHeartProps {
-//   id: string | number;
-//   onComplete: (id: string | number) => void;
-// }
-
-// const FloatingHeart = ({ id, onComplete }: FloatingHeartProps) => {
-//   const [position] = useState({
-//     left: Math.random() * 80 + 10, 
-//     delay: Math.random() * 0.3,
-//     duration: 3 + Math.random() * 2, 
-//     rotation: Math.random() * 60 - 30,
-//     scale: 0.7 + Math.random() * 0.6,
-//   });
-
-//   useEffect(() => {
-//     const timer = setTimeout(() => {
-//       onComplete(id);
-//     }, position.duration * 1000);
-
-//     return () => clearTimeout(timer);
-//   }, [id, position.duration, onComplete]);
-
-//   return (
-//     <div
-//       className="absolute pointer-events-none z-50"
-//       style={{
-//         left: `${position.left}%`,
-//         bottom: '100px',
-//         animation: `float-up ${position.duration}s ease-out forwards`,
-//         animationDelay: `${position.delay}s`,
-//         transform: `scale(${position.scale}) rotate(${position.rotation}deg)`,
-//       }}
-//     >
-//       <div className="bg-red-600 text-foreground rounded-full size-10 place-content-center items-center">
-//         <PiHeartFill className="size-5 flex mx-auto" />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default FloatingHeart;
-
 "use client";
 
 import { motion } from "framer-motion";
@@ -57,11 +10,10 @@ interface FloatingHeartProps {
 }
 
 const FloatingHeart = ({ id, onComplete }: FloatingHeartProps) => {
-  // Randomize position, direction, and animation behavior
-  const x = Math.random() * 200 - 100; // random horizontal movement
-  const y = Math.random() * -200 - 100; // random upward movement
-  const scale = Math.random() * 0.5 + 0.5; // random scale
-  const duration = 1.5 + Math.random() * 0.5; // between 1.5s and 2s
+  const x = Math.random() * 200 - 100; 
+  const y = Math.random() * -200 - 100; 
+  const scale = Math.random() * 0.5 + 0.5;
+  const duration = 1.5 + Math.random() * 0.5;
 
   const animationProps = {
     initial: { opacity: 1, x: 0, y: 0, scale: 1 },
@@ -86,7 +38,6 @@ const FloatingHeart = ({ id, onComplete }: FloatingHeartProps) => {
   };
 
   useEffect(() => {
-    // Trigger cleanup when animation completes
     const timer = setTimeout(() => {
       onComplete(id);
     }, duration * 1000);
@@ -103,53 +54,3 @@ const FloatingHeart = ({ id, onComplete }: FloatingHeartProps) => {
 };
 
 export default FloatingHeart;
-
-
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { FaHeart } from "react-icons/fa";
-
-// interface FloatingHeartProps {
-//   id: string | number;
-//   onComplete: (id: string | number) => void;
-// }
-
-// const FloatingHeart = ({ id, onComplete }: FloatingHeartProps) => {
-//   const [position] = useState({
-//     right: Math.random() * 15 + 5, 
-//     delay: Math.random() * 0.2,
-//     duration: 2.5 + Math.random() * 1.5,
-//     wobble: Math.random() * 30 - 15, 
-//     scale: 0.8 + Math.random() * 0.4, 
-//   });
-
-//   useEffect(() => {
-//     const timer = setTimeout(() => {
-//       onComplete(id);
-//     }, position.duration * 1000);
-
-//     return () => clearTimeout(timer);
-//   }, [id, position.duration, onComplete]);
-
-//   return (
-//     <div
-//       className="absolute pointer-events-none z-50"
-//       style={{
-//         right: `${position.right}%`,
-//         bottom: '120px',
-//         animation: `float-up-right ${position.duration}s ease-out forwards`,
-//         animationDelay: `${position.delay}s`,
-//         transform: `scale(${position.scale})`,
-//         '--wobble': `${position.wobble}px`,
-//       } as React.CSSProperties}
-//     >
-//       <FaHeart
-//         className="text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
-//         size={36}
-//       />
-//     </div>
-//   );
-// };
-
-// export default FloatingHeart;
