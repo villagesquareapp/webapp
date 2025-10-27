@@ -250,7 +250,7 @@ const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLives
                   }`}
                 >
                   <div className="flex flex-row gap-x-2 items-center">
-                    {!turnOffQuestion && <LiveStreamQuestionAndAnswer />}
+                    {/* {!turnOffQuestion && <LiveStreamQuestionAndAnswer />} */}
                     {turnOffQuestion && (
                       <Popover>
                         <PopoverTrigger>
