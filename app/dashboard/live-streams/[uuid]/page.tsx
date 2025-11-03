@@ -220,7 +220,6 @@ const LiveStreamDetailPage = async ({
     );
   }
 
-  // Fetch featured streams for the sidebar
   const featuredLivestream = await getFeaturedLivestreams(1, 1);
   const featuredLivestreams = featuredLivestream?.data?.data && Array.isArray(featuredLivestream?.data?.data)
     ? featuredLivestream?.data?.data
@@ -231,7 +230,6 @@ const LiveStreamDetailPage = async ({
   const currentUserId = user.uuid;
   const currentUserEmail = user.email;
 
-  // Debug logging
   console.log('Host comparison:', {
     hostId,
     hostEmail,
@@ -246,15 +244,8 @@ const LiveStreamDetailPage = async ({
     (hostEmail && currentUserEmail && String(hostEmail).toLowerCase() === String(currentUserEmail).toLowerCase());
 
   console.log('Is current user the host?', isHost);
-  // Determine if current user is the host
-  // const isHost = (user.uuid === streamData.host?.uuid || user.email === streamData.host?.email);
-
-  // const isHost = 
-  //   (hostId && currentUserId && String(hostId) === String(currentUserId)) ||
-  //   (hostEmail && currentUserEmail && String(hostEmail).toLowerCase() === String(currentUserEmail).toLowerCase());
-
+  
   console.log('Is current user the host?', isHost);
-  // Return appropriate component based on user role
   if (isHost) {
     return (
       <StreamHostSetup
