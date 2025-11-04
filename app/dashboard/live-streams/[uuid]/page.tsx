@@ -181,7 +181,7 @@ const LiveStreamDetailPage = async ({
   const { uuid } = await params;
   const response = await getLivestreamDetails(uuid);
 
-  console.log("API Response:", JSON.stringify(response, null, 2));
+  // console.log("API Response:", JSON.stringify(response, null, 2));
 
   // Handle the paginated response structure
   let streamData: ILivestreamDetails | null = null;
