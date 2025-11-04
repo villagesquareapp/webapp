@@ -173,7 +173,7 @@ const LivestreamPage = () => {
                 )}
 
                 {/* Live Stream Filters */}
-                <div className="flex mt-0 gap-x-4 items-center w-full overflow-x-auto">
+                <div className="flex mt-6 gap-x-4 items-center w-full overflow-x-auto">
                   {LIVE_STREAM_FILTERS.map((filter) => (
                     <Button
                       key={filter}
@@ -188,7 +188,7 @@ const LivestreamPage = () => {
                       className={cn(
                         "rounded-md shrink-0",
                         selectedFilter.includes(filter) &&
-                          "border-2 border-primary/75 font-semibold"
+                          "border-2 border-primary/75 font-semibold text-sm"
                       )}
                     >
                       {filter}
