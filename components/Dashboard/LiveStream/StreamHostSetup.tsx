@@ -38,6 +38,8 @@ import FloatingHeart from "./FloatingHeart";
 import { PiHeartFill } from "react-icons/pi";
 import LiveStreamHostQA from "./LiveStreamHostQA";
 import { GoDotFill } from "react-icons/go";
+import RemoteParticipantVideoComponent from "./RemoteParticipantVideoComponent";
+import RemoteParticipantAudioComponent from "./RemoteParticipantAudioComponent";
 
 interface StreamHostSetupProps {
   streamData: any;
@@ -46,8 +48,30 @@ interface StreamHostSetupProps {
   user: IUser;
 }
 
+interface BroadcastObject {
+  streamId: string;
+  subTrackStreamIds: string[];
+  streamName?: string;
+  metaData?: string;
+  isCameraOff?: boolean;
+  isMicMuted?: boolean;
+}
+
+interface Participant extends BroadcastObject {
+  streamId: string;
+  isFake?: boolean;
+  videoTrack?: MediaStreamTrack;
+  audioTrack?: MediaStreamTrack;
+  // add other participant properties as needed
+}
+
 // Stream states: 'setup' -> 'live'
 type StreamState = "setup" | "live";
+interface RemoteParticipantTrack {
+  trackId: string;
+  track: MediaStreamTrack;
+  kind: "video" | "audio";
+}
 
 const StreamHostSetup = ({
   streamData: initialStreamData,
@@ -60,6 +84,7 @@ const StreamHostSetup = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const websocketRef = useRef<WebSocket | null>(null);
   const webRTCAdaptorRef = useRef<WebRTCAdaptor | null>(null);
+  const allParticipants = useRef<Record<string, Participant>>({});
   const [streamData, setStreamData] = useState(initialStreamData);
   const [pendingLivestreamData, setPendingLivestreamData] = useState<any>(null);
   const [streamState, setStreamState] = useState<StreamState>("setup");
@@ -82,7 +107,7 @@ const StreamHostSetup = ({
     null
   );
   const [isEndingStream, setIsEndingStream] = useState(false);
-
+  const [commentsEnabled, setCommentsEnabled] = useState<boolean>(false);
   const [newComment, setNewComment] = useState("");
   const [viewerCount, setViewerCount] = useState<number>(
     streamData?.users ?? 0
@@ -104,6 +129,18 @@ const StreamHostSetup = ({
   const [showQADialog, setShowQADialog] = useState<boolean>(false);
   const [newQuestions, setNewQuestions] = useState<Array<any>>([]);
   const [hasUnreadQuestions, setHasUnreadQuestions] = useState(false);
+
+  const [remoteParticipantTracks, setRemoteParticipantTracks] = useState<
+    RemoteParticipantTrack[]
+  >([]);
+
+  // const [remoteTracks, setRemoteTracks] = useState<{
+  //   video: Map<string, MediaStreamTrack>;
+  //   audio: Map<string, MediaStreamTrack>;
+  // }>({
+  //   video: new Map(),
+  //   audio: new Map(),
+  // });
 
   // Load pending livestream data from localStorage
   useEffect(() => {
@@ -241,25 +278,43 @@ const StreamHostSetup = ({
 
             case "livestream-answers":
               console.log("Answer to question:", data.questionId, data);
-              if (data.questionId && data.answer) {
-                setNewQuestions((prev) =>
-                  prev.map((q) =>
-                    q.questionId === data.questionId
-                      ? {
-                          ...q,
-                          answers: [
-                            ...(q.answers || []),
-                            {
-                              answer: data.answer,
-                              user: data.user,
-                            },
-                          ],
-                        }
-                      : q
-                  )
-                );
+
+              // Validate that all required fields are present
+              if (!data.questionId || !data.answer || !data.user) {
+                console.error("Incomplete answer payload received:", data);
+                console.error("Missing fields:", {
+                  questionId: !data.questionId,
+                  answer: !data.answer,
+                  user: !data.user,
+                });
+                // toast.error("Received incomplete answer data");
+                break;
               }
+              setNewQuestions((prev) =>
+                prev.map((q) =>
+                  q.questionId === data.questionId
+                    ? {
+                        ...q,
+                        answers: [
+                          ...(q.answers || []),
+                          {
+                            answer: data.answer,
+                            user: {
+                              id: data.user.id,
+                              name: data.user.name,
+                              profile_picture: data.user.profile_picture,
+                            },
+                          },
+                        ],
+                      }
+                    : q
+                )
+              );
+
+              console.log("Answer added to question:", data.questionId);
+              toast.success("Answer received!");
               break;
+
             case "livestream-views":
               console.log("Viewer count update: ", data.total_count);
               setViewerCount(data.total_count || 0);
@@ -461,6 +516,68 @@ const StreamHostSetup = ({
     setHasUnreadQuestions(false);
   };
 
+  const onNewTrack = (obj: any) => {
+    console.log(
+      "new track available with id: " +
+        obj.trackId +
+        " and kind: " +
+        obj.track.kind +
+        " on the room:" +
+        streamData?.livestream_room_id
+    );
+    console.log(obj);
+
+    const remoteParticipantTrack: RemoteParticipantTrack = {
+      trackId: obj.trackId,
+      track: obj.track,
+      kind: obj.track.kind,
+    };
+
+    // I'm checking here if the track already exists before adding
+    setRemoteParticipantTracks((prevTracks) => {
+      const trackExists = prevTracks.some(
+        (participantTrack) =>
+          participantTrack.trackId === remoteParticipantTrack.trackId
+      );
+
+      if (!trackExists) {
+        return [...prevTracks, remoteParticipantTrack];
+      }
+      return prevTracks;
+    });
+
+    // obj.stream.onremovetrack = (event: MediaStreamTrackEvent) => {
+    //   console.log("track is removed with id: " + event.track.id);
+    //   console.log(event);
+    //   const removedTrackId = event.track.id.substring("ARDAMSx".length);
+    //   setRemoteParticipantTracks((prevTracks) =>
+    //     prevTracks.filter(
+    //       (participantTrack) => participantTrack.trackId !== removedTrackId
+    //     )
+    //   );
+    // };
+    obj.stream.onremovetrack = (event: MediaStreamTrackEvent) => {
+      console.log("Track is being removed with id: " + event.track.id);
+      console.log(event);
+
+      let removedTrackId = event.track.id;
+      if (removedTrackId.startsWith("ARDAMSx")) {
+        removedTrackId = removedTrackId.substring("ARDAMSx".length);
+      }
+
+      console.log("Removing track with cleaned ID:", removedTrackId);
+
+      setRemoteParticipantTracks((prevTracks) => {
+        const newTracks = prevTracks.filter(
+          (participantTrack) => participantTrack.trackId !== removedTrackId
+        );
+        console.log("📊 Tracks before removal:", prevTracks.length);
+        console.log("📊 Tracks after removal:", newTracks.length);
+        return newTracks;
+      });
+    };
+  };
+
   // Initialize WebRTC peer connection with TURN server
   const initializeAntMediaAdaptor = () => {
     const roomId = streamData?.livestream_room_id;
@@ -538,12 +655,15 @@ const StreamHostSetup = ({
             undefined,
             undefined,
             streamId,
-            roomId
+            roomId,
+            JSON.stringify({ isMicActive, isCameraActive })
           );
+          webRTCAdaptorRef.current?.play(roomId);
         } else if (info === "publish_started") {
           console.log("Publishing started:", obj);
           toast.success("Now broadcasting live!");
           setStreamState("live");
+          webRTCAdaptorRef.current?.play(roomId);
         } else if (info === "publish_finished") {
           console.log("Stream publish finished");
           toast.info("Stream ended");
@@ -554,6 +674,30 @@ const StreamHostSetup = ({
           // Handle stream stats if needed
         } else if (info === "data_received") {
           console.log("Data channel message:", obj);
+        } else if (info === "play_started") {
+          console.log("Playback started");
+          webRTCAdaptorRef.current?.getBroadcastObject(roomId);
+        } else if (info === "broadcastObject") {
+          console.log("Broadcast object received:", obj);
+          if (obj.broadcast === undefined) {
+            return;
+          }
+          let broadcastObject = JSON.parse(obj.broadcast);
+          if (obj.streamId === roomId) {
+            handleMainTrackBroadcastObject(broadcastObject);
+          } else {
+            console.log("Sub track broadcast object received:", obj.streamId);
+            handleSubtrackBroadcastObject(broadcastObject);
+          }
+        } else if (info === "newTrackAvailable") {
+          console.log(
+            "new track available with id: " +
+              obj.trackId +
+              " and kind: " +
+              obj.track.kind
+          );
+          console.log(obj);
+          onNewTrack(obj);
         }
       },
 
@@ -571,6 +715,72 @@ const StreamHostSetup = ({
           toast.error(`Streaming error: ${error}`);
         }
       },
+    });
+  };
+
+  const handleMainTrackBroadcastObject = (broadcastObject: BroadcastObject) => {
+    let participantIds = broadcastObject.subTrackStreamIds;
+
+    let currentTracks = Object.keys(allParticipants.current);
+    currentTracks.forEach((trackId) => {
+      if (
+        !allParticipants.current[trackId].isFake &&
+        !participantIds.includes(trackId)
+      ) {
+        console.log("stream removed:" + trackId);
+
+        delete allParticipants.current[trackId];
+      }
+    });
+
+    //request broadcast object for new tracks
+    participantIds.forEach((pid) => {
+      if (allParticipants.current[pid] === undefined) {
+        webRTCAdaptorRef.current?.getBroadcastObject(pid);
+      }
+    });
+  };
+
+  function handleSubtrackBroadcastObject(broadcastObject: BroadcastObject) {
+    if (
+      broadcastObject.metaData !== undefined &&
+      broadcastObject.metaData !== null
+    ) {
+      let userStatusMetadata = JSON.parse(broadcastObject.metaData);
+
+      if (userStatusMetadata.isCameraOff !== undefined) {
+        broadcastObject.isCameraOff = userStatusMetadata.isCameraOff;
+      }
+
+      if (userStatusMetadata.isMicMuted !== undefined) {
+        broadcastObject.isMicMuted = userStatusMetadata.isMicMuted;
+      }
+    }
+
+    allParticipants.current[broadcastObject.streamId] =
+      broadcastObject as Participant;
+  }
+
+  const renderRemoteParticipantTracks = () => {
+    return remoteParticipantTracks.map((trackObj) => {
+      if (trackObj.kind === "video") {
+        return (
+          <RemoteParticipantVideoComponent
+            key={trackObj.trackId}
+            videoTrack={trackObj.track}
+            streamIdProp={trackObj.trackId}
+          />
+        );
+      } else if (trackObj.kind === "audio") {
+        return (
+          <RemoteParticipantAudioComponent
+            key={trackObj.trackId}
+            audioTrack={trackObj.track}
+          />
+        );
+      } else {
+        return null;
+      }
     });
   };
 
@@ -1089,16 +1299,37 @@ const StreamHostSetup = ({
             )}
 
             {/* Video Element */}
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted={streamState !== "live" || isMuted}
-              className="w-full h-full object-cover transform -scale-x-100"
-              style={{
-                display: isCameraActive && !mediaError ? "block" : "none",
-              }}
-            />
+            <div
+              className={`grid ${
+                remoteParticipantTracks.filter((t) => t.kind === "video")
+                  .length === 0
+                  ? "grid-cols-1"
+                  : remoteParticipantTracks.filter((t) => t.kind === "video")
+                      .length >= 2
+                  ? "grid-cols-2"
+                  : "grid-cols-2"
+              } gap-2 w-full h-full p-2`}
+            >
+              {/* Host Video */}
+              <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted={streamState !== "live" || isMuted}
+                  className="w-full h-full object-cover transform -scale-x-100"
+                  style={{
+                    display: isCameraActive && !mediaError ? "block" : "none",
+                  }}
+                />
+                <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-white text-sm font-semibold">
+                  You (Host)
+                </div>
+              </div>
+
+              {/* Remote Participants */}
+              {renderRemoteParticipantTracks()}
+            </div>
 
             {/* Camera Off Placeholder */}
             {(!isCameraActive || mediaError) && !mediaError && (
@@ -1648,8 +1879,3 @@ const StreamHostSetup = ({
 };
 
 export default StreamHostSetup;
-
-// const testWs = new WebSocket("wss://origin-streaming-server.villagesquare.io/Livestream/websocket");
-// testWs.onopen = () => console.log("WORKS!");
-// testWs.onerror = (e) => console.error("FAILED:", e);
-// testWs.onclose = (e) => console.log("CLOSED. Code:", e.code);

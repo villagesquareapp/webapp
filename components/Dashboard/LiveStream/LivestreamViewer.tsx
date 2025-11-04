@@ -44,6 +44,7 @@ const LivestreamViewer = ({
   const websocketRef = useRef<WebSocket | null>(null);
   const playerRef = useRef<ReactPlayer>(null);
   const webRTCAdaptorRef = useRef<WebRTCAdaptor | null>(null);
+  const hlsInstanceRef = useRef<any>(null);
 
   const [isMuted, setIsMuted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -76,6 +77,33 @@ const LivestreamViewer = ({
 
   const removeHeart = (id: string | number) => {
     setHearts((prev) => prev.filter((heart) => heart.id !== id));
+  };
+
+  // Handle stream ended
+  const handleStreamEnded = () => {
+    console.log("Stream has ended (HLS EOF detected)");
+    setStreamEnded(true);
+    toast.info("The live stream has ended", { duration: 5000 });
+
+    // Stop WebRTC if applicable
+    if (webRTCAdaptorRef.current) {
+      const streamIdToStop = streamData?.stream_id;
+      console.log("Stopping stream:", streamIdToStop);
+      try {
+        webRTCAdaptorRef.current.stop(streamIdToStop);
+        if (webRTCAdaptorRef.current.closeStream) {
+          webRTCAdaptorRef.current.closeStream();
+        }
+      } catch (error) {
+        console.error("Error stopping WebRTC:", error);
+      }
+    }
+
+    // Close WebSocket connection
+    if (websocketRef.current) {
+      websocketRef.current.close();
+      websocketRef.current = null;
+    }
   };
 
   /* Initialize chat WebSocket */
@@ -147,7 +175,6 @@ const LivestreamViewer = ({
               break;
 
             case "livestream-likes":
-              // Handle likes
               const newHeart = {
                 id: Date.now() + Math.random(),
               };
@@ -157,7 +184,6 @@ const LivestreamViewer = ({
               break;
 
             case "livestream-questions":
-              console.log("New question:", data.question);
               console.log("📝 Viewer received new question:", data);
 
               if (data.question && data.user) {
@@ -184,47 +210,31 @@ const LivestreamViewer = ({
               break;
 
             case "livestream-answers":
-              // Answer received - update the question
-              console.log(" Viewer received answer:", data);
-              console.log(
-                "Full answer payload: ",
-                JSON.stringify(data, null, 2)
+              console.log("📩 Viewer received answer:", data);
+
+              setQuestions((prev) =>
+                prev.map((q) =>
+                  q.questionId === data.questionId
+                    ? {
+                        ...q,
+                        answers: [
+                          ...(q.answers || []),
+                          {
+                            user: {
+                              id: data.user.id,
+                              name: data.user.name,
+                              profile_picture: data.user.profile_picture,
+                            },
+                            answer: data.answer,
+                          },
+                        ],
+                      }
+                    : q
+                )
               );
 
-              if (data.questionId && data.answer) {
-                console.log("Answer has all required fields");
-                setQuestions((prev) =>
-                  prev.map((q) =>
-                    q.questionId === data.questionId
-                      ? {
-                          ...q,
-                          answers: [
-                            ...(q.answers || []),
-                            {
-                              user: {
-                                id: data.user.id,
-                                name: data.user.name,
-                                profile_picture: data.user.profile_picture,
-                              },
-                              answer: data.answer,
-                            },
-                          ],
-                        }
-                      : q
-                  )
-                );
-                setHasUnreadQuestions(true);
-                toast.success("Host replied to a question!");
-                console.log("🔴 Setting hasUnreadQuestions to TRUE");
-              } else {
-                console.error("Backend answer payload is imcomplete.");
-                console.error("Missing fields:");
-                if (!data.questionId) console.error("- questionId");
-                if (!data.answer) console.error("- answer");
-                if (!data.user) console.error("- user");
-
-                toast.error("Received incomplete answer data from server");
-              }
+              setHasUnreadQuestions(true);
+              toast.success("Host replied to a question!");
               break;
 
             case "livestream-views":
@@ -236,45 +246,13 @@ const LivestreamViewer = ({
               toast.success(`Gift sent! 🎁`);
               break;
 
-            // case "stream_paused":
-            //   console.log("Stream paused by host");
-            //   setIsStreamPaused(true);
-            //   toast.info("Host paused the stream");
-            //   setIsPaused(true);
-            //   break;
-
-            // case "stream_resumed":
-            //   console.log("Stream resumed by host");
-            //   setIsStreamPaused(false);
-            //   toast.success("Stream resumed!");
-            //   setIsPaused(false);
-            //   break;
-
             case "stream_duration":
               setStreamDuration(data.duration || 0);
               break;
 
-            case "stream_ended":
+            case "livestream-room-ended":
               console.log("Stream ended by host:", data);
-              setStreamEnded(true);
-              toast.info("The host has ended this live stream", {
-                duration: 5000,
-              });
-
-              // Stop WebRTC
-              if (webRTCAdaptorRef.current) {
-                const streamIdToStop = streamData?.stream_id;
-                console.log("Stopping stream:", streamIdToStop);
-                webRTCAdaptorRef.current.stop(streamIdToStop);
-                if (webRTCAdaptorRef.current.closeStream) {
-                  webRTCAdaptorRef.current.closeStream();
-                }
-              }
-
-              // Redirect after a delay
-              setTimeout(() => {
-                router.push("/dashboard/live-streams");
-              }, 3000);
+              handleStreamEnded();
               break;
 
             default:
@@ -284,9 +262,11 @@ const LivestreamViewer = ({
           console.error("Error parsing chat message:", error);
         }
       };
+
       websocketRef.current.onerror = (error) => {
         console.error("Websocket error: ", error);
       };
+
       websocketRef.current.onclose = () => {
         console.log("Websocket closed");
       };
@@ -298,34 +278,24 @@ const LivestreamViewer = ({
   useEffect(() => {
     setIsClient(true);
     initializeChatWebSocket();
+
+    return () => {
+      // Cleanup on unmount
+      if (websocketRef.current) {
+        websocketRef.current.close();
+      }
+      if (webRTCAdaptorRef.current) {
+        try {
+          webRTCAdaptorRef.current.stop(streamData?.stream_id);
+        } catch (error) {
+          console.error("Error stopping WebRTC on unmount:", error);
+        }
+      }
+    };
   }, []);
 
   const toggleMute = () => setIsMuted((prev) => !prev);
   const togglePlay = () => setIsPaused((prev) => !prev);
-
-  // const handleCommentSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (newComment.trim() && websocketRef.current) {
-  //     const message = {
-  //       type: "comment",
-  //       stream_id: streamData?.uuid || streamData?.id,
-  //       user_id: user.uuid || "anonymous",
-  //       message: newComment,
-  //       timestamp: Date.now(),
-  //     };
-  //     websocketRef.current.send(JSON.stringify(message));
-  //     setComments((prev) => [
-  //       ...prev,
-  //       {
-  //         id: Date.now(),
-  //         user: { name: "You", avatar: "/images/default-avatar.webp" },
-  //         message: newComment,
-  //         timestamp: Date.now(),
-  //       },
-  //     ]);
-  //     setNewComment("");
-  //   }
-  // };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -365,18 +335,15 @@ const LivestreamViewer = ({
   };
 
   const handleSendLike = () => {
-    // Add heart animation
     const newHeart = {
       id: Date.now() + Math.random(),
     };
     setHearts((prev) => [...prev, newHeart]);
     setLikeCount((prev) => prev + 1);
 
-    // Button animation
     setIsLikeAnimating(true);
     setTimeout(() => setIsLikeAnimating(false), 300);
 
-    // Send like via WebSocket
     if (
       websocketRef.current &&
       websocketRef.current.readyState === WebSocket.OPEN
@@ -398,12 +365,14 @@ const LivestreamViewer = ({
   };
 
   const handleLeaveStream = () => {
-    websocketRef.current?.send(
-      JSON.stringify({
-        type: "leave",
-        stream_id: streamData?.uuid || streamData?.id,
-      })
-    );
+    if (websocketRef.current) {
+      websocketRef.current.send(
+        JSON.stringify({
+          type: "leave",
+          stream_id: streamData?.uuid || streamData?.id,
+        })
+      );
+    }
     router.push("/dashboard/live-streams");
   };
 
@@ -443,6 +412,7 @@ const LivestreamViewer = ({
           </span>
         </div>
       </div>
+
       <div className="grid grid-cols-8 gap-x-4">
         <div className="col-span-6 gap-y-4 flex flex-col">
           <div className="w-full h-[66dvh] relative rounded-xl overflow-hidden bg-black">
@@ -460,7 +430,6 @@ const LivestreamViewer = ({
               </div>
             )}
 
-            {/* Stream Paused Overlay */}
             {isStreamPaused && (
               <div className="absolute inset-0 z-30 bg-black/90 flex items-center justify-center text-white flex-col gap-y-3">
                 <div className="animate-pulse">⏸️</div>
@@ -471,21 +440,55 @@ const LivestreamViewer = ({
               </div>
             )}
 
-            {/* ReactPlayer */}
             <ReactPlayer
               ref={playerRef}
               url={hlsUrl}
-              playing={!isPaused}
+              playing={!isPaused && !streamEnded}
               muted={isMuted}
               controls={false}
               onReady={() => {
                 toast.success("Connected to stream!");
                 setIsConnecting(false);
+                
+                // Access HLS instance for advanced event handling
+                const internalPlayer = playerRef.current?.getInternalPlayer();
+                if (internalPlayer && internalPlayer.hlsPlayer) {
+                  hlsInstanceRef.current = internalPlayer.hlsPlayer;
+                  
+                  // Listen to HLS error events
+                  hlsInstanceRef.current.on('hlsError', (event: string, data: any) => {
+                    console.log("HLS Error:", event, data);
+                    
+                    if (data.fatal) {
+                      switch (data.type) {
+                        case 'networkError':
+                          console.log("Network error - stream might have ended");
+                          // Check if it's actually stream end vs network issue
+                          if (data.details === 'manifestLoadError' || data.details === 'levelLoadError') {
+                            handleStreamEnded();
+                          }
+                          break;
+                        case 'mediaError':
+                          console.log("Media error detected");
+                          break;
+                      }
+                    }
+                  });
+
+                  // Listen for manifest loaded to detect stream end
+                  hlsInstanceRef.current.on('hlsManifestParsed', (event: string, data: any) => {
+                    console.log("HLS Manifest parsed:", data);
+                  });
+                }
               }}
               onError={(err) => {
                 console.error("Stream playback error:", err);
                 setStreamError("Failed to play stream. Host may not be live.");
                 setIsConnecting(false);
+              }}
+              onEnded={() => {
+                console.log("ReactPlayer onEnded triggered");
+                handleStreamEnded();
               }}
               width="100%"
               height="100%"
@@ -495,6 +498,9 @@ const LivestreamViewer = ({
                   hlsOptions: {
                     enableWorker: true,
                     lowLatencyMode: true,
+                    maxBufferLength: 10,
+                    maxMaxBufferLength: 20,
+                    liveSyncDurationCount: 3,
                   },
                 },
               }}
@@ -530,18 +536,6 @@ const LivestreamViewer = ({
                 </div>
               </div>
             </div>
-
-            {/* Floating Hearts */}
-
-            {/* Like count */}
-            {/* {likeCount > 0 && (
-              <div className="absolute top-20 right-4 z-30 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
-                <span className="text-white text-sm font-semibold flex items-center gap-1">
-                  <FaHeart className="text-red-500" size={14} />
-                  {likeCount.toLocaleString()}
-                </span>
-              </div>
-            )} */}
           </div>
 
           <div className="flex items-center justify-between">
@@ -666,7 +660,6 @@ const LivestreamViewer = ({
                       size="sm"
                       variant="ghost"
                       className="p-2 w-8 h-8"
-                      // onClick={() => setShowInviteFriendsDialog(true)}
                     >
                       <FaUserPlus className="size-4" />
                     </Button>
@@ -675,7 +668,6 @@ const LivestreamViewer = ({
                       size="sm"
                       variant="ghost"
                       className="p-2 w-8 h-8"
-                      // onClick={() => setShowGiftDialog(true)}
                     >
                       <BiSolidGift className="size-4" />
                     </Button>
@@ -708,37 +700,64 @@ const LivestreamViewer = ({
                 </div>
               </form>
             </div>
-
-            <div className="absolute bottom-16 w-full p-4 pointer-events-none">
-              {/* <div className="pointer-events-auto">
-                <SponsorCard sponsorType="liveStream" />
-              </div> */}
-            </div>
           </div>
         </div>
       </div>
+
+      {/* Stream Ended Overlay */}
       {streamEnded && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md text-center">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
-                  clipRule="evenodd"
-                />
-              </svg>
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-[100]">
+          <div className="max-w-md w-full mx-4">
+            <div className="flex flex-col items-center text-center">
+              {/* Checkmark Icon */}
+              <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center mb-6">
+                <svg
+                  className="w-12 h-12 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Live Stream Ended
+              </h2>
+
+              {/* Description */}
+              <p className="text-gray-300 mb-8">
+                The live stream has ended. Feel free to explore other live
+                stream videos below.
+              </p>
+
+              {/* Close Button */}
+              <Button
+                onClick={() => router.push("/dashboard/live-streams")}
+                className="absolute top-8 right-8 bg-transparent hover:bg-white/10 text-white p-2"
+                size="icon"
+              >
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </Button>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Live Stream Ended</h3>
-            <p className="text-muted-foreground mb-6">
-              The host has ended this live stream. Thank you for watching!
-            </p>
-            <Button
-              onClick={() => router.push("/dashboard/live-streams")}
-              className="w-full"
-            >
-              Back to Live Streams
-            </Button>
           </div>
         </div>
       )}
@@ -789,7 +808,6 @@ const LivestreamViewer = ({
                   key={question.questionId}
                   className="flex flex-col gap-y-3"
                 >
-                  {/* Question */}
                   <div className="flex items-start gap-x-3">
                     <CustomAvatar
                       src={question.user.profile_picture}
@@ -804,7 +822,6 @@ const LivestreamViewer = ({
                     </div>
                   </div>
 
-                  {/* Answers */}
                   {question.answers && question.answers.length > 0 && (
                     <div className="ml-[57px] flex flex-col gap-y-2">
                       <div className="flex items-center gap-x-2">
@@ -829,7 +846,7 @@ const LivestreamViewer = ({
                             <p className="text-sm">{ans.answer}</p>
                           </div>
                         </div>
-                      ))}{" "}
+                      ))}
                     </div>
                   )}
                 </div>
