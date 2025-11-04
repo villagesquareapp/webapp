@@ -16,12 +16,9 @@ import {
 import { Switch } from "components/ui/switch";
 import { FaArrowLeft, FaVideo } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
-// Assuming LiveStreamDialog is a wrapper for your modal/dialog
 import LiveStreamDialog from "./LiveStreamDialog";
 
-// --- Sub-Components for Separation of Concerns ---
 
-// 1. Initial Info/Settings Step
 interface StreamInfoStepProps {
   category: string | null;
   setCategory: (value: string) => void;
@@ -88,7 +85,6 @@ const StreamInfoStep = ({
         </Select>
       </div>
 
-      {/* Privacy Select */}
       <div className="flex flex-col gap-y-2">
         <Label htmlFor="privacy" className="font-semibold">
           Privacy Settings

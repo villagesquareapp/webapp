@@ -21,8 +21,8 @@ const StreamSetupModal = () => {
   const [showAdditionalSettings, setShowAdditionalSettings] =
     useState<boolean>(false);
   const [titleInput, setTitleInput] = useState<string>("");
-  const [category, setCategory] = useState<string | null>(null);
-  const [privacy, setPrivacy] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>("1");
+  const [privacy, setPrivacy] = useState<string>("everyone");
   const [streamSource, setStreamSource] = useState<string | null>(null);
   const [commentsEnabled, setCommentsEnabled] = useState<boolean>(false);
   const [questionsEnabled, setQuestionsEnabled] = useState<boolean>(false);
@@ -132,8 +132,8 @@ const StreamSetupModal = () => {
   // Close the modal
   setCurrentStep("INFO");
   setTitleInput("");
-  setCategory(null);
-  setPrivacy(null);
+  setCategory("1");
+  setPrivacy("everyone");
   setStreamSource(null);
   setCommentsEnabled(false);
   setQuestionsEnabled(false);

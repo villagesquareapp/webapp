@@ -75,6 +75,10 @@ const LivestreamViewer = ({
 
   const hlsUrl = streamData?.livestream_room_stream_url;
 
+  const commentsEnabled = streamData?.comments_enabled ?? true;
+  const questionsEnabled = streamData?.questions_enabled ?? true;
+  const giftingEnabled = streamData?.gifting_enabled ?? true;
+
   const removeHeart = (id: string | number) => {
     setHearts((prev) => prev.filter((heart) => heart.id !== id));
   };
@@ -376,6 +380,33 @@ const LivestreamViewer = ({
     router.push("/dashboard/live-streams");
   };
 
+  const handleQAClick = () => {
+    if (!questionsEnabled) {
+      toast.error("Questions are disabled for this stream");
+      return;
+    }
+    setShowQADialog(true);
+    setHasUnreadQuestions(false);
+  };
+
+  const handleAskQuestionClick = () => {
+    if (!questionsEnabled) {
+      toast.error("Questions are disabled for this stream");
+      return;
+    }
+    setShowQADialog(false);
+    setShowQuestionAndAnswerDialog(true);
+  };
+
+  const handleGiftClick = () => {
+    if (!giftingEnabled) {
+      toast.error("Gifting is disabled for this stream");
+      return;
+    }
+    // Add gift dialog logic here
+    toast.info("Gift feature coming soon!");
+  };
+
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -403,7 +434,7 @@ const LivestreamViewer = ({
     <div className="flex flex-col gap-y-4 p-4">
       <div className="flex items-center justify-between">
         <p className="font-semibold text-lg">
-          {streamData?.title || "Live Discussion"}
+          {streamData?.title || "Untitled Livestream"}{" "}
         </p>
         <div className="flex items-center gap-x-2">
           <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-x-2">
@@ -449,36 +480,47 @@ const LivestreamViewer = ({
               onReady={() => {
                 toast.success("Connected to stream!");
                 setIsConnecting(false);
-                
+
                 // Access HLS instance for advanced event handling
                 const internalPlayer = playerRef.current?.getInternalPlayer();
                 if (internalPlayer && internalPlayer.hlsPlayer) {
                   hlsInstanceRef.current = internalPlayer.hlsPlayer;
-                  
+
                   // Listen to HLS error events
-                  hlsInstanceRef.current.on('hlsError', (event: string, data: any) => {
-                    console.log("HLS Error:", event, data);
-                    
-                    if (data.fatal) {
-                      switch (data.type) {
-                        case 'networkError':
-                          console.log("Network error - stream might have ended");
-                          // Check if it's actually stream end vs network issue
-                          if (data.details === 'manifestLoadError' || data.details === 'levelLoadError') {
-                            handleStreamEnded();
-                          }
-                          break;
-                        case 'mediaError':
-                          console.log("Media error detected");
-                          break;
+                  hlsInstanceRef.current.on(
+                    "hlsError",
+                    (event: string, data: any) => {
+                      console.log("HLS Error:", event, data);
+
+                      if (data.fatal) {
+                        switch (data.type) {
+                          case "networkError":
+                            console.log(
+                              "Network error - stream might have ended"
+                            );
+                            // Check if it's actually stream end vs network issue
+                            if (
+                              data.details === "manifestLoadError" ||
+                              data.details === "levelLoadError"
+                            ) {
+                              handleStreamEnded();
+                            }
+                            break;
+                          case "mediaError":
+                            console.log("Media error detected");
+                            break;
+                        }
                       }
                     }
-                  });
+                  );
 
                   // Listen for manifest loaded to detect stream end
-                  hlsInstanceRef.current.on('hlsManifestParsed', (event: string, data: any) => {
-                    console.log("HLS Manifest parsed:", data);
-                  });
+                  hlsInstanceRef.current.on(
+                    "hlsManifestParsed",
+                    (event: string, data: any) => {
+                      console.log("HLS Manifest parsed:", data);
+                    }
+                  );
                 }
               }}
               onError={(err) => {
@@ -598,7 +640,7 @@ const LivestreamViewer = ({
         </div>
 
         {/* Chat Section */}
-        <div className="flex flex-col col-span-2 w-full gap-y-4">
+        {/* <div className="flex flex-col col-span-2 w-full gap-y-4">
           <div className="flex flex-col rounded-xl border w-full h-[66dvh] relative">
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {comments.length === 0 ? (
@@ -668,6 +710,140 @@ const LivestreamViewer = ({
                       size="sm"
                       variant="ghost"
                       className="p-2 w-8 h-8"
+                    >
+                      <BiSolidGift className="size-4" />
+                    </Button>
+                  </div>
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
+                    {hearts.map((heart) => (
+                      <FloatingHeart
+                        key={heart.id}
+                        id={heart.id}
+                        onComplete={removeHeart}
+                      />
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className={`p-2 transition-transform ${
+                      isLikeAnimating ? "animate-pulse" : ""
+                    }`}
+                    onClick={handleSendLike}
+                    style={{
+                      animation: isLikeAnimating
+                        ? "pulse-heart 0.3s ease-in-out"
+                        : "none",
+                    }}
+                  >
+                    <FaHeart className="size-4 text-red-500" />
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div> */}
+
+        <div className="flex flex-col col-span-2 w-full gap-y-4">
+          <div className="flex flex-col rounded-xl border w-full h-[66dvh] relative">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {!commentsEnabled ? (
+                <div className="text-center text-muted-foreground py-8 flex flex-col items-center justify-center h-full">
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-4 mb-4">
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                      />
+                    </svg>
+                  </div>
+                  <p className="font-semibold">
+                    The host has turned off comments for
+                  </p>
+                  <p className="font-semibold">this live stream.</p>
+                </div>
+              ) : comments.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  <p>No comments yet</p>
+                  <p className="text-sm">Be the first to comment!</p>
+                </div>
+              ) : (
+                comments.map((comment) => (
+                  <div key={comment.id} className="flex items-start gap-x-2">
+                    <CustomAvatar
+                      src={comment.user.avatar}
+                      className="size-8 shrink-0"
+                      name={comment.user.name}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-x-2 mb-1">
+                        <p className="font-semibold text-sm truncate">
+                          {comment.user.name}
+                        </p>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimestamp(comment.timestamp)}
+                        </span>
+                      </div>
+                      <p className="text-sm break-words">{comment.message}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="p-4 border-t">
+              <form onSubmit={handleCommentSubmit} className="space-y-3">
+                <Input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={
+                    commentsEnabled ? "Add comment..." : "Comments are disabled"
+                  }
+                  className="w-full"
+                  disabled={!commentsEnabled}
+                />
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-x-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className={`p-2 w-8 h-8 relative ${
+                        !questionsEnabled ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      onClick={handleQAClick}
+                      disabled={!questionsEnabled}
+                    >
+                      <VSChatAsk className="size-4" />
+                      {questionsEnabled && hasUnreadQuestions && (
+                        <GoDotFill className="absolute -top-1 -right-1 size-5 text-red-600" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="p-2 w-8 h-8"
+                    >
+                      <FaUserPlus className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className={`p-2 w-8 h-8 ${
+                        !giftingEnabled ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      onClick={handleGiftClick}
+                      disabled={!giftingEnabled}
                     >
                       <BiSolidGift className="size-4" />
                     </Button>
