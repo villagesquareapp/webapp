@@ -54,7 +54,7 @@ export function Login({ className, ...props }: LoginProps) {
         password: values.password,
         timezone: getTimeZone(),
         login_type: "password",
-        provider: "default",
+        // provider: "default",
         // provider_token: null,
         // device_id: null,
         // device: null,
@@ -70,6 +70,7 @@ export function Login({ className, ...props }: LoginProps) {
 
       if (result.error) {
         toast.error(result.error);
+        console.log("Login error:", result.error);
       } else {
         setIsRedirecting(true);
         toast.success("Logged in successfully");
@@ -79,6 +80,8 @@ export function Login({ className, ...props }: LoginProps) {
       toast.error(
         error instanceof Error ? error.message : "Authentication failed"
       );
+      console.log("Login exception:", error);
+      
     } finally {
       if (!isRedirecting) {
         setIsLoading(false);
@@ -117,11 +120,10 @@ export function Login({ className, ...props }: LoginProps) {
       setIsGoogleLoading(true);
 
       const result = await signIn("google", {
-        callbackUrl: "/dashboard/social", // Where to land after success
-        redirect: false, // Let NextAuth handle redirect
+        callbackUrl: "/dashboard/social", 
+        redirect: false,
       });
 
-      // Normally, if redirect: true, this part won't run unless there's an error
       if (result?.error) {
         toast.error(result.error);
       }
@@ -222,7 +224,7 @@ export function Login({ className, ...props }: LoginProps) {
             </div>
 
             <p className="px-3 text-center text-sm">
-              If you have forgot your password{" "}
+              If you have forgotten your password{" "}
               <Link
                 href="/auth/forgot-password"
                 className="hover:text-foreground font-semibold"

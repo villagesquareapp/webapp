@@ -23,7 +23,7 @@ export async function getPosts(params: GetPostsParams = {}) {
   const route = `/posts/social/foryou?${queryParams.toString()}`;
 
   const response = await apiGet<IPostsResponse>(route, token);
-  console.log("Response from API: ", response);
+  // console.log("Response from API: ", response);
   if (!response.status) {
     console.error("Error fetching posts:", response.message);
     return null;
