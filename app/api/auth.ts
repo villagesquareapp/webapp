@@ -24,9 +24,9 @@ interface SocialRegisterData {
 
 export async function socialRegister(data: SocialRegisterData) {
     const registerData: RegisterData & Partial<SocialRegisterData> = {
-        username: '', // These would come from the OAuth provider
-        email: '',    // These would come from the OAuth provider
-        name: '',     // These would come from the OAuth provider
+        username: '',
+        email: '',   
+        name: '',    
         registration_type: data.provider,
         timezone: getTimeZone(),
         ...data,

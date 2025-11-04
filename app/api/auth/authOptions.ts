@@ -35,24 +35,53 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, _req) {
         try {
-          const authResponse = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email_or_username: credentials?.email_or_username,
-              password: credentials?.password,
-              login_type: credentials?.login_type,
-              provider: credentials?.provider,
-              provider_token: null,
-              device_id: null,
-              device: null,
-              fcm_token: null,
-              timezone: getTimeZone(),
-              audience: "web",
-            }),
+          const requestBody = JSON.stringify({
+            email_or_username: credentials?.email_or_username,
+            password: credentials?.password,
+            login_type: credentials?.login_type,
+            provider: credentials?.provider,
+            provider_token: null,
+            device_id: null,
+            device: null,
+            fcm_token: null,
+            timezone: getTimeZone(),
+            audience: "web",
           });
+          console.log("Credential Request: ", requestBody);
+
+          const authResponse = await fetch(
+            `${process.env.API_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: requestBody,
+            }
+          );
+
+          console.log("Credential Response Status: ", authResponse.status);
+          console.log(
+            "Credential Response Headers: ",
+            Object.fromEntries(authResponse.headers.entries())
+          );
+
+          const contentType = authResponse.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            const textResponse = await authResponse.text();
+            console.error(
+              "Non-JSON response received:",
+              textResponse.substring(0, 200)
+            );
+
+            if (authResponse.status >= 500) {
+              throw new Error(
+                "Server error. Please try again later or contact support."
+              );
+            }
+
+            throw new Error("Invalid server response. Please try again.");
+          }
 
           const authData = await authResponse.json();
 
@@ -61,6 +90,7 @@ export const authOptions: NextAuthOptions = {
 
           return authData.data;
         } catch (error: any) {
+          console.error("Authorization error:", error);
           throw new Error(error.message || "Authentication failed");
         }
       },
@@ -93,7 +123,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           const data = await res.json();
-          console.log("Backend response:", data);
+          // console.log("Backend response:", data);
 
           if (!res.ok || !data.status) {
             console.log(
@@ -101,6 +131,11 @@ export const authOptions: NextAuthOptions = {
               data.message
             );
             return false;
+          }
+
+          if (data.data) {
+            (user as any).backendData = data.data;
+            console.log("Social account data:", data.data);
           }
 
           console.log("Social login approved");
@@ -118,6 +153,9 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
+      if ((user as any)?.backendData) {
+        token = { ...token, ...((user as any).backendData as any) };
+      }
       if (account?.userData) {
         token = { ...token, ...account.userData };
       }
