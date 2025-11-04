@@ -42,12 +42,12 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },
-  {
-    title: "Live Streams",
-    url: "/dashboard/live-streams",
-    icon: <HiOutlineVideoCamera className="!size-[28px] -ml-0.5" />,
-    activeIcon: <VSCameraFill className="fill-black !size-[26px] -ml-0.5" />,
-  },
+  // {
+  //   title: "Live Streams",
+  //   url: "/dashboard/live-streams",
+  //   icon: <HiOutlineVideoCamera className="!size-[28px] -ml-0.5" />,
+  //   activeIcon: <VSCameraFill className="fill-black !size-[26px] -ml-0.5" />,
+  // },
   // {
   //   title: "Messages",
   //   url: "/dashboard/messages",
