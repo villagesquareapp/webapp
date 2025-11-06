@@ -129,9 +129,9 @@ const ReplyModal = ({
         const newReply: IPostComment = {
           uuid: result.data?.uuid || `temp-${Date.now()}`,
           caption: newComment,
-          user_id: user.uuid, // required by IPostComment
-          parent_post_id: "", // set appropriately if available
-          root_post_id: "", // set appropriately if available
+          user_id: user.uuid, 
+          parent_post_id: "",
+          root_post_id: "",
           quote_post_id: null,
           thread_id: "",
           address: null,
@@ -154,13 +154,12 @@ const ReplyModal = ({
           is_thread_continuation: false,
           media: uploadedFiles.length > 0 ? [] : [],
 
-          // ✅ Now fill user with all required fields from IPostUser
           user: {
             uuid: user.uuid,
             name: user.name,
             username: user.username,
             profile_picture: user.profile_picture,
-            email: user.email ?? "", // fallback if not available
+            email: user.email ?? "", 
             verified_status: user.verified_status ?? 0,
             checkmark_verification_status:
               user.checkmark_verification_status ?? false,
