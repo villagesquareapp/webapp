@@ -27,12 +27,12 @@ const ReplyPostActionButtons = ({
   onOpenReplyModal: () => void;
 }) => {
   return (
-    <div className="flex flex-row justify-between items-center px-4 mt-2">
-      <div className="flex flex-row gap-x-7 items-center">
+    <div className="flex flex-row justify-between items-center mt-2">
+      <div className="flex flex-row gap-x-5 items-center">
         <div className="flex flex-row gap-x-1 items-center">
           <PiHeartFill
             onClick={() => likeUnlikePost(reply.uuid)}
-            className={`size-6 cursor-pointer text-gray-500 ${
+            className={`size-5 cursor-pointer text-gray-500 ${
               reply.is_liked && "text-red-600"
             }`}
           />
@@ -46,15 +46,15 @@ const ReplyPostActionButtons = ({
           onOpenReplyModal={onOpenReplyModal}
         />
         <div className="flex flex-row gap-x-1 items-center">
-          <IoMdShareAlt className="size-6 cursor-pointer text-gray-500" />
+          <IoMdShareAlt className="size-5 cursor-pointer text-gray-500" />
           <p className="text-sm text-gray-400">{reply?.shares_count}</p>
         </div>
         <div className="flex flex-row gap-x-1 items-center">
           <BsBookmarkDashFill
             onClick={() => saveUnsavePost(reply.uuid)}
-            className={`size-5 ${
+            className={`size-4 ${
               reply?.is_saved && "text-primary"
-            } size-5 cursor-pointer text-gray-500`}
+            } cursor-pointer text-gray-500`}
           />
         </div>
       </div>

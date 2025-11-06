@@ -109,14 +109,14 @@ export const authOptions: NextAuthOptions = {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                provider: "google",
+                audience: "web",
                 auth_type: "google",
-                provider_token: account.id_token || account.access_token,
-                timezone: getTimeZone(),
+                device: "browser",
                 device_id: null,
                 fcm_token: null,
-                device: "browser",
-                audience: "web",
+                provider: "google",
+                provider_token: account.id_token || account.access_token,
+                timezone: getTimeZone(),
               }),
             }
           );

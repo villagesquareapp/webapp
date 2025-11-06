@@ -40,7 +40,7 @@ const SocialPostDetails = ({
   const [activeMediaCarouselIndex, setActiveMediaCarouselIndex] = useState<number>(0);
 
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="flex flex-col gap-y-2">
       <PostHeader post={post} />
 
       <div className="flex flex-col gap-y-4">

@@ -5,9 +5,6 @@ import PostText from "./PostText";
 import PostVideo from "./PostVideo";
 import SocialPostActionButtons from "./SocialPostActionButtons";
 import { useState } from "react";
-import PostDetails from "./PostDetails";
-import { ArrowLeft } from "lucide-react";
-import { on } from "events";
 
 const EachSocialPost = ({
   post,
@@ -51,27 +48,21 @@ const EachSocialPost = ({
       setTimeout(() => {
         setIsPlayingVideo(false);
         setCurrentVideoPlaying("");
-        // Open details after ensuring video is paused
-        // setClickedMediaIndex(mediaIndex ?? 0);
-        // setShowPostDetails(true);
         onOpenPostDetails();
       }, 150);
     } else {
       onOpenPostDetails();
-      // No video playing, just open details immediately
-      // setClickedMediaIndex(mediaIndex ?? 0);
-      // setShowPostDetails(true);
     }
   };
 
   const isSingleMedia = post?.media?.length === 1;
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-2 -mt-2 px-4 md:px-0 py-3 md:py-0 border-b md:border-b-0 border-gray-800">
       <PostHeader post={post} />
 
       <div
-        className="flex flex-col gap-y-2 cursor-pointer"
+        className="flex flex-col cursor-pointer"
         onClick={(e) => handlePostClickWithVideoPause(e)}
       >
         {/* Post text with highlighted hashtags */}
@@ -83,7 +74,7 @@ const EachSocialPost = ({
         </div>
         {!!post?.media?.length && (
           <div
-            className={`p-4 ${
+            className={`md:p-4 ${
               isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"
             }`}
           >
@@ -103,7 +94,7 @@ const EachSocialPost = ({
                   {media?.media_type === "image" && (
                     <div
                       onClick={(e) => handlePostClickWithVideoPause(e, index)}
-                      className={`w-full relative rounded-xl overflow-hidden ${
+                      className={`w-full relative rounded-xl md:rounded-2xl overflow-hidden ${
                         isSingleMedia
                           ? "aspect-[4/5] max-h-[500px]"
                           : shouldSpanFull
@@ -149,7 +140,7 @@ const EachSocialPost = ({
             })}
           </div>
         )}
-        <span className="flex flex-row items-center gap-x-1 px-4">
+        <span className="flex flex-row items-center gap-x-1 md:px-4">
           {post?.address && (
             <>
               <span className="text-xs text-muted-foreground">
@@ -168,7 +159,7 @@ const EachSocialPost = ({
         user={user}
         onOpenReplyModal={onOpenReplyModal}
       />
-      <Separator className="my-2" />
+      <Separator className="my-2 md:my-0 hidden md:block" />
     </div>
   );
 };
