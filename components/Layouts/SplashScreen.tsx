@@ -10,7 +10,7 @@ export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2500); // splash screen duration (2.5s)
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -19,7 +19,7 @@ export default function SplashScreen() {
     <AnimatePresence>
       {showSplash && (
         <motion.div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#020817] text-white"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-white"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.8 } }}
         >
