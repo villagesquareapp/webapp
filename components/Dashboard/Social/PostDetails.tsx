@@ -23,6 +23,7 @@ import { on } from "events";
 import { toast } from "sonner";
 import PostHeader from "./PostHeader";
 import { HiMiniCheckBadge } from "react-icons/hi2";
+import ReplyToPostModal from "./ReplyToPostModal";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -36,7 +37,8 @@ interface PostDetailsProps {
   setIsPlayingVideo: (playing: boolean) => void;
   initialMediaIndex?: number;
   onOpenReplyModal: (post: IPost, replyToComment?: IPostComment) => void;
-  // onReplySuccess: (newReply: IPostComment) => void;
+  onReplySuccess: (newReply: IPostComment) => void;
+  newReply?: IPostComment | null;
   // isReplyModalOpen: boolean;
   // setIsReplyModalOpen: (open: boolean) => void;
 }
@@ -54,8 +56,9 @@ const PostDetails = ({
   setIsPlayingVideo,
   initialMediaIndex,
   onOpenReplyModal,
-}: // onReplySuccess,
-PostDetailsProps) => {
+  onReplySuccess,
+  newReply
+}: PostDetailsProps) => {
   const {
     replyingTo,
     setReplyingTo,
@@ -92,6 +95,24 @@ PostDetailsProps) => {
     }
   }, [post.uuid]);
 
+  const handleFetchReplies = async (page: number) => {
+    setIsLoadingReplies(true);
+    try {
+      const response = await getPostComments(post.uuid, page);
+      if (response?.status && response.data) {
+        setReplies(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching replies:", error);
+    } finally {
+      setIsLoadingReplies(false);
+    }
+  };
+
+  useEffect(() => {
+    handleFetchReplies(1);
+  }, [post.uuid, post.replies_count]);
+
   // const handleReplySuccess = useCallback((newReply: IPostComment) => {
   //   setReplies((prev) => [newReply, ...prev]);
 
@@ -101,7 +122,6 @@ PostDetailsProps) => {
   // }, [onReplySuccess]);
 
   const handleLikeReply = useCallback(async (replyId: string) => {
-    // Optimistically update the UI
     setReplies((prev) =>
       prev.map((reply) =>
         reply.uuid === replyId
@@ -166,21 +186,10 @@ PostDetailsProps) => {
   }, [post.uuid, setCurrentVideoPlaying, setIsPlayingVideo]);
 
   useEffect(() => {
-    const handleFetchReplies = async (page: number) => {
-      setIsLoadingReplies(true);
-      try {
-        const response = await getPostComments(post.uuid, page);
-        if (response?.status && response.data) {
-          setReplies(response.data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching replies:", error);
-      } finally {
-        setIsLoadingReplies(false);
-      }
-    };
-    handleFetchReplies(1);
-  }, [post.uuid]);
+    if (newReply) {
+      setReplies((prev) => [newReply, ...prev]);
+    }
+  }, [newReply]);
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto">

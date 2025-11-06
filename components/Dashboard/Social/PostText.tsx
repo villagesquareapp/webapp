@@ -30,7 +30,7 @@ export const PostText = ({ text }: { text: string }) => {
   return (
     <div className="px-4">
       <div
-        className={`whitespace-pre-line ${
+        className={`whitespace-pre-line font-normal text-[15px] text-white/90  ${
           !isExpanded && needsTruncation ? "line-clamp-6" : ""
         }`}
       >
