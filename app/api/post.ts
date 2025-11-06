@@ -4,7 +4,7 @@ import { apiGet, apiPost } from "lib/api";
 import { getToken } from "lib/getToken";
 
 interface GetPostsParams {
-  order?: "latest" | "popular";
+  order?: "latest";
   location?: string;
   include?: string;
   page?: number;
@@ -26,6 +26,29 @@ export async function getPosts(params: GetPostsParams = {}) {
   // console.log("Response from API: ", response);
   if (!response.status) {
     console.error("Error fetching posts:", response.message);
+    return null;
+  }
+  return response.data || null;
+}
+
+// Add this to your app/api/post.ts file
+
+export async function getFollowingPosts(params: GetPostsParams = {}) {
+  // Get the session
+  const token = await getToken();
+  const queryParams = new URLSearchParams();
+
+  if (params.order) queryParams.append("order", params.order);
+  if (params.location) queryParams.append("location", params.location);
+  if (params.include) queryParams.append("include", params.include);
+  if (params.page) queryParams.append("page", params.page.toString());
+
+  const route = `/posts/social/following?${queryParams.toString()}`;
+
+  const response = await apiGet<IPostsResponse>(route, token);
+  
+  if (!response.status) {
+    console.error("Error fetching following posts:", response.message);
     return null;
   }
   return response.data || null;

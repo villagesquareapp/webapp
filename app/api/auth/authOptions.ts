@@ -107,20 +107,23 @@ export const authOptions: NextAuthOptions = {
         console.log("Google provider_token (ID token):", account.id_token);
 
         try {
-          const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              provider: "google",
-              auth_type: "google",
-              provider_token: account.id_token || account.access_token,
-              timezone: getTimeZone(),
-              device_id: null,
-              fcm_token: null,
-              device: "browser",
-              audience: "web",
-            }),
-          });
+          const res = await fetch(
+            `${process.env.API_URL}/auth/social-account`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                audience: "web",
+                auth_type: "google",
+                device: "browser",
+                device_id: null,
+                fcm_token: null,
+                provider: "google",
+                provider_token: account.id_token || account.access_token,
+                timezone: getTimeZone(),
+              }),
+            }
+          );
 
           const data = await res.json();
           // console.log("Backend response:", data);

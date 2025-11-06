@@ -59,7 +59,7 @@ const PostHeader = ({
               {post?.user?.name}
             </span>
             {!!post?.user?.verified_status && (
-              <HiMiniCheckBadge className="size-5 text-green-600 ml-1" />
+              <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
             )}
             <span>
               <BsDot />
@@ -87,7 +87,7 @@ const PostHeader = ({
         {showMoreDetailButton ? (
           <Popover>
             <PopoverTrigger>
-              <IoEllipsisHorizontal className="size-6" />
+              <IoEllipsisHorizontal className="size-5" />
             </PopoverTrigger>
             <PopoverContent
               align="end"

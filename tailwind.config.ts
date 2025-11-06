@@ -18,6 +18,7 @@ export default {
 			fontFamily: {
 				poppins: ["var(--font-poppins)"],
 				"albert-sans": ["var(--font-albert-sans)"],
+				ogonek: ['"Ogonek Unicase"', 'sans-serif'],
 			},
 			colors: {
 				background: 'hsl(var(--background))',

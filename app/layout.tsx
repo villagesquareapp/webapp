@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./Providers";
 import CustomToaster from "components/ui/custom/custom-toaster";
 import { Metadata } from "next";
+import SplashScreen from "components/Layouts/SplashScreen";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             enableSystem
             disableTransitionOnChange
           >
+            {/* <SplashScreen /> */}
             <div className="min-h-[100dvh] overflow-x-hidden relative">{children}</div>
             <CustomToaster />
           </ThemeProvider>
