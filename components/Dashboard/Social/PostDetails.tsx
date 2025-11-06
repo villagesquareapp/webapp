@@ -21,6 +21,8 @@ import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
 import { on } from "events";
 import { toast } from "sonner";
+import PostHeader from "./PostHeader";
+import { HiMiniCheckBadge } from "react-icons/hi2";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -225,7 +227,6 @@ PostDetailsProps) => {
             </button>
           </div>
         </div>
-
         {/* Comments */}
         {isLoadingReplies ? (
           <LoadingSpinner />
@@ -245,6 +246,9 @@ PostDetailsProps) => {
                         <span className="font-semibold text-sm text-white">
                           {reply.user?.name}
                         </span>
+                        {!!reply?.user?.verified_status && (
+                          <HiMiniCheckBadge className="size-4 text-green-600" />
+                        )}
                         <span className="text-xs text-gray-400">
                           · {reply.formatted_time}
                         </span>
@@ -253,8 +257,9 @@ PostDetailsProps) => {
                         @{reply.user?.username}
                       </div>
                     </div>
+                    {/* <PostHeader post={reply} /> */}
 
-                    <p className="text-sm text-gray-200 mt-4">
+                    <p className="text-sm text-gray-200 mt-2">
                       {reply.caption}
                     </p>
 

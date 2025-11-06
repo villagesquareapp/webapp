@@ -4,6 +4,10 @@ import { AppSidebar } from "./AppSidebar";
 import DashboardNavbar from "./DashboardNavbar";
 import { getNotifications } from "api/notification";
 import CustomToaster from "components/ui/custom/custom-toaster";
+// import MobileBottomNav from "./MobileBottomNav";
+import MobileBlockScreen from "./MobileBlockScreen";
+import { Splash } from "next/font/google";
+import SplashScreen from "./SplashScreen";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -11,14 +15,17 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   return (
-    <main className="md:hidden lg:flex relative font-albert-sans">
-      <DashboardNavbar />
-      <SidebarProvider>
-        <AppSidebar />
-        <div className="flex-1 mt-16 pl-6 relative">{children}</div>
-      </SidebarProvider>
-      <CustomToaster />
-    </main>
+    <MobileBlockScreen>
+        <SplashScreen />
+      <main className="md:hidden lg:flex relative font-albert-sans">
+        <DashboardNavbar />
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex-1 mt-16 pl-6 relative">{children}</div>
+        </SidebarProvider>
+        <CustomToaster />
+      </main>
+    </MobileBlockScreen>
   );
 };
 

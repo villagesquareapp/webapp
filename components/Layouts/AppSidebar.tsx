@@ -42,36 +42,6 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },
-  // {
-  //   title: "Live Streams",
-  //   url: "/dashboard/live-streams",
-  //   icon: <HiOutlineVideoCamera className="!size-[28px] -ml-0.5" />,
-  //   activeIcon: <VSCameraFill className="fill-black !size-[26px] -ml-0.5" />,
-  // },
-  // {
-  //   title: "Messages",
-  //   url: "/dashboard/messages",
-  //   icon: <MdMailOutline className="!size-6 -ml-0.5" />,
-  //   activeIcon: <VSMailFill className="fill-black !size-6 -ml-0.5" />,
-  // },
-  // {
-  //   title: "Wallet",
-  //   url: "/dashboard/wallet",
-  //   icon: <VSWalletOutline className="!size-6 mt-2" />,
-  //   activeIcon: <VSWalletFill className="fill-black !size-6 mt-1" />,
-  // },
-  // {
-  //   title: "Profile",
-  //   url: "/dashboard/profile",
-  //   icon: <IoPersonOutline className="!size-6 -ml-0.5" />,
-  //   activeIcon: <IoPersonSharp className="!fill-black !size-6 -ml-0.5" />,
-  // },
-  // {
-  //   title: "More Pages",
-  //   url: "#",
-  //   icon: <VSMore className="!size-[28px] -mb-2 -ml-0.5" />,
-  //   activeIcon: <VSMore className="!fill-black !size-6 -ml-0.5" />,
-  // },
 ];
 
 const morePageItems = [
@@ -127,7 +97,7 @@ export function AppSidebar() {
                               <Link
                                 key={moreItem.title}
                                 href={moreItem.url}
-                                className="flex flex-row  items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
+                                className="flex flex-row items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
                               >
                                 {moreItem.icon}
                                 <span className="font-medium text-xl">{moreItem.title}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { getPosts, likeOrUnlikePost, saveOrUnsavePost } from "app/api/post";
+import { getPosts, getFollowingPosts, likeOrUnlikePost, saveOrUnsavePost } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
@@ -11,12 +11,15 @@ import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
 
+type TabType = "explore" | "connections";
+
 const SocialPost = ({ user }: { user: IUser }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isPostLoading, setIsPostLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [loadingMorePost, setLoadingMorePost] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<TabType>("explore");
 
   const [currentVideoPlaying, setCurrentVideoPlaying] = useState<string>("");
   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
@@ -30,28 +33,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const [replyToReply, setReplyToReply] = useState<IPostComment | null>(null);
 
   const scrollRef = useRef(0);
-
-  // const likeUnlikePost = async (postId: string) => {
-  //   const formData = new FormData();
-  //   const result = await likeOrUnlikePost(postId, formData);
-  //   if (result?.status) {
-  //     setPosts((prev) =>
-  //       prev.map((post) =>
-  //         post.uuid === postId
-  //           ? {
-  //               ...post,
-  //               likes_count: result?.data?.is_liked
-  //                 ? (Number(post.likes_count) + 1).toString()
-  //                 : (Number(post.likes_count) - 1).toString(),
-  //               is_liked: !post.is_liked,
-  //             }
-  //           : post
-  //       )
-  //     );
-  //   } else {
-  //     toast.error(result?.message);
-  //   }
-  // };
 
   const likeUnlikePost = useCallback(async (postId: string) => {
     // Optimistically update the UI
@@ -123,7 +104,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
     }
   };
 
-  const fetchPosts = async (pageNumber: number) => {
+  const fetchPosts = async (pageNumber: number, tab: TabType = activeTab) => {
     try {
       if (pageNumber === 1) {
         setIsPostLoading(true);
@@ -131,12 +112,17 @@ const SocialPost = ({ user }: { user: IUser }) => {
         setLoadingMorePost(true);
       }
 
-      const response = await getPosts({
-        order: "latest",
+      const params = {
+        order: "latest" as const,
         location: "lagos",
         include: "livestream,echo,post",
         page: pageNumber,
-      });
+      };
+
+      // Choose endpoint based on active tab
+      const response = tab === "explore" 
+        ? await getPosts(params)
+        : await getFollowingPosts(params);
 
       const newPosts = response?.data;
 
@@ -164,8 +150,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
   };
 
   useEffect(() => {
-    fetchPosts(page);
-  }, [page]);
+    fetchPosts(page, activeTab);
+  }, [page, activeTab]);
 
   const observerTarget = useRef(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -202,7 +188,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
       observer.observe(currentTarget);
     }
     return () => {
-      // if (currentTarget) observer.unobserve(currentTarget);
       observer.disconnect();
       observerRef.current = null;
     };
@@ -311,16 +296,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
     handleCloseReplyModal();
   };
 
-  // const handleReplyCountUpdate = (postId: string) => {
-  //   // Optimistically update the replies count in the main posts list
-  //   setPosts((prev) =>
-  //     prev.map((p) =>
-  //       p.uuid === postId
-  //         ? { ...p, replies_count: (Number(p.replies_count) + 1).toString() }
-  //         : p
-  //     )
-  //   );
-  // };
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setPage(1); // Reset to page 1
+    setPosts([]); // Clear existing posts
+    setHasMore(true); // Reset hasMore
+  };
 
   return (
     <>
@@ -337,27 +318,45 @@ const SocialPost = ({ user }: { user: IUser }) => {
           isPlayingVideo={isPlayingVideo}
           setIsPlayingVideo={setIsPlayingVideo}
           onOpenReplyModal={handleOpenReplyModal}
-          // onReplySuccess={handleReplySuccess}
         />
       ) : (
         <>
-          <AddPost user={user} onRefreshPosts={() => fetchPosts(1)} />
+          <AddPost user={user} onRefreshPosts={() => fetchPosts(1, activeTab)} />
 
           <div className="flex flex-col gap-y-4">
-            <div className="border-b-[1.5px] flex justify-between">
-              <div className="flex flex-row">
-                <span className="py-3 px-5 text-lg border-b-4 border-primary">
+            {/* Header with tabs - Responsive */}
+            <div className="border-b-[1.5px] flex justify-between sticky top-16 bg-background z-10 md:static md:top-0">
+              <div className="flex flex-row w-full md:w-auto">
+                <button
+                  onClick={() => handleTabChange("explore")}
+                  className={`py-3 px-3 md:px-5 text-base md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors ${
+                    activeTab === "explore"
+                      ? "border-b-4 border-primary font-semibold"
+                      : "text-gray-400 hover:text-foreground"
+                  }`}
+                >
                   Explore
-                </span>
-                <span className="py-3 px-5 text-lg">Connections</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange("connections")}
+                  className={`py-3 px-3 md:px-5 text-base md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors hidden sm:block ${
+                    activeTab === "connections"
+                      ? "border-b-4 border-primary font-semibold"
+                      : "text-gray-400 hover:text-foreground"
+                  }`}
+                >
+                  Connections
+                </button>
               </div>
-              <SocialPostFilterDialog />
+              <div className="hidden md:flex items-center">
+                <SocialPostFilterDialog />
+              </div>
             </div>
 
             {isPostLoading && <LoadingSpinner />}
 
             {!isPostLoading && posts?.length > 0 && (
-              <div className="border rounded-xl flex flex-col gap-y-4 py-4">
+              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
                 {posts.map((post) => (
                   <EachSocialPost
                     key={post.uuid}

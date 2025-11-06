@@ -25,6 +25,7 @@ import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { RiUserLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { getTimeZone } from "lib/timezone";
+import Image from "next/image";
 
 
 interface LoginProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -295,6 +296,33 @@ export function Login({ className, ...props }: LoginProps) {
           Register Now
         </Link>
       </p>
+      <div className="flex items-center w-full justify-between mt-6">
+      <Link
+        href="https://play.google.com/store/apps/details?id=io.villagesquare.app"
+        target="_blank"
+      >
+        <Image
+          src="/images/play_store.png"
+          alt="Get it on Google Play"
+          width={220}
+          height={50}
+          className="object-contain"
+        />
+      </Link>
+
+      <Link
+        href="https://apps.apple.com/ng/app/villagesquare/id6746132330"
+        target="_blank"
+      >
+        <Image
+          src="/images/app_store.png"
+          alt="Download on the App Store"
+          width={220}
+          height={50}
+          className="object-contain"
+        />
+      </Link>
+    </div>
     </>
   );
 }
