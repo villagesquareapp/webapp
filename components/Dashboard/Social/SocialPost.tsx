@@ -344,20 +344,25 @@ const SocialPost = ({ user }: { user: IUser }) => {
               <div className="flex flex-row w-full md:w-auto">
                 <button
                   onClick={() => handleTabChange("explore")}
-                  className={`py-3 px-2 md:px-5 text-sm md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors ${
+                  // className={`py-3 px-2 md:px-5 text-sm md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors ${
+                  //   activeTab === "explore"
+                  //     ? "border-b-4 border-primary font-semibold"
+                  //     : "text-gray-400 hover:text-foreground"
+                  // }`}
+                  className={`px-6 py-3 text-sm font-medium ${
                     activeTab === "explore"
-                      ? "border-b-4 border-primary font-semibold"
-                      : "text-gray-400 hover:text-foreground"
+                      ? "text-white border-b-2 border-blue-500"
+                      : "text-gray-400"
                   }`}
                 >
                   Explore
                 </button>
                 <button
                   onClick={() => handleTabChange("connections")}
-                  className={`py-3 px-3 md:px-5 text-[10px] md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors hidden sm:block ${
+                  className={`px-6 py-3 text-sm font-medium ${
                     activeTab === "connections"
-                      ? "border-b-4 border-primary font-semibold"
-                      : "text-gray-400 hover:text-foreground"
+                      ? "text-white border-b-2 border-blue-500"
+                      : "text-gray-400"
                   }`}
                 >
                   Connections

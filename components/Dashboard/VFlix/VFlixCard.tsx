@@ -157,7 +157,7 @@ export default function VflixCard({
 
   return (
     <div 
-      className="relative w-full h-full bg-black rounded-xl overflow-hidden"
+      className="relative w-full h-[85vh] bg-black rounded-xl overflow-hidden"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >

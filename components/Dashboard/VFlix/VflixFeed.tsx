@@ -110,7 +110,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
       )}
 
       {/* Video Card */}
-      <div className="relative w-[550px] h-[700px] rounded-xl shadow-lg overflow-hidden">
+      <div className="relative w-[550px] h-[85vh] rounded-xl shadow-lg overflow-hidden">
         {videos[currentIndex] && (
           <VflixCard
             post={videos[currentIndex]}
