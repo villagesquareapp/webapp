@@ -38,8 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             enableSystem
             disableTransitionOnChange
           >
-            {/* <SplashScreen /> */}
-            <div className="min-h-[100dvh] overflow-x-hidden relative">{children}</div>
+            <div className="">{children}</div>
             <CustomToaster />
           </ThemeProvider>
         </Providers>
@@ -47,3 +46,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+// min-h-[100dvh] overflow-x-hidden relative
