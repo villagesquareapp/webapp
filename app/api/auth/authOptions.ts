@@ -156,16 +156,18 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       console.log("JWT callback invoked: ", token, user, account);
       
-      // if ((user as any)?.backendData) {
-      //   token = { ...token, ...((user as any).backendData as any) };
-      // }
-      // if (account?.userData) {
-      //   token = { ...token, ...account.userData };
-      // }
-      // if (user) {
-      //   token = { ...token, ...user };
-      // }
-      return token;
+      if ((user as any)?.backendData) {
+        token = { ...token, ...((user as any).backendData as any) };
+      }
+      if (account?.userData) {
+        token = { ...token, ...account.userData };
+      }
+      if (user) {
+        token = { ...token, ...user };
+      }
+      const { access_token, ...rest } = token;
+      return rest;
+      // return token;
     },
     async session({ session, token }) {
       session.user = token as any;

@@ -95,6 +95,7 @@ interface IUser {
   verified_status: number;
   checkmark_verification_status: boolean;
   premium_verification_status: boolean;
+  verification_badge: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -118,6 +119,8 @@ interface IUser {
   following: number;
   is_blocked: boolean;
   token: string;
+  access_token?: string;
+  refresh_token?: string;
   provider?: string;
   provider_id?: string;
   provider_token?: string;
