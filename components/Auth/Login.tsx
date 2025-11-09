@@ -84,13 +84,13 @@ export function Login({ className, ...props }: LoginProps) {
       }
     } catch (error) {
       console.log("Got here 4");
+      console.log("Login error caught:", error);
       toast.error(
         error instanceof Error ? error.message : "Authentication failed"
       );
       console.log("Login exception:", error);
       
     } finally {
-      console.log("Got here 5");
       if (!isRedirecting) {
         setIsLoading(false);
       }
