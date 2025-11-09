@@ -43,11 +43,12 @@ export default function AuthLayout({
               width={150}
               height={150}
             />
-            <div className="flex flex-col items-start justify-center">
-              <p className="font-ogonek font-black text-[55px] tracking-tight">
+            <div className="flex flex-col items-start justify-center mt-2">
+              {/* <p className="font-ogonek font-black text-[55px] tracking-tight">
                 Villagesquare
-              </p>
-              <p className="font-poppins text-[23px]">
+              </p> */}
+              <Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
+              <p className="font-poppins text-[23px] mt-2">
                 Where Connections Flourish.
               </p>
             </div>

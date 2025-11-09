@@ -53,8 +53,8 @@ const AddPost = ({
   user: IUser;
   onRefreshPosts: () => void;
 }) => {
-  const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
-  const [isPostInitiated, setIsPostInitiated] = useState(false);
+  const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState<boolean>(false);
+  const [isPostInitiated, setIsPostInitiated] = useState<boolean>(false);
 
   const {
     isPosting,
@@ -63,8 +63,8 @@ const AddPost = ({
     createPostFunc: apiCreatePost,
   } = usePostUploader();
 
-  const [imageEditing, setImageEditing] = useState(false);
-  const [imagePreviewing, setImagePreviewing] = useState(false);
+  const [imageEditing, setImageEditing] = useState<boolean>(false);
+  const [imagePreviewing, setImagePreviewing] = useState<boolean>(false);
   const [previewImage, setPreviewImage] = useState<{
     type: "new" | "edit";
     postIndex: number | null;
@@ -342,6 +342,13 @@ const AddPost = ({
   const handleCancelUpload = () => {
     setIsPostInitiated(false);
   };
+
+  const canAddMorePost = useMemo(() => {
+  return items.some(
+    (it) => it.caption.trim().length > 0 || it.media.length > 0
+  );
+}, [items]);
+
 
 
   return (
@@ -636,12 +643,14 @@ const AddPost = ({
                     </div>
                   ))}
 
-                  <button
-                    onClick={addThreadItem}
-                    className="flex items-center px-4 gap-2 text-sm text-gray-400 hover:text-white"
-                  >
-                    <TbPlus /> Add more to post
-                  </button>
+                  {canAddMorePost && (
+                    <button
+                      onClick={addThreadItem}
+                      className="flex items-center px-4 gap-2 text-sm text-gray-400 hover:text-white"
+                    >
+                      <TbPlus /> Add more to post
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -733,7 +742,7 @@ const AddPost = ({
                 <div>
                   <Button
                     onClick={localCreatePostFunc}
-                    disabled={isPostInitiated && isPosting}
+                    disabled={canAddMorePost && isPostInitiated && isPosting}
                     className={`w-full mt-6 h-[52px] bg-blue-600 hover:bg-blue-700 text-white rounded-xl ${
                       isPosting
                         ? "bg-background cursor-not-allowed opacity-50"
