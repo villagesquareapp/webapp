@@ -154,15 +154,17 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
-      if ((user as any)?.backendData) {
-        token = { ...token, ...((user as any).backendData as any) };
-      }
-      if (account?.userData) {
-        token = { ...token, ...account.userData };
-      }
-      if (user) {
-        token = { ...token, ...user };
-      }
+      console.log("JWT callback invoked: ", token, user, account);
+      
+      // if ((user as any)?.backendData) {
+      //   token = { ...token, ...((user as any).backendData as any) };
+      // }
+      // if (account?.userData) {
+      //   token = { ...token, ...account.userData };
+      // }
+      // if (user) {
+      //   token = { ...token, ...user };
+      // }
       return token;
     },
     async session({ session, token }) {
