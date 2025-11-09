@@ -42,10 +42,39 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },
+  // {
+  //   title: "Live Streams",
+  //   url: "/dashboard/live-streams",
+  //   icon: <HiOutlineVideoCamera className="!size-6" />,
+  //   activeIcon: <VSCameraFill className="fill-black !size-6" />,
+  // },
+  // {
+  //   title: "Messages",
+  //   url: "/dashboard/messages",
+  //   icon: <MdMailOutline className="!size-6" />,
+  //   activeIcon: <VSMailFill className="fill-black !size-6" />,
+  // },
+  // {
+  //   title: "Wallet",
+  //   url: "/dashboard/wallet",
+  //   icon: <VSWalletOutline className="!size-6" />,
+  //   activeIcon: <VSWalletFill className="fill-black !size-6" />,
+  // },
+  // {
+  //   title: "Profile",
+  //   url: "/dashboard/profile",
+  //   icon: <IoPersonOutline className="!size-6" />,
+  //   activeIcon: <IoPersonSharp className="fill-black !size-6" />,
+  // },
+  // {
+  //   title: "More Pages",
+  //   url: "#",
+  //   icon: <VSMore className="!size-6" />,
+  // },
 ];
 
 const morePageItems = [
-  { title: "Dating", icon: <FaHeart />, url: "#" },
+  { title: "Dating", icon: <FaHeart className="!size-6" />, url: "#" },
   { title: "Marketplace", icon: <FaShoppingBasket />, url: "#" },
   { title: "Audio Hub", icon: <BsMic />, url: "#" },
   { title: "Forums", icon: <FaComments />, url: "#" },

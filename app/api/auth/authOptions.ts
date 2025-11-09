@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           console.log("Credential Request: ", requestBody);
 
           const authResponse = await fetch(
-            `${process.env.API_URL}/auth/login`,
+            `${API_BASE_URL}/auth/login`,
             {
               method: "POST",
               headers: {
@@ -73,13 +73,11 @@ export const authOptions: NextAuthOptions = {
               "Non-JSON response received:",
               textResponse.substring(0, 200)
             );
-
             if (authResponse.status >= 500) {
               throw new Error(
                 "Server error. Please try again later or contact support."
               );
             }
-
             throw new Error("Invalid server response. Please try again.");
           }
 
@@ -108,7 +106,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.API_URL}/auth/social-account`,
+            `${API_BASE_URL}/auth/social-account`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
