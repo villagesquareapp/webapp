@@ -24,14 +24,16 @@ const SocialPostActionButtons = ({
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   onOpenReplyModal?: () => void;
 }) => {
-    const [burst, setBurst] = useState<boolean>(false);
+  const [burst, setBurst] = useState<boolean>(false);
   return (
     <div className="flex flex-row justify-between items-center px-4">
       <div className="flex flex-row gap-x-6 items-center">
         <div className="flex flex-row gap-x-1 items-center">
           <PiHeartFill
             onClick={() => likeUnlikePost(post.uuid)}
-            className={`hover:scale-125 transition-transform pointer-events-auto size-5 cursor-pointer text-gray-500 ${post.is_liked && "text-red-600"}`}
+            className={`hover:scale-125 transition-transform pointer-events-auto size-5 cursor-pointer text-gray-500 ${
+              post.is_liked && "text-red-600"
+            }`}
           />
           <p className="text-sm text-gray-400">{post?.likes_count}</p>
         </div>
@@ -49,7 +51,9 @@ const SocialPostActionButtons = ({
         <div className="flex flex-row gap-x-1 items-center">
           <BsBookmarkDashFill
             onClick={() => saveUnsavePost(post.uuid)}
-            className={`size-4 text-gray-400 ${post?.is_saved && "text-primary"} cursor-pointer`}
+            className={`size-4 text-gray-400 ${
+              post?.is_saved && "text-primary"
+            } cursor-pointer`}
           />
         </div>
       </div>
