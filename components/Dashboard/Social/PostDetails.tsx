@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import PostHeader from "./PostHeader";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import ReplyToPostModal from "./ReplyToPostModal";
+import { BsDot } from "react-icons/bs";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -251,15 +252,15 @@ const PostDetails = ({
                   />
                   <div className="flex-1">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <span className="font-semibold text-sm text-white">
                           {reply.user?.name}
                         </span>
                         {!!reply?.user?.verified_status && (
                           <HiMiniCheckBadge className="size-4 text-green-600" />
                         )}
-                        <span className="text-xs text-gray-400">
-                          · {reply.formatted_time}
+                        <span className="text-xs text-gray-400 flex items-center mr-2">
+                          <BsDot /> {reply.formatted_time}
                         </span>
                       </div>
                       <div className="text-xs text-gray-400 my-1">
@@ -277,7 +278,6 @@ const PostDetails = ({
                         <Carousel
                           onSelect={(api) => {
                             const carouselApi = api as any;
-
                             if (
                               carouselApi &&
                               typeof carouselApi.selectedScrollSnap ===

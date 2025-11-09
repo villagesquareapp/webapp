@@ -65,25 +65,32 @@ export function Login({ className, ...props }: LoginProps) {
         callbackUrl: "/dashboard/social",
       });
 
+      console.log("Result:", result);
+
       if (!result) {
+        console.log("Got here 1");
         throw new Error("Authentication failed");
       }
 
       if (result.error) {
+        console.log("Got here 2");
         toast.error(result.error);
         console.log("Login error:", result.error);
       } else {
+        console.log("Got here 3");
         setIsRedirecting(true);
         toast.success("Logged in successfully");
         router.push("/dashboard/social");
       }
     } catch (error) {
+      console.log("Got here 4");
       toast.error(
         error instanceof Error ? error.message : "Authentication failed"
       );
       console.log("Login exception:", error);
       
     } finally {
+      console.log("Got here 5");
       if (!isRedirecting) {
         setIsLoading(false);
       }

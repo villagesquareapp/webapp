@@ -96,6 +96,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log("SignIn callback invoked: ", user, account, profile);
       if (account?.provider === "google" && profile) {
         if (!profile) {
           console.log("No profile information from Google OAuth");
@@ -124,7 +125,6 @@ export const authOptions: NextAuthOptions = {
           );
 
           const data = await res.json();
-          // console.log("Backend response:", data);
 
           if (!res.ok || !data.status) {
             console.log(
