@@ -152,68 +152,69 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
-      console.log("JWT callback invoked");
-
-      if ((user as any)?.backendData) {
-        // Remove ALL tokens and large data
-        const {
-          access_token,
-          refresh_token,
-          provider_token,
-          ...essentialData
-        } = (user as any).backendData;
-
-        token = {
-          ...token,
-          userId: essentialData.user_id || essentialData.id,
-          email: essentialData.email,
-          username: essentialData.username,
-          name: essentialData.name || essentialData.full_name,
-          avatar: essentialData.avatar || essentialData.profile_picture,
-          bio: essentialData.bio,
-          token: essentialData.token,
-          ...essentialData,
-        };
-      }
-
-      if (user && !token.userId) {
-        token = {
-          ...token,
-          userId: user.id,
-          email: user.email,
-          name: user.name,
-        };
-      }
-
-      const {
-        access_token,
-        id_token,
-        refresh_token,
-        provider_token,
-        ...cleanToken
-      } = token;
-
-      return cleanToken;
-    },
     // async jwt({ token, user, account }) {
-    //   console.log("JWT callback invoked (Token): ", token);
-    //   console.log("JWT callback invoked (User): ", user);
-    //   console.log("JWT callback invoked (Account): ", account);
+    //   console.log("JWT callback invoked");
 
     //   if ((user as any)?.backendData) {
-    //     token = { ...token, ...((user as any).backendData as any) };
+    //     // Remove ALL tokens and large data
+    //     // const { access_token, ...essentialData } = (user as any).backendData;
+
+    //     if ((user as any)?.backendData) {
+    //       token = { ...token, ...((user as any).backendData as any) };
+    //     }
+
+    //     if (account?.userData) {
+    //       token = { ...token, ...account.userData };
+    //     }
+    //     if (user) {
+    //       token = { ...token, ...user };
+    //     }
+
+    //     // token = {
+    //     //   ...token,
+    //     //   userId: essentialData.user_id || essentialData.id,
+    //     //   email: essentialData.email,
+    //     //   username: essentialData.username,
+    //     //   name: essentialData.name || essentialData.full_name,
+    //     //   avatar: essentialData.avatar || essentialData.profile_picture,
+    //     //   bio: essentialData.bio,
+    //     //   authToken: essentialData.token,
+    //     //   ...essentialData,
+    //     // };
     //   }
-    //   if (account?.userData) {
-    //     token = { ...token, ...account.userData };
-    //   }
-    //   if (user) {
-    //     token = { ...token, ...user };
-    //   }
-    //   const { access_token, ...rest } = token;
-    //   return rest;
-    //   // return token;
+
+    //   // if (user && !token.userId) {
+    //   //   token = {
+    //   //     ...token,
+    //   //     userId: user.id,
+    //   //     email: user.email,
+    //   //     name: user.name,
+    //   //   };
+    //   // }
+
+    //   const { access_token, ...cleanToken } = token;
+
+    //   return cleanToken;
     // },
+
+    async jwt({ token, user, account }) {
+      console.log("JWT callback invoked (Token): ", token);
+      console.log("JWT callback invoked (User): ", user);
+      console.log("JWT callback invoked (Account): ", account);
+
+    if ((user as any)?.backendData) {
+      token = { ...token, ...((user as any).backendData as any) };
+    }
+      if (account?.userData) {
+        token = { ...token, ...account.userData };
+      }
+      if (user) {
+        token = { ...token, ...user };
+      }
+      const { access_token, ...rest } = token;
+      return rest;
+      // return token;
+    },
     async session({ session, token }) {
       session.user = token as any;
       return session;
