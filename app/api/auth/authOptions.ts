@@ -14,8 +14,12 @@ export const authOptions: NextAuthOptions = {
     "zSLADSxHudaAtzEkWbPfbVaXa3D3Ls1Ey6f/Kn5YNVs=",
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "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",
+      clientId:
+        process.env.GOOGLE_CLIENT_ID ??
+        "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com",
+      clientSecret:
+        process.env.GOOGLE_CLIENT_SECRET ??
+        "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",
       issuer: "https://accounts.google.com",
       authorization: {
         params: {
@@ -49,16 +53,13 @@ export const authOptions: NextAuthOptions = {
           });
           console.log("Credential Request: ", requestBody);
 
-          const authResponse = await fetch(
-            `${API_BASE_URL}/auth/login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: requestBody,
-            }
-          );
+          const authResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: requestBody,
+          });
 
           console.log("Credential Response Status: ", authResponse.status);
           console.log(
@@ -98,6 +99,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       console.log("SignIn callback invoked: ", user, account, profile);
       if (account?.provider === "google" && profile) {
+        console.log("Google sign-in detected");
         if (!profile) {
           console.log("No profile information from Google OAuth");
           return false;
@@ -106,23 +108,20 @@ export const authOptions: NextAuthOptions = {
         console.log("Google provider_token (ID token):", account.id_token);
 
         try {
-          const res = await fetch(
-            `${API_BASE_URL}/auth/social-account`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                audience: "web",
-                auth_type: "google",
-                device: "browser",
-                device_id: null,
-                fcm_token: null,
-                provider: "google",
-                provider_token: account.id_token || account.access_token,
-                timezone: getTimeZone(),
-              }),
-            }
-          );
+          const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              audience: "web",
+              auth_type: "google",
+              device: "browser",
+              device_id: null,
+              fcm_token: null,
+              provider: "google",
+              provider_token: account.id_token || account.access_token,
+              timezone: getTimeZone(),
+            }),
+          });
 
           const data = await res.json();
 
@@ -154,21 +153,67 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
-      console.log("JWT callback invoked: ", token, user, account);
-      
+      console.log("JWT callback invoked");
+
       if ((user as any)?.backendData) {
-        token = { ...token, ...((user as any).backendData as any) };
+        // Remove ALL tokens and large data
+        const {
+          access_token,
+          refresh_token,
+          provider_token,
+          ...essentialData
+        } = (user as any).backendData;
+
+        token = {
+          ...token,
+          userId: essentialData.user_id || essentialData.id,
+          email: essentialData.email,
+          username: essentialData.username,
+          name: essentialData.name || essentialData.full_name,
+          avatar: essentialData.avatar || essentialData.profile_picture,
+          bio: essentialData.bio,
+          token: essentialData.token,
+          ...essentialData,
+        };
       }
-      if (account?.userData) {
-        token = { ...token, ...account.userData };
+
+      if (user && !token.userId) {
+        token = {
+          ...token,
+          userId: user.id,
+          email: user.email,
+          name: user.name,
+        };
       }
-      if (user) {
-        token = { ...token, ...user };
-      }
-      const { access_token, ...rest } = token;
-      return rest;
-      // return token;
+
+      const {
+        access_token,
+        id_token,
+        refresh_token,
+        provider_token,
+        ...cleanToken
+      } = token;
+
+      return cleanToken;
     },
+    // async jwt({ token, user, account }) {
+    //   console.log("JWT callback invoked (Token): ", token);
+    //   console.log("JWT callback invoked (User): ", user);
+    //   console.log("JWT callback invoked (Account): ", account);
+
+    //   if ((user as any)?.backendData) {
+    //     token = { ...token, ...((user as any).backendData as any) };
+    //   }
+    //   if (account?.userData) {
+    //     token = { ...token, ...account.userData };
+    //   }
+    //   if (user) {
+    //     token = { ...token, ...user };
+    //   }
+    //   const { access_token, ...rest } = token;
+    //   return rest;
+    //   // return token;
+    // },
     async session({ session, token }) {
       session.user = token as any;
       return session;
