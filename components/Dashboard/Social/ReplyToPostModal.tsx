@@ -33,6 +33,7 @@ interface ReplyModalProps {
   setPosts: Dispatch<SetStateAction<IPost[]>>;
   onReplySuccess?: (newReply: IPostComment) => void;
   replyToComment?: IPostComment | null;
+  isInPostDetails?: boolean;
 }
 
 interface DraftItem {
@@ -53,6 +54,7 @@ const ReplyModal = ({
   setPosts,
   onReplySuccess,
   replyToComment,
+  isInPostDetails = false,
 }: ReplyModalProps) => {
   const [newComment, setNewComment] = useState<string>("");
   const charCount = newComment.length;
@@ -173,11 +175,7 @@ const ReplyModal = ({
           onReplySuccess(newReply);
         }
 
-        setNewComment("");
-        setSelectedFile(null);
-        setMediaPreviewUrl(null);
-        onClose();
-        setPosts((prev) =>
+         setPosts((prev) =>
           prev.map((p) =>
             p.uuid === post.uuid
               ? {
@@ -187,6 +185,11 @@ const ReplyModal = ({
               : p
           )
         );
+
+        setNewComment("");
+        setSelectedFile(null);
+        setMediaPreviewUrl(null);
+        onClose();
         setIsLoading(false);
       } else {
         toast.error(result?.message || "Failed to create reply");

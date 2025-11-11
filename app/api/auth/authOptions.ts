@@ -212,7 +212,6 @@ export const authOptions: NextAuthOptions = {
       } = token;
 
       console.log("Final token (cleaned):", cleanToken);
-      console.log("=========================");
 
       return cleanToken;
     },

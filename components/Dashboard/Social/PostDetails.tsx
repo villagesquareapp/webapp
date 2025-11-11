@@ -58,7 +58,7 @@ const PostDetails = ({
   initialMediaIndex,
   onOpenReplyModal,
   onReplySuccess,
-  newReply
+  newReply,
 }: PostDetailsProps) => {
   const {
     replyingTo,
@@ -81,6 +81,49 @@ const PostDetails = ({
   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [activeReplyCarouselIndex, setActiveReplyCarouselIndex] = useState(0);
+  const [localPost, setLocalPost] = useState<IPost>(post);
+
+  useEffect(() => {
+    setLocalPost(post);
+  }, [post]);
+
+  const handleLikeMainPost = (postId: string) => {
+    setLocalPost((prev) => ({
+      ...prev,
+      likes_count: prev.is_liked
+        ? (Number(prev.likes_count) - 1).toString()
+        : (Number(prev.likes_count) + 1).toString(),
+      is_liked: !prev.is_liked,
+    }));
+
+    likeUnlikePost(postId);
+  };
+
+  // const handleSaveMainPost = (postId: string) => {
+  //   setLocalPost(prev => ({
+  //     ...prev,
+  //     is_saved: !prev.is_saved,
+  //   }));
+
+  //   saveUnsavePost(postId);
+  // };
+
+  // Update handleReplySuccess to add reply to local list
+const handleLocalReplySuccess = (newReply: IPostComment) => {
+  // Add to local replies list
+  setReplies(prev => [newReply, ...prev]);
+  
+  // Update local post reply count
+  setLocalPost(prev => ({
+    ...prev,
+    replies_count: (Number(prev.replies_count) + 1).toString(),
+  }));
+  
+  // Call parent's onReplySuccess
+  if (onReplySuccess) {
+    onReplySuccess(newReply);
+  }
+};
 
   const refetchReplies = useCallback(async () => {
     setIsLoadingReplies(true);
@@ -209,15 +252,16 @@ const PostDetails = ({
       <div className="border border-gray-800 rounded-md">
         <div className="pt-2">
           <SocialPostDetails
-            post={post}
+            post={localPost}
             setPosts={setPosts}
             user={user}
-            likeUnlikePost={likeOrUnlikePost}
+            likeUnlikePost={handleLikeMainPost}
             saveUnsavePost={saveOrUnsavePost}
             currentVideoPlaying={currentVideoPlaying}
             setCurrentVideoPlaying={setCurrentVideoPlaying}
             isPlayingVideo={isPlayingVideo}
             setIsPlayingVideo={setIsPlayingVideo}
+            onOpenReplyModal={() => onOpenReplyModal(localPost)}
           />
         </div>
 
@@ -252,18 +296,21 @@ const PostDetails = ({
                   />
                   <div className="flex-1">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-1">
+                      <div className="flex flex-row items-center max-w-80">
                         <span className="font-semibold text-sm text-white">
                           {reply.user?.name}
                         </span>
                         {!!reply?.user?.verified_status && (
-                          <HiMiniCheckBadge className="size-4 text-green-600" />
+                          <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
                         )}
-                        <span className="text-xs text-gray-400 flex items-center mr-2">
-                          <BsDot /> {reply.formatted_time}
+                        <span>
+                          <BsDot />
                         </span>
+                        <p className="text-xs text-muted-foreground">
+                          {reply.formatted_time}{" "}
+                        </p>
                       </div>
-                      <div className="text-xs text-gray-400 my-1">
+                      <div className="text-xs text-gray-400">
                         @{reply.user?.username}
                       </div>
                     </div>

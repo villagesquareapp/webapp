@@ -304,6 +304,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
           : p
       )
     );
+    if (selectedPost && selectedPost.uuid === postForReplyModal?.uuid) {
+    setSelectedPost(prev => prev ? {
+      ...prev,
+      replies_count: (Number(prev.replies_count) + 1).toString(),
+    } : null);
+  }
     handleCloseReplyModal();
   };
 
@@ -427,6 +433,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setPosts={setPosts}
           replyToComment={replyToReply}
           onReplySuccess={handleReplySuccess}
+          isInPostDetails={!!selectedPost}
         />
       )}
     </>
