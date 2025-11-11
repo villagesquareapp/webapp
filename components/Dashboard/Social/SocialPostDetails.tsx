@@ -4,7 +4,7 @@ import PostHeader from "./PostHeader";
 import PostText from "./PostText";
 import PostVideo from "./PostVideo";
 import SocialPostActionButtons from "./SocialPostActionButtons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostDetails from "./PostDetails";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -25,6 +25,7 @@ const SocialPostDetails = ({
   setCurrentVideoPlaying,
   isPlayingVideo,
   setIsPlayingVideo,
+  onOpenReplyModal,
 }: {
   post: IPost;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
@@ -35,9 +36,38 @@ const SocialPostDetails = ({
   setCurrentVideoPlaying: (mediaID: string) => void;
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
+  onOpenReplyModal: (post?: IPost, replyToComment?: IPostComment) => void;
 }) => {
   const [isGloballyMuted, setIsGloballyMuted] = useState<boolean>(true);
-  const [activeMediaCarouselIndex, setActiveMediaCarouselIndex] = useState<number>(0);
+  const [activeMediaCarouselIndex, setActiveMediaCarouselIndex] =
+    useState<number>(0);
+
+  const [localPost, setLocalPost] = useState<IPost>(post);
+
+  useEffect(() => {
+    setLocalPost(post);
+  }, [post]);
+
+  const handleLikePost = (postId: string) => {
+    setLocalPost((prev) => ({
+      ...prev,
+      likes_count: prev.is_liked
+        ? (Number(prev.likes_count) - 1).toString()
+        : (Number(prev.likes_count) + 1).toString(),
+      is_liked: !prev.is_liked,
+    }));
+
+    likeUnlikePost(postId);
+  };
+
+  const handleSavePost = (postId: string) => {
+    setLocalPost((prev) => ({
+      ...prev,
+      is_saved: !prev.is_saved,
+    }));
+
+    saveUnsavePost(postId);
+  };
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -49,11 +79,11 @@ const SocialPostDetails = ({
         {!!post?.media?.length && (
           <div className="p-4 w-full">
             <Carousel
-              // onSelect={(api) => {
-              //   if (api && typeof api.selectedScrollSnap === "function") {
-              //     setActiveMediaCarouselIndex(api.selectedScrollSnap());
-              //   }
-              // }}
+            // onSelect={(api) => {
+            //   if (api && typeof api.selectedScrollSnap === "function") {
+            //     setActiveMediaCarouselIndex(api.selectedScrollSnap());
+            //   }
+            // }}
             >
               <CarouselContent>
                 {post.media.map((media, index) => (
@@ -120,8 +150,9 @@ const SocialPostDetails = ({
         setPosts={setPosts}
         likeUnlikePost={likeUnlikePost}
         saveUnsavePost={saveUnsavePost}
-        post={post}
+        post={localPost}
         user={user}
+        onOpenReplyModal={onOpenReplyModal}
       />
       <Separator className="my-2" />
     </div>
