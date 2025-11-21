@@ -76,7 +76,7 @@ jobs:
       # Step 11: Tag Docker image for ECR
       - name: Tag Docker Image
         run: |
-          docker tag webdev:${{ env.IMAGE_TAG }} \
+          docker tag dev-webapps:${{ env.IMAGE_TAG }} \
           606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
 
       # Step 12: Push Docker image to ECR
