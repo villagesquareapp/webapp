@@ -70,24 +70,24 @@ jobs:
 
       # Step 10: Build Docker image
       - name: Build Docker Image
-        run: docker build -t webdev:${{ env.IMAGE_TAG }} .
+        run: docker build -t dev-webapps:${{ env.IMAGE_TAG }} .
         shell: bash
 
       # Step 11: Tag Docker image for ECR
       - name: Tag Docker Image
         run: |
           docker tag webdev:${{ env.IMAGE_TAG }} \
-          606802968668.dkr.ecr.af-south-1.amazonaws.com/webdev:${{ env.IMAGE_TAG }}
+          606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
 
       # Step 12: Push Docker image to ECR
       - name: Push Docker Image to ECR
         run: |
-          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webdev:${{ env.IMAGE_TAG }}
+          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
 
       # Step 13: Output ECR image URI
       - name: Output Image URI
         run: |
-          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webdev:${{ env.IMAGE_TAG }}"
+          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}"
 
       # Step 14: Update Kubernetes manifests with new image tag
       - name: Update Kubernetes manifests with new image tag
