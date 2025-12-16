@@ -291,7 +291,6 @@ const AddPost = ({
 
       if (result) {
         toast.success("Post created successfully");
-        // Only trigger a refresh of the parent component's data
         onRefreshPosts();
         setIsNewPostDialogOpen(false);
         setItems([

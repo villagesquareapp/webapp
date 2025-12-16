@@ -41,12 +41,12 @@ export default function VflixFeed({ activeTab, user }: Props) {
         prev.map((post) =>
           post.uuid === postId
             ? {
-                ...post,
-                likes_count: result?.data?.is_liked
-                  ? (Number(post.likes_count) + 1).toString()
-                  : (Number(post.likes_count) - 1).toString(),
-                is_liked: !post.is_liked,
-              }
+              ...post,
+              likes_count: result?.data?.is_liked
+                ? (Number(post.likes_count) + 1).toString()
+                : (Number(post.likes_count) - 1).toString(),
+              is_liked: !post.is_liked,
+            }
             : post
         )
       );
@@ -98,19 +98,19 @@ export default function VflixFeed({ activeTab, user }: Props) {
   const currentPost = videos[currentIndex];
 
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center justify-center gap-0 md:gap-6 w-full max-w-full px-2 md:px-0 relative">
       {/* Left Arrow */}
       {currentIndex > 0 && (
         <button
           onClick={prevVideo}
-          className="p-2 rounded-full bg-black/50 hover:bg-black/70 z-20"
+          className="absolute left-4 md:static p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
         >
           <ChevronLeft className="w-6 h-6 text-white" />
         </button>
       )}
 
       {/* Video Card */}
-      <div className="relative w-[550px] h-[85vh] rounded-xl shadow-lg overflow-hidden">
+      <div className="relative w-full md:w-[550px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0">
         {videos[currentIndex] && (
           <VflixCard
             post={videos[currentIndex]}
@@ -126,7 +126,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
       {/* Right Arrow */}
       <button
         onClick={nextVideo}
-        className="p-2 rounded-full bg-black/50 hover:bg-black/70 z-20"
+        className="absolute right-4 md:static p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
         disabled={loading}
       >
         {loading ? null : <ChevronRight className="w-6 h-6 text-white" />}

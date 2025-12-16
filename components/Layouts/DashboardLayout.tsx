@@ -15,17 +15,17 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   return (
-    <MobileBlockScreen>
-        <SplashScreen />
-      <main className="md:hidden lg:flex relative font-albert-sans">
-        <DashboardNavbar />
+    <>
+      <SplashScreen />
+      <main className="relative font-albert-sans min-h-screen">
         <SidebarProvider>
+          <DashboardNavbar />
           <AppSidebar />
-          <div className="flex-1 mt-16 pl-6 relative">{children}</div>
+          <div className="flex-1 mt-16 pl-0 md:pl-6 relative w-full overflow-x-hidden">{children}</div>
         </SidebarProvider>
         <CustomToaster />
       </main>
-    </MobileBlockScreen>
+    </>
   );
 };
 

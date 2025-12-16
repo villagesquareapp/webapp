@@ -44,7 +44,7 @@ const SocialPage = ({ user }: { user: IUser }) => {
       <div className="grid w-full relative">
         {showSearchMain && !showProfileSearch && (
           <>
-            <div className="border-b-[1.5px] w-full bg-background fixed px-16 h-fit flex z-40">
+            <div className="border-b-[1.5px] w-full bg-background fixed px-4 md:px-16 h-fit flex z-40">
               <div className="flex flex-row">
                 {/* @Todo Font is bold and primary border when selected */}
                 <span className="py-3 px-5 text-lg border-b-4 border-primary font-semibold">
@@ -54,7 +54,7 @@ const SocialPage = ({ user }: { user: IUser }) => {
                 <span className="py-3 px-5 text-lg text-muted-foreground">Accounts</span>
               </div>
             </div>
-            <div className="px-16 py-6 mt-[55px] min-h-[calc(100vh-150px)] flex flex-col">
+            <div className="px-4 md:px-16 py-6 mt-[55px] min-h-[calc(100vh-150px)] flex flex-col w-full max-w-full overflow-x-hidden">
               {!showHome && !showAccount && showPostsAndHashtags && <PostShortcut />}
 
               <div className="grid lg:grid-cols-4 gap-4">
@@ -102,7 +102,7 @@ const SocialPage = ({ user }: { user: IUser }) => {
           </>
         )}
         {showProfileSearch && !showSearchMain && (
-          <div className="px-16 py-6 flex flex-col">
+          <div className="px-4 md:px-16 py-6 flex flex-col w-full max-w-full">
             <div className="w-full rounded-xl h-[25dvh] relative">
               <Image
                 src="/images/beautiful-image.webp"
