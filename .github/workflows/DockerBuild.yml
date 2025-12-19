@@ -113,3 +113,4 @@ jobs:
         run: |
           aws eks update-kubeconfig --region af-south-1 --name kitops-eks
           kubectl apply -f kubernetes/webapp.yml --validate=false
+          qhdjqdqbhbqd
