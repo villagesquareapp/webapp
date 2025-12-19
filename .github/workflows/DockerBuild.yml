@@ -108,7 +108,7 @@ jobs:
 
           git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
 
-          git push origin dev
+          git push origin main
 
       # Step 16: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
