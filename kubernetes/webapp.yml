@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nextjs-app
-  namespace: webapp  
+  namespace: default
   labels:
     app: nextjs-app
 spec:
