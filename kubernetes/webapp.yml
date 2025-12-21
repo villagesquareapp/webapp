@@ -22,11 +22,11 @@ spec:
             - containerPort: 3000
           env:
             - name: API_URL
-              value: "https://staging-api.villagesquare.io/v2"
+              value: "https://production-api.villagesquare.io/v2"
             - name: NEXTAUTH_SECRET
               value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="
             - name: NEXTAUTH_URL
-              value: "https://webdev.villagesquare.io"              
+              value: "https://villagesquare.io"
             - name: GOOGLE_CLIENT_ID
               value: "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com"
             - name: GOOGLE_CLIENT_SECRET
