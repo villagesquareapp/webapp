@@ -89,10 +89,10 @@ export function AppSidebar() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
-    <Sidebar className="w-[280px]">
+    <Sidebar className="w-[280px]" collapsible="icon" mobileVariant="sheet">
       <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupContent className="pt-20 px-3">
+          <SidebarGroupContent className="pt-4 md:pt-20 px-3">
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
                 const isActive = pathname.includes(item.url);
@@ -108,11 +108,10 @@ export function AppSidebar() {
                       <Popover>
                         <PopoverTrigger asChild>
                           <SidebarMenuButton
-                            className={`w-full flex items-center px-3 py-3 rounded-md transition-colors h-11 ${
-                              isActive || isHovered
-                                ? "bg-foreground text-background"
-                                : "text-foreground"
-                            }`}
+                            className={`w-full flex items-center px-3 py-3 rounded-md transition-colors h-11 ${isActive || isHovered
+                              ? "bg-foreground text-background"
+                              : "text-foreground"
+                              }`}
                             onMouseEnter={() => setHoveredItem(item.title)}
                             onMouseLeave={() => setHoveredItem(null)}
                           >
@@ -143,11 +142,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title} className="px-2">
                     <SidebarMenuButton
                       asChild
-                      className={`w-full rounded-lg transition-colors h-11 ${
-                        isActive || isHovered
-                          ? "bg-foreground text-background"
-                          : "text-foreground"
-                      }`}
+                      className={`w-full rounded-lg transition-colors h-11 ${isActive || isHovered
+                        ? "bg-foreground text-background"
+                        : "text-foreground"
+                        }`}
                       onMouseEnter={() => setHoveredItem(item.title)}
                       onMouseLeave={() => setHoveredItem(null)}
                     >

@@ -16,7 +16,7 @@ import VflixActionButtons from "./VflixActionButtons";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover";
 import { Button } from "components/ui/button";
-import {Separator} from "components/ui/separator";
+import { Separator } from "components/ui/separator";
 import { FaEllipsisH } from "react-icons/fa";
 
 interface Props {
@@ -52,7 +52,7 @@ export default function VflixCard({
     setMuted(!muted);
   };
 
-    const handleSave = (e: React.MouseEvent) => {
+  const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Add save logic here
     console.log("Save post:", post.uuid);
@@ -82,11 +82,11 @@ export default function VflixCard({
 
   const handleMouseMove = () => {
     setShowControls(true);
-    
+
     if (hideControlsTimeoutRef.current) {
       clearTimeout(hideControlsTimeoutRef.current);
     }
-    
+
     hideControlsTimeoutRef.current = setTimeout(() => {
       if (isPlaying) {
         setShowControls(false);
@@ -156,8 +156,8 @@ export default function VflixCard({
   const videoUrl = post.media?.transcoded_media_url || post.media?.media_url;
 
   return (
-    <div 
-      className="relative w-full h-[85vh] bg-black rounded-xl overflow-hidden"
+    <div
+      className="relative w-full h-full bg-black rounded-xl overflow-hidden"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -194,7 +194,7 @@ export default function VflixCard({
 
       {/* Overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-4 right-4 z-30">
+      <div className="absolute top-4 right-4 z-30">
         <Popover>
           <PopoverTrigger asChild>
             <Button

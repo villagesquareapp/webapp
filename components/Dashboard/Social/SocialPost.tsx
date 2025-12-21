@@ -48,12 +48,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((post) =>
         post.uuid === postId
           ? {
-              ...post,
-              likes_count: post?.is_liked
-                ? (Number(post.likes_count) - 1).toString()
-                : (Number(post.likes_count) + 1).toString(),
-              is_liked: !post.is_liked,
-            }
+            ...post,
+            likes_count: post?.is_liked
+              ? (Number(post.likes_count) - 1).toString()
+              : (Number(post.likes_count) + 1).toString(),
+            is_liked: !post.is_liked,
+          }
           : post
       )
     );
@@ -67,12 +67,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
           prev.map((post) =>
             post.uuid === postId
               ? {
-                  ...post,
-                  likes_count: post.is_liked
-                    ? (Number(post.likes_count) + 1).toString()
-                    : (Number(post.likes_count) - 1).toString(),
-                  is_liked: !post.is_liked,
-                }
+                ...post,
+                likes_count: post.is_liked
+                  ? (Number(post.likes_count) + 1).toString()
+                  : (Number(post.likes_count) - 1).toString(),
+                is_liked: !post.is_liked,
+              }
               : post
           )
         );
@@ -83,12 +83,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
         prev.map((post) =>
           post.uuid === postId
             ? {
-                ...post,
-                likes_count: post.is_liked
-                  ? (Number(post.likes_count) + 1).toString()
-                  : (Number(post.likes_count) - 1).toString(),
-                is_liked: !post.is_liked,
-              }
+              ...post,
+              likes_count: post.is_liked
+                ? (Number(post.likes_count) + 1).toString()
+                : (Number(post.likes_count) - 1).toString(),
+              is_liked: !post.is_liked,
+            }
             : post
         )
       );
@@ -297,19 +297,19 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((p) =>
         p.uuid === postForReplyModal?.uuid
           ? {
-              ...p,
-              replies_count: (Number(p.replies_count) + 1).toString(),
-              replies: p.caption ? [...p.caption, newReply] : [newReply],
-            }
+            ...p,
+            replies_count: (Number(p.replies_count) + 1).toString(),
+            replies: p.caption ? [...p.caption, newReply] : [newReply],
+          }
           : p
       )
     );
     if (selectedPost && selectedPost.uuid === postForReplyModal?.uuid) {
-    setSelectedPost(prev => prev ? {
-      ...prev,
-      replies_count: (Number(prev.replies_count) + 1).toString(),
-    } : null);
-  }
+      setSelectedPost(prev => prev ? {
+        ...prev,
+        replies_count: (Number(prev.replies_count) + 1).toString(),
+      } : null);
+    }
     handleCloseReplyModal();
   };
 
@@ -350,26 +350,19 @@ const SocialPost = ({ user }: { user: IUser }) => {
               <div className="flex flex-row w-full md:w-auto">
                 <button
                   onClick={() => handleTabChange("explore")}
-                  // className={`py-3 px-2 md:px-5 text-sm md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors ${
-                  //   activeTab === "explore"
-                  //     ? "border-b-4 border-primary font-semibold"
-                  //     : "text-gray-400 hover:text-foreground"
-                  // }`}
-                  className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "explore"
-                      ? "text-white border-b-2 border-blue-500"
-                      : "text-gray-400"
-                  }`}
+                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "explore"
+                      ? "text-foreground border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   Explore
                 </button>
                 <button
                   onClick={() => handleTabChange("connections")}
-                  className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "connections"
-                      ? "text-white border-b-2 border-blue-500"
-                      : "text-gray-400"
-                  }`}
+                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "connections"
+                      ? "text-foreground border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   Connections
                 </button>
