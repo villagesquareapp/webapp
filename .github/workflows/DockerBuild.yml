@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: 
+      - main
+      - dev
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write    
+
+    steps:
+      # Step 1: Checkout current repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Build project
+      - name: Build
+        run: npm run build --if-present
+
+      # Step 5: Run tests
+      - name: Test
+        run: npm test --if-present
+
+      # Step 6: Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::606802968668:role/GitHubOIDCRole
+          role-session-name: github-actions  
+          aws-region: af-south-1
+          audience: sts.amazonaws.com
+
+      # Step 7: Configure kubeconfig for EKS
+      - name: Configure kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region af-south-1 \
+            --name kitops-eks \
+            --role-arn arn:aws:iam::606802968668:role/GitHubOIDCRole
+
+      # Step 8: Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region af-south-1 \
+            | docker login --username AWS --password-stdin 606802968668.dkr.ecr.af-south-1.amazonaws.com
+
+      # Step 9: Generate Docker image tag
+      - name: Generate Image Tag
+        run: |
+          IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      # Step 10: Build Docker image
+      - name: Build Docker Image
+        run: docker build -t dev-webapps:${{ env.IMAGE_TAG }} .
+        shell: bash
+
+      # Step 11: Tag Docker image for ECR
+      - name: Tag Docker Image
+        run: |
+          docker tag dev-webapps:${{ env.IMAGE_TAG }} \
+          606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
+
+      # Step 12: Push Docker image to ECR
+      - name: Push Docker Image to ECR
+        run: |
+          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
+
+      # Step 13: Output ECR image URI
+      - name: Output Image URI
+        run: |
+          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}"
+
+      # Step 14: Update Kubernetes manifests with new image tag
+      - name: Update Kubernetes manifests with new image tag
+        run: |
+          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/webdev\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
+          echo "=== File after update ==="
+          cat kubernetes/webapp.yml
+
+      # Step 15: Commit and push manifest update
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "villagesquareltd"
+          git config --global user.email "villagesquare130@gmail.com"
+
+          git add kubernetes/webapp.yml
+
+          git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+
+          git push origin main
+
+      # Step 16: Apply Kubernetes deployment
+      - name: Apply Kubernetes deployment
+        run: |
+          aws eks update-kubeconfig --region af-south-1 --name kitops-eks
+          kubectl apply -f kubernetes/webapp.yml --validate=false
