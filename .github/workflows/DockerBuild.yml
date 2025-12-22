@@ -2,11 +2,9 @@ name: CI
 
 on:
   push:
-    branches: 
-      - main
-      - dev
+    branches: [ dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
 
 jobs:
   build:
@@ -108,7 +106,7 @@ jobs:
 
           git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
 
-          git push origin main
+          git push origin dev
 
       # Step 16: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
