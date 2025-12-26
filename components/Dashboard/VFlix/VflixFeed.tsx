@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
 import VflixComments from "./VflixComments";
+import VFlixSkeleton from "./VFlixSkeleton";
 
 interface Props {
   activeTab: "for-you" | "following";
@@ -120,7 +121,8 @@ export default function VflixFeed({ activeTab, user }: Props) {
             onCommentClick={() => toggleComments(currentPost.uuid)}
           />
         )}
-        {loading && <LoadingSpinner />}
+        {loading && videos.length === 0 && <VFlixSkeleton />}
+        {loading && videos.length > 0 && <LoadingSpinner />}
       </div>
 
       {/* Right Arrow */}
