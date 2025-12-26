@@ -16,6 +16,7 @@ import SocialPostFilterDialog from "./SocialPostFilterDialog";
 import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
+import PostSkeleton from "./PostSkeleton";
 
 type TabType = "explore" | "connections";
 
@@ -351,8 +352,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <button
                   onClick={() => handleTabChange("explore")}
                   className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "explore"
-                      ? "text-foreground border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                    ? "text-foreground border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Explore
@@ -360,8 +361,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <button
                   onClick={() => handleTabChange("connections")}
                   className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "connections"
-                      ? "text-foreground border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                    ? "text-foreground border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Connections
@@ -372,7 +373,13 @@ const SocialPost = ({ user }: { user: IUser }) => {
               </div>
             </div>
 
-            {isPostLoading && <LoadingSpinner />}
+            {isPostLoading && (
+              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <PostSkeleton key={index} />
+                ))}
+              </div>
+            )}
 
             {!isPostLoading && posts?.length > 0 && (
               <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
