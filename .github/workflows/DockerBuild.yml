@@ -75,7 +75,7 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
-            --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} \
+            --build-arg API_URL=${{ secrets.API_URL }} \
             -t webapps:${{ env.IMAGE_TAG }} .
         shell: bash
 
