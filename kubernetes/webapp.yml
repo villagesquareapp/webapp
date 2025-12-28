@@ -23,6 +23,8 @@ spec:
           env:
             - name: API_URL
               value: "https://production-api.villagesquare.io/v2"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://production-api.villagesquare.io/v2"
             - name: NEXTAUTH_SECRET
               value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="
             - name: NEXTAUTH_URL
