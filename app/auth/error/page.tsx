@@ -12,12 +12,16 @@ const errorMessages: Record<string, string> = {
   Verification: "The verification link is no longer valid. Please request a new one.",
 };
 
-export default function AuthErrorPage({
+type ErrorSearchParams = Record<string, string | string[] | undefined>;
+
+export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams?: { error?: string };
+  searchParams?: ErrorSearchParams | Promise<ErrorSearchParams>;
 }) {
-  const errorKey = typeof searchParams?.error === "string" ? searchParams.error : undefined;
+  const resolvedSearchParams = await Promise.resolve(searchParams);
+  const errorParam = resolvedSearchParams?.error;
+  const errorKey = Array.isArray(errorParam) ? errorParam?.[0] : errorParam;
   const message =
     (errorKey && errorMessages[errorKey]) ||
     "Something went wrong while trying to sign you in. Please try again.";
