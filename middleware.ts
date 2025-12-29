@@ -1,10 +1,19 @@
+import { getAuthSecret, getAuthUrl } from "lib/authConfig";
 import { withAuth } from "next-auth/middleware";
 
-export default withAuth({
+const authSecret = getAuthSecret();
+getAuthUrl();
+
+export default withAuth(
+  {
     pages: {
-        signIn: "/auth/login",
+      signIn: "/auth/login",
     },
-});
+  },
+  {
+    secret: authSecret,
+  }
+);
 
 export const config = {
     matcher: [
