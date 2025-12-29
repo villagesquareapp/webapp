@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "villagesquare.io",
+        hostname: "**.villagesquare.io",
       },
     ],
   },
