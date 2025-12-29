@@ -4,8 +4,8 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 const API_BASE_URL =
-  process.env.API_URL && process.env.API_URL.trim().length > 0
-    ? process.env.API_URL.replace(/\/+$/, "")
+  process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
     : "https://staging-api.villagesquare.io/v2";
 
 export const authOptions: NextAuthOptions = {
