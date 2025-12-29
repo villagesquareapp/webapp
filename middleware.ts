@@ -4,16 +4,12 @@ import { withAuth } from "next-auth/middleware";
 const authSecret = getAuthSecret();
 getAuthUrl();
 
-export default withAuth(
-  {
-    pages: {
-      signIn: "/auth/login",
-    },
+export default withAuth({
+  pages: {
+    signIn: "/auth/login",
   },
-  {
-    secret: authSecret,
-  }
-);
+  secret: authSecret,
+});
 
 export const config = {
     matcher: [
