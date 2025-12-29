@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+
   experimental: {
     serverActions: {
       bodySizeLimit: '100mb'
@@ -16,6 +17,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
   },*/
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
