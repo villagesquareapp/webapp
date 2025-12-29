@@ -17,9 +17,9 @@ type ErrorSearchParams = Record<string, string | string[] | undefined>;
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams?: ErrorSearchParams | Promise<ErrorSearchParams>;
+  searchParams?: Promise<ErrorSearchParams>;
 }) {
-  const resolvedSearchParams = await Promise.resolve(searchParams);
+  const resolvedSearchParams = (await searchParams) ?? {};
   const errorParam = resolvedSearchParams?.error;
   const errorKey = Array.isArray(errorParam) ? errorParam?.[0] : errorParam;
   const message =
