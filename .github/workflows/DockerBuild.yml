@@ -76,7 +76,10 @@ jobs:
 
       # Step 10: Build Docker image
       - name: Build Docker Image
-        run: docker build -t webapps:${{ env.IMAGE_TAG }} .
+        run: |
+          echo "Building Docker image without cache..."
+          docker build --no-cache \
+          -t webapps:${{ env.IMAGE_TAG }} .
 
       # Step 11: Tag Docker image for ECR
       - name: Tag Docker Image
