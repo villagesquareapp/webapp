@@ -61,7 +61,7 @@ const AddPost = ({
     uploadProgress,
     uploadFileAndGetInfo,
     createPostFunc: apiCreatePost,
-  } = usePostUploader();
+  } = usePostUploader(user?.token);
 
   const [imageEditing, setImageEditing] = useState<boolean>(false);
   const [imagePreviewing, setImagePreviewing] = useState<boolean>(false);

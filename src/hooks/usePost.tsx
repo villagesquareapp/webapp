@@ -9,7 +9,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPost[]>>) => {
+const usePost = (
+  post: IPost,
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>,
+  token?: string
+) => {
   const [replyingTo, setReplyingTo] = useState<IPostComment | IPost | null>(null);
   const [newComment, setNewComment] = useState("");
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
@@ -97,7 +101,7 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
     try {
       setLoadingReplies((prev) => ({ ...prev, [commentId]: true }));
 
-      const response = await getPostComments(post?.uuid, page);
+      const response = await getPostComments(post?.uuid, page, token);
 
       console.log("Replies response:", response);
       
@@ -154,7 +158,7 @@ const usePost = (post: IPost, setPosts: React.Dispatch<React.SetStateAction<IPos
 
   const handleCommentLike = async (comment: IPostComment, parentCommentId?: string) => {
     const formData = new FormData();
-    const result = await likeOrUnlikeComments(post.uuid, comment.uuid, formData);
+    const result = await likeOrUnlikeComments(post.uuid, comment.uuid, formData, token);
 
     if (result?.status) {
       if (parentCommentId) {
