@@ -6,7 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
-    : "https://staging-api.villagesquare.io/v2";
+    : "https://production-api.villagesquare.io/v2";
 
 export const authOptions: NextAuthOptions = {
   secret:
