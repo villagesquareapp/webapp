@@ -68,11 +68,12 @@ export const authOptions: NextAuthOptions = {
           );
 
           const contentType = authResponse.headers.get("content-type");
+          const rawResponse = await authResponse.text();
+
           if (!contentType || !contentType.includes("application/json")) {
-            const textResponse = await authResponse.text();
             console.error(
               "Non-JSON response received:",
-              textResponse.substring(0, 200)
+              rawResponse.substring(0, 200)
             );
             if (authResponse.status >= 500) {
               throw new Error(
@@ -82,7 +83,16 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Invalid server response. Please try again.");
           }
 
-          const authData = await authResponse.json();
+          let authData;
+          try {
+            authData = JSON.parse(rawResponse);
+          } catch (parseError) {
+            console.error(
+              "Failed to parse JSON response:",
+              rawResponse.substring(0, 200)
+            );
+            throw new Error("Invalid server response. Please try again.");
+          }
 
           if (!authResponse.ok)
             throw new Error(messageHandler(authData?.message));
