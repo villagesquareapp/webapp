@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  getPosts,
-  getFollowingPosts,
   likeOrUnlikePost,
   saveOrUnsavePost,
   getPostComments,
@@ -119,23 +117,27 @@ const SocialPost = ({ user }: { user: IUser }) => {
         setLoadingMorePost(true);
       }
 
-      const params = {
-        order: "latest" as const,
+      const params = new URLSearchParams({
+        order: "latest",
         location: "lagos",
         include: "livestream,echo,post",
-        page: pageNumber,
-      };
+        page: pageNumber.toString(),
+        type: tab === "explore" ? "foryou" : "following",
+      });
 
-      // Choose endpoint based on active tab
-      // Choose endpoint based on active tab
-      const response =
-        tab === "explore"
-          ? await getPosts(params)
-          : await getFollowingPosts(params);
+      // Use Route Handler instead of Server Action
+      const res = await fetch(`/api/posts/social?${params.toString()}`);
 
-      // Handle null response (e.g. if getPosts throws/returns null unexpectedly)
+      let response: any = null;
+      try {
+        response = await res.json();
+      } catch (e) {
+        console.error("Failed to parse JSON", e);
+      }
+
+      // Handle null response (e.g. if fetch throws/returns null unexpectedly)
       if (!response) {
-        toast.error("Failed to load posts: No response");
+        toast.error("Failed to load posts: No response from server");
         setIsPostLoading(false);
         setLoadingMorePost(false);
         return;
@@ -145,7 +147,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       if (!response.status) {
         toast.error(response.message || "Failed to load posts");
         console.error("API Error:", response.message);
-        setIsPostLoading(false); // Ensure loading state is cleared
+        setIsPostLoading(false);
         setLoadingMorePost(false);
         return;
       }
