@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import VflixCard from "./VFlixCard";
-import { likeOrUnlikeVflix } from "api/vflix";
+// import { likeOrUnlikeVflix } from "api/vflix";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
@@ -35,24 +35,32 @@ export default function VflixFeed({ activeTab, user }: Props) {
   };
 
   const likeUnlikeVflix = async (postId: string) => {
-    const formData = new FormData();
-    const result = await likeOrUnlikeVflix(postId, formData);
-    if (result?.status) {
-      setVideos((prev) =>
-        prev.map((post) =>
-          post.uuid === postId
-            ? {
-              ...post,
-              likes_count: result?.data?.is_liked
-                ? (Number(post.likes_count) + 1).toString()
-                : (Number(post.likes_count) - 1).toString(),
-              is_liked: !post.is_liked,
-            }
-            : post
-        )
-      );
-    } else {
-      toast.error(result?.message);
+    // const formData = new FormData();
+    // const result = await likeOrUnlikeVflix(postId, formData);
+    try {
+      const res = await fetch(`/api/posts/vflix/${postId}/like`, { method: "POST" });
+      const result = await res.json();
+
+      if (result?.status) {
+        setVideos((prev) =>
+          prev.map((post) =>
+            post.uuid === postId
+              ? {
+                ...post,
+                likes_count: result?.data?.is_liked
+                  ? (Number(post.likes_count) + 1).toString()
+                  : (Number(post.likes_count) - 1).toString(),
+                is_liked: !post.is_liked,
+              }
+              : post
+          )
+        );
+      } else {
+        toast.error(result?.message);
+      }
+    } catch (e) {
+      console.error("Vflix like error", e);
+      toast.error("Failed to like video");
     }
   };
 
