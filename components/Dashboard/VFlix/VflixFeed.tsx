@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import VflixCard from "./VFlixCard";
-import { getVflixPosts, likeOrUnlikeVflix } from "api/vflix";
+import { likeOrUnlikeVflix } from "api/vflix";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
@@ -60,15 +60,27 @@ export default function VflixFeed({ activeTab, user }: Props) {
     async function fetchVflixVideos() {
       try {
         setLoading(true);
-        const response = await getVflixPosts(page);
-        if (page === 1) {
-          setVideos(response.data?.data || []);
-          setCurrentIndex(0);
+        // Use Route Handler
+        const params = new URLSearchParams({
+          page: page.toString(),
+        });
+        const res = await fetch(`/api/posts/vflix?${params.toString()}`);
+        const response = await res.json();
+
+        if (response?.status) {
+          if (page === 1) {
+            setVideos(response.data?.data || []);
+            setCurrentIndex(0);
+          } else {
+            setVideos((prev) => [...prev, ...(response.data?.data ?? [])]);
+          }
         } else {
-          setVideos((prev) => [...prev, ...(response.data?.data ?? [])]);
+          console.error("Failed to fetch Vflix posts: ", response?.message);
+          toast.error(response?.message || "Failed to load Vflix posts");
         }
       } catch (error) {
         console.error("Failed to fetch Vflix posts: ", error);
+        toast.error("An error occurred while fetching Vflix posts");
       } finally {
         setLoading(false);
       }
