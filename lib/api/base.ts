@@ -24,8 +24,6 @@ async function baseApiCall<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  console.log("Sending request to:", url);
-
   try {
     const response = await fetch(url, {
       ...options,
