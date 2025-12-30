@@ -1,3 +1,4 @@
+import { getAuthSecret, getAuthUrl } from "lib/authConfig";
 import { messageHandler } from "lib/messageHandler";
 import { getTimeZone } from "lib/timezone";
 import { NextAuthOptions } from "next-auth";
@@ -8,10 +9,11 @@ const API_BASE_URL =
     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
     : "https://staging-api.villagesquare.io/v2";
 
+const authSecret = getAuthSecret();
+getAuthUrl();
+
 export const authOptions: NextAuthOptions = {
-  secret:
-    process.env.NEXTAUTH_SECRET ||
-    "zSLADSxHudaAtzEkWbPfbVaXa3D3Ls1Ey6f/Kn5YNVs=",
+  secret: authSecret,
   providers: [
     GoogleProvider({
       clientId:
