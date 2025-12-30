@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  likeOrUnlikePost,
-  saveOrUnsavePost,
   getPostComments,
 } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -58,8 +56,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
     );
 
     try {
-      const formData = new FormData();
-      const result = await likeOrUnlikePost(postId, formData);
+      // const formData = new FormData();
+      // const result = await likeOrUnlikePost(postId, formData);
+      const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      const result = await res.json();
 
       if (!result?.status) {
         setPosts((prev) =>
@@ -96,16 +96,24 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, []);
 
   const saveUnsavePost = async (postId: string) => {
-    const formData = new FormData();
-    const result = await saveOrUnsavePost(postId, formData);
-    if (result?.status) {
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
-        )
-      );
-    } else {
-      toast.error(result?.message);
+    // const formData = new FormData();
+    // const result = await saveOrUnsavePost(postId, formData);
+    try {
+      const res = await fetch(`/api/posts/${postId}/save`, { method: "POST" });
+      const result = await res.json();
+
+      if (result?.status) {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
+          )
+        );
+      } else {
+        toast.error(result?.message || "Failed to save post");
+      }
+    } catch (e) {
+      console.error("Error saving post", e);
+      toast.error("Failed to save post");
     }
   };
 
