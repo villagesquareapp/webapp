@@ -47,7 +47,8 @@ export default function AuthLayout({
               {/* <p className="font-ogonek font-black text-[55px] tracking-tight">
                 Villagesquare
               </p> */}
-              <Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
+              <Image src="https://cdn-assets.villagesquare.io/assets/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
+              {/*<Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />*/}
               <p className="font-poppins text-[23px] mt-2">
                 Where Connections Flourish.
               </p>
