@@ -127,12 +127,31 @@ const SocialPost = ({ user }: { user: IUser }) => {
       };
 
       // Choose endpoint based on active tab
+      // Choose endpoint based on active tab
       const response =
         tab === "explore"
           ? await getPosts(params)
           : await getFollowingPosts(params);
 
-      const newPosts = response?.data;
+      // Handle null response (e.g. if getPosts throws/returns null unexpectedly)
+      if (!response) {
+        toast.error("Failed to load posts: No response");
+        setIsPostLoading(false);
+        setLoadingMorePost(false);
+        return;
+      }
+
+      // Check API status
+      if (!response.status) {
+        toast.error(response.message || "Failed to load posts");
+        console.error("API Error:", response.message);
+        setIsPostLoading(false); // Ensure loading state is cleared
+        setLoadingMorePost(false);
+        return;
+      }
+
+      const postsData = response.data;
+      const newPosts = postsData?.data;
 
       if (Array.isArray(newPosts)) {
         if (pageNumber === 1) {
@@ -141,12 +160,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setPosts((prev) => [...prev, ...newPosts]);
         }
 
-        const totalPosts = response?.total || 0;
+        const totalPosts = postsData?.total || 0;
         const currentTotal =
-          (pageNumber - 1) * (response?.per_page || 10) + newPosts.length;
+          (pageNumber - 1) * (postsData?.per_page || 10) + newPosts.length;
         setHasMore(currentTotal < totalPosts);
       } else {
-        toast.error("Failed to load posts");
+        toast.error("Failed to load posts: Invalid data format");
       }
     } catch (error) {
       console.error("Error fetching posts:", error);

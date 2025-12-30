@@ -36,7 +36,10 @@ async function baseApiCall<T>(
     if (response.ok) {
       return data;
     } else {
-      return data;
+      return {
+        ...data,
+        message: `${data.message || "Unknown Error"} (Status: ${response.status}, URL: ${url})`
+      };
     }
   } catch (error: any) {
     const errorMessage =
@@ -44,7 +47,7 @@ async function baseApiCall<T>(
       `An unexpected error occurred during the ${method} request.`;
     return {
       status: false,
-      message: errorMessage,
+      message: `${errorMessage} (URL: ${url})`,
     };
   }
 }
