@@ -83,7 +83,7 @@ const ReplyModal = ({
     },
   ]);
 
-  const { isPosting, uploadProgress, uploadFileAndGetInfo } = usePostUploader();
+  const { isPosting, uploadProgress, uploadFileAndGetInfo } = usePostUploader(user?.token);
 
   const createReplyFunc = async () => {
     if (!post?.uuid || isReplyButtonDisabled) return;
@@ -106,7 +106,7 @@ const ReplyModal = ({
         privacy: "everyone",
       };
       setIsLoading(true);
-      const result = await createPost({ posts: [replyPayload] });
+      const result = await createPost({ posts: [replyPayload] }, user?.token);
 
       if (result?.status && result?.data) {
         toast.success("Reply created successfully");

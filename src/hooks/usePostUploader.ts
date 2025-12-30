@@ -37,14 +37,18 @@ const calculateChecksum = async (chunk: Blob): Promise<string> => {
   }
 };
 
-export const usePostUploader = () => {
+export const usePostUploader = (token?: string) => {
   const [isPosting, setIsPosting] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
 
   const handleLargeFileUpload = useCallback(
     async (file: File, fileId: string) => {
       try {
-        const startResponse = await startUploadPostGreaterThan6MB(file.name, file.type);
+        const startResponse = await startUploadPostGreaterThan6MB(
+          file.name,
+          file.type,
+          token
+        );
         if (!startResponse?.status || !startResponse?.data)
           throw new Error("Failed to start multipart upload");
         const uploadId = startResponse.data.UploadId;
@@ -80,7 +84,7 @@ export const usePostUploader = () => {
           formData.append("part_number", String(partNumber));
           formData.append("checksum", checksum);
 
-          const uploadPromise = uploadPostMediaGreaterThan6MB(formData).then(
+          const uploadPromise = uploadPostMediaGreaterThan6MB(formData, token).then(
             (res) => {
               if (res?.status && res?.data) {
                 const { partNumber: pn, eTag } = res.data;
@@ -120,11 +124,14 @@ export const usePostUploader = () => {
             eTag: p.eTag.replace(/"/g, ""),
           }));
 
-        const completeResponse = await completePostMediaGreaterThan6MB({
-          filename: file.name,
-          upload_id: uploadId,
-          parts: sortedParts,
-        });
+        const completeResponse = await completePostMediaGreaterThan6MB(
+          {
+            filename: file.name,
+            upload_id: uploadId,
+            parts: sortedParts,
+          },
+          token
+        );
 
         setUploadProgress((prev: Record<string, UploadProgress>) => ({
           ...prev,
@@ -163,7 +170,7 @@ export const usePostUploader = () => {
           ...prev,
           [fileId]: { file, progress: 0, status: "uploading" },
         }));
-        const uploadResponse = await uploadPostMediaLessThan6MB(fd);
+        const uploadResponse = await uploadPostMediaLessThan6MB(fd, token);
         if (!uploadResponse?.status || !uploadResponse?.data) {
           throw new Error("Direct upload failed");
         }
@@ -198,7 +205,7 @@ export const usePostUploader = () => {
       try {
         setIsPosting(true);
         const postBody = { posts: payloadPosts };
-        const result = await createPost(postBody as any);
+        const result = await createPost(postBody as any, token);
         if (!result?.status || !result?.data) {
           throw new Error(result?.message || "Failed to create post");
         }

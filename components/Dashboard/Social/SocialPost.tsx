@@ -61,7 +61,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
     try {
       const formData = new FormData();
-      const result = await likeOrUnlikePost(postId, formData);
+      const result = await likeOrUnlikePost(postId, formData, user?.token);
 
       if (!result?.status) {
         setPosts((prev) =>
@@ -99,7 +99,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   const saveUnsavePost = async (postId: string) => {
     const formData = new FormData();
-    const result = await saveOrUnsavePost(postId, formData);
+    const result = await saveOrUnsavePost(postId, formData, user?.token);
     if (result?.status) {
       setPosts((prev) =>
         prev.map((post) =>
@@ -129,8 +129,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
       // Choose endpoint based on active tab
       const response =
         tab === "explore"
-          ? await getPosts(params)
-          : await getFollowingPosts(params);
+          ? await getPosts(params, user?.token)
+          : await getFollowingPosts(params, user?.token);
 
       const newPosts = response?.data;
 

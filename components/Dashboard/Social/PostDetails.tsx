@@ -75,7 +75,7 @@ const PostDetails = ({
     loadMoreReplies,
     observerTarget,
     initialFetchDone,
-  } = usePost(post, setPosts);
+  } = usePost(post, setPosts, user?.token);
 
   const [replies, setReplies] = useState<IPostComment[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
@@ -128,7 +128,7 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
   const refetchReplies = useCallback(async () => {
     setIsLoadingReplies(true);
     try {
-      const response = await getPostComments(post.uuid, 1);
+      const response = await getPostComments(post.uuid, 1, user?.token);
       if (response?.status && response.data) {
         setReplies(response.data.data);
       }
@@ -142,7 +142,7 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
   const handleFetchReplies = async (page: number) => {
     setIsLoadingReplies(true);
     try {
-      const response = await getPostComments(post.uuid, page);
+      const response = await getPostComments(post.uuid, page, user?.token);
       if (response?.status && response.data) {
         setReplies(response.data.data);
       }
@@ -183,7 +183,7 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
     try {
       // Make API call
       const formData = new FormData();
-      const result = await likeOrUnlikePost(replyId, formData);
+      const result = await likeOrUnlikePost(replyId, formData, user?.token);
 
       if (!result?.status) {
         // Revert optimistic update on failure

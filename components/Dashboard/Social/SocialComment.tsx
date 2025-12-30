@@ -14,6 +14,7 @@ const SocialComment = ({
   setComments,
   commentsWithReplies,
   setCommentsWithReplies,
+  token,
 }: {
   onChangeReplyingTo: (postComment: IPostComment, parentComment?: IPostComment) => void;
   postId: string;
@@ -23,6 +24,7 @@ const SocialComment = ({
   setCommentsWithReplies: React.Dispatch<
     React.SetStateAction<Record<string, CommentWithReplies>>
   >;
+  token?: string;
 }) => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -42,7 +44,7 @@ const SocialComment = ({
         setLoadingMore(true);
       }
 
-      const response = await getPostComments(postId, pageNumber);
+      const response = await getPostComments(postId, pageNumber, token);
 
       if (response?.status && response.data) {
         const allComments = response.data.data;
@@ -102,7 +104,7 @@ const SocialComment = ({
     try {
       setLoadingReplies((prev) => ({ ...prev, [commentId]: true }));
 
-      const response = await getCommentReplies(postId, commentId, page);
+      const response = await getCommentReplies(postId, commentId, page, token);
 
       if (response?.status && response.data?.data) {
         const replies = response.data.data;
@@ -156,7 +158,7 @@ const SocialComment = ({
 
   const handleCommentLike = async (comment: IPostComment, parentCommentId?: string) => {
     const formData = new FormData();
-    const result = await likeOrUnlikeComments(postId, comment.uuid, formData);
+    const result = await likeOrUnlikeComments(postId, comment.uuid, formData, token);
 
     if (result?.status) {
       if (parentCommentId) {

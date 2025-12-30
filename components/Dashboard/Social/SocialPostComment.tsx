@@ -44,7 +44,7 @@ const SocialPostComment = ({
     commentsWithReplies,
     handleEmojiClick,
     // handleSubmitComment,
-  } = usePost(post, setPosts);
+  } = usePost(post, setPosts, user?.token);
 
 
   return (
