@@ -110,41 +110,60 @@ export const authOptions: NextAuthOptions = {
         console.log("Google provider_token (ID token):", account.id_token);
 
         try {
+          console.log(`[GoogleSignIn] Attempting to register/login with backend at ${API_BASE_URL}/auth/social-account`);
+
+          const payload = {
+            audience: "web",
+            auth_type: "google",
+            device: "browser",
+            device_id: null,
+            fcm_token: null,
+            provider: "google",
+            provider_token: account.id_token || account.access_token,
+            timezone: getTimeZone(),
+          };
+
+          // console.log("[GoogleSignIn] Payload:", JSON.stringify(payload)); // Be careful logging tokens in prod logs if not necessary
+
           const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              audience: "web",
-              auth_type: "google",
-              device: "browser",
-              device_id: null,
-              fcm_token: null,
-              provider: "google",
-              provider_token: account.id_token || account.access_token,
-              timezone: getTimeZone(),
-            }),
+            body: JSON.stringify(payload),
           });
 
-          const data = await res.json();
+          console.log(`[GoogleSignIn] Backend response status: ${res.status}`);
+
+          const textData = await res.text();
+          console.log(`[GoogleSignIn] Backend response body (text): ${textData.substring(0, 500)}`); // Log first 500 chars
+
+          let data;
+          try {
+            data = JSON.parse(textData);
+          } catch (e) {
+            console.error("[GoogleSignIn] Failed to parse backend response as JSON");
+            return false;
+          }
 
           if (!res.ok || !data.status) {
-            console.log(
-              "Social account registration/login failed:",
-              data.message
+            console.error(
+              "[GoogleSignIn] Social account registration/login failed:",
+              data.message || "Unknown error"
             );
+            // We can throw an error here to show a specific message on the error page
+            // throw new Error(data.message || "Backend authentication failed");
             return false;
           }
 
           if (data.data) {
             (user as any).backendData = data.data;
-            console.log("Social account data:", data.data);
+            console.log("[GoogleSignIn] Social account data attached to user object.");
           }
 
-          console.log("Social login approved");
+          console.log("[GoogleSignIn] Social login approved");
 
           return true;
         } catch (error) {
-          console.error("Error in social account signIn callback:", error);
+          console.error("[GoogleSignIn] Error in social account signIn callback:", error);
           return false;
         }
       }
@@ -174,7 +193,7 @@ export const authOptions: NextAuthOptions = {
 
           token = {
             ...token,
-            ...essentialData, 
+            ...essentialData,
           };
         }
         else {

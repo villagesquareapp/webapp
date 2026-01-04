@@ -1,6 +1,6 @@
 'use server'
 
-import { apiGet } from 'lib/api';
+import { apiGet, apiPost } from 'lib/api';
 import { getToken } from 'lib/getToken';
 
 
@@ -12,7 +12,7 @@ export const getNotifications = async (page: number) => {
     })
 
     const response = await apiGet<INotificationsResponse>(
-        `app/notifications?${params.toString()}`,
+        `notifications?${params.toString()}`,
         token
     );
     return response;
@@ -23,8 +23,9 @@ export const getNotifications = async (page: number) => {
 export const readAllNotifications = async () => {
     const token = await getToken()
 
-    const response = await apiGet<INotificationsResponse>(
-        `/app/notifications/read-all`,
+    const response = await apiPost(
+        `/notifications/read-all`,
+        {},
         token
     );
     return response;

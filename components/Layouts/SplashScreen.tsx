@@ -5,15 +5,24 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function SplashScreen() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2500);
+    // Check if we've already shown the splash screen in this session
+    const hasShownSplash = sessionStorage.getItem("hasShownSplash");
 
-    return () => clearTimeout(timer);
+    if (!hasShownSplash) {
+      setShowSplash(true);
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+        sessionStorage.setItem("hasShownSplash", "true");
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
   }, []);
+
+  if (!showSplash) return null;
 
   return (
     <AnimatePresence>
