@@ -24,14 +24,9 @@ export async function getPosts(params: GetPostsParams = {}) {
 
   const response = await apiGet<IPostsResponse>(route, token);
   // console.log("Response from API: ", response);
-  // Return the full response to let the client handle errors
   return response;
 }
-
-// Add this to your app/api/post.ts file
-
 export async function getFollowingPosts(params: GetPostsParams = {}) {
-  // Get the session
   const token = await getToken();
   const queryParams = new URLSearchParams();
 
@@ -44,7 +39,6 @@ export async function getFollowingPosts(params: GetPostsParams = {}) {
 
   const response = await apiGet<IPostsResponse>(route, token);
 
-  // Return the full response to let the client handle errors
   return response;
 }
 
