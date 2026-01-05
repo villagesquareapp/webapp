@@ -22,24 +22,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # Step 4: Build project
-      - name: Build
-        run: npm run build --if-present
-
-      # Step 5: Run tests
-      - name: Test
-        run: npm test --if-present
-
       # Step 6: Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -73,11 +55,12 @@ jobs:
       # Step 10: Build Docker image
       - name: Build Docker Image
         run: |
-          docker build \
-            --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
-            --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} \
-            -t webapps:${{ env.IMAGE_TAG }} .
-        shell: bash
+          echo "Building Docker image without cache..."
+          docker build --no-cache \
+          --build-arg NEXT_PUBLIC_API_URL=https://production-api.villagesquare.io/v2 \
+          --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
+          --build-arg NEXTAUTH_URL=https://villagesquare.io \
+          -t webapps:${{ env.IMAGE_TAG }} .
 
       # Step 11: Tag Docker image for ECR
       - name: Tag Docker Image

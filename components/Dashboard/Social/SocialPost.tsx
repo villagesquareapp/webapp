@@ -1,10 +1,6 @@
 "use client";
 
 import {
-  getPosts,
-  getFollowingPosts,
-  likeOrUnlikePost,
-  saveOrUnsavePost,
   getPostComments,
 } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -60,8 +56,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
     );
 
     try {
-      const formData = new FormData();
-      const result = await likeOrUnlikePost(postId, formData);
+      // const formData = new FormData();
+      // const result = await likeOrUnlikePost(postId, formData);
+      const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      const result = await res.json();
 
       if (!result?.status) {
         setPosts((prev) =>
@@ -98,16 +96,24 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, []);
 
   const saveUnsavePost = async (postId: string) => {
-    const formData = new FormData();
-    const result = await saveOrUnsavePost(postId, formData);
-    if (result?.status) {
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
-        )
-      );
-    } else {
-      toast.error(result?.message);
+    // const formData = new FormData();
+    // const result = await saveOrUnsavePost(postId, formData);
+    try {
+      const res = await fetch(`/api/posts/${postId}/save`, { method: "POST" });
+      const result = await res.json();
+
+      if (result?.status) {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
+          )
+        );
+      } else {
+        toast.error(result?.message || "Failed to save post");
+      }
+    } catch (e) {
+      console.error("Error saving post", e);
+      toast.error("Failed to save post");
     }
   };
 
@@ -119,20 +125,40 @@ const SocialPost = ({ user }: { user: IUser }) => {
         setLoadingMorePost(true);
       }
 
-      const params = {
-        order: "latest" as const,
+      const params = new URLSearchParams({
+        order: "latest",
         location: "lagos",
         include: "livestream,echo,post",
-        page: pageNumber,
-      };
+        page: pageNumber.toString(),
+        type: tab === "explore" ? "foryou" : "following",
+      });
 
-      // Choose endpoint based on active tab
-      const response =
-        tab === "explore"
-          ? await getPosts(params)
-          : await getFollowingPosts(params);
+      const res = await fetch(`/api/posts/social?${params.toString()}`);
 
-      const newPosts = response?.data;
+      let response: any = null;
+      try {
+        response = await res.json();
+      } catch (e) {
+        console.error("Failed to parse JSON", e);
+      }
+
+      if (!response) {
+        toast.error("Failed to load posts: No response from server");
+        setIsPostLoading(false);
+        setLoadingMorePost(false);
+        return;
+      }
+
+      if (!response.status) {
+        toast.error(response.message || "Failed to load posts");
+        console.error("API Error:", response.message);
+        setIsPostLoading(false);
+        setLoadingMorePost(false);
+        return;
+      }
+
+      const postsData = response.data;
+      const newPosts = postsData?.data;
 
       if (Array.isArray(newPosts)) {
         if (pageNumber === 1) {
@@ -141,12 +167,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setPosts((prev) => [...prev, ...newPosts]);
         }
 
-        const totalPosts = response?.total || 0;
+        const totalPosts = postsData?.total || 0;
         const currentTotal =
-          (pageNumber - 1) * (response?.per_page || 10) + newPosts.length;
+          (pageNumber - 1) * (postsData?.per_page || 10) + newPosts.length;
         setHasMore(currentTotal < totalPosts);
       } else {
-        toast.error("Failed to load posts");
+        toast.error("Failed to load posts: Invalid data format");
       }
     } catch (error) {
       console.error("Error fetching posts:", error);

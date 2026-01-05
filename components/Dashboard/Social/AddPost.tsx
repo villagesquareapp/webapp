@@ -556,10 +556,10 @@ const AddPost = ({
                                 updateItem(idx, { caption: e.target.value })
                               }
                               placeholder="What's on your mind?"
-                              className="w-full resize-none bg-transparent mt-3 text-white placeholder:text-gray-500 min-h-[80px] max-h-[180px] outline-none"
+                              className="w-full resize-none bg-transparent mt-3 text-white placeholder:text-gray-500 min-h-[40px] max-h-[80px] outline-none"
                               maxLength={500}
                             />
-                            <div className="flex items-center justify-between text-xs text-gray-400 mt-2">
+                            <div className="flex items-center justify-between text-xs text-gray-400">
                               <div className="flex items-center gap-3">
                                 <label className="flex items-center gap-2 cursor-pointer text-gray-400 hover:text-white">
                                   <input
@@ -586,7 +586,7 @@ const AddPost = ({
                               </div>
                             </div>
 
-                            <div className="border-t border-white/5 mt-3 pt-3" />
+                            <div className="border-t border-white/5 mt-3 pt-0" />
 
                             <div className="mt-3 flex flex-wrap gap-3">
                               {it.media.map((file, fIdx) => {

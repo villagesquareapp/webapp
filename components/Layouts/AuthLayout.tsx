@@ -28,7 +28,7 @@ export default function AuthLayout({
       <div className="absolute top-0 left-0 w-full h-full z-0">
         <Image
           src="/images/login_bg_clip.png"
-          alt="Authentication"
+          alt="bg-clip"
           fill
           className="w-full h-full object-cover"
         />
@@ -47,7 +47,8 @@ export default function AuthLayout({
               {/* <p className="font-ogonek font-black text-[55px] tracking-tight">
                 Villagesquare
               </p> */}
-              <Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
+              <Image src="https://cdn-assets.villagesquare.io/assets/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
+              {/*<Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />*/}
               <p className="font-poppins text-[23px] mt-2">
                 Where Connections Flourish.
               </p>
@@ -91,7 +92,7 @@ export default function AuthLayout({
       <style jsx>{`
         @media (max-width: 768px) {
           .store-buttons {
-            margin-top: 0.5rem; /* reduce spacing between the store buttons */
+            margin-top: 0.5rem;
             gap: 0.5rem;
           }
         }
