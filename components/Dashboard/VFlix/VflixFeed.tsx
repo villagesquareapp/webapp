@@ -24,7 +24,6 @@ export default function VflixFeed({ activeTab, user }: Props) {
   const [activePostId, setActivePostId] = useState<string | null>(null);
 
   const toggleComments = (postId: string | null = null) => {
-    // If the panel is open, close it. Otherwise, open it for the given postId.
     if (isCommentsOpen) {
       setIsCommentsOpen(false);
       setActivePostId(null);
@@ -35,8 +34,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
   };
 
   const likeUnlikeVflix = async (postId: string) => {
-    // const formData = new FormData();
-    // const result = await likeOrUnlikeVflix(postId, formData);
+    
     try {
       const res = await fetch(`/api/posts/vflix/${postId}/like`, { method: "POST" });
       const result = await res.json();
@@ -68,7 +66,6 @@ export default function VflixFeed({ activeTab, user }: Props) {
     async function fetchVflixVideos() {
       try {
         setLoading(true);
-        // Use Route Handler
         const params = new URLSearchParams({
           page: page.toString(),
         });
@@ -103,7 +100,6 @@ export default function VflixFeed({ activeTab, user }: Props) {
     if (currentIndex < videos.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      // reached end → load next page
       setPage((prev) => prev + 1);
     }
   };
@@ -130,7 +126,6 @@ export default function VflixFeed({ activeTab, user }: Props) {
         </button>
       )}
 
-      {/* Video Card */}
       <div className="relative w-full md:w-[550px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0">
         {videos[currentIndex] && (
           <VflixCard

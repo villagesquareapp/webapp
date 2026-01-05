@@ -133,7 +133,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
         type: tab === "explore" ? "foryou" : "following",
       });
 
-      // Use Route Handler instead of Server Action
       const res = await fetch(`/api/posts/social?${params.toString()}`);
 
       let response: any = null;
@@ -143,7 +142,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
         console.error("Failed to parse JSON", e);
       }
 
-      // Handle null response (e.g. if fetch throws/returns null unexpectedly)
       if (!response) {
         toast.error("Failed to load posts: No response from server");
         setIsPostLoading(false);
@@ -151,7 +149,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
         return;
       }
 
-      // Check API status
       if (!response.status) {
         toast.error(response.message || "Failed to load posts");
         console.error("API Error:", response.message);
