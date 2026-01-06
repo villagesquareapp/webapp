@@ -26,7 +26,6 @@ import ProgressBar from "./ProgressBar";
 import { BookImage } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
 
-// import { usePostUploader } from "src/hooks/usePostUploader";
 import { usePostUploadContext } from "context/PostUploadContext";
 import { set } from "zod";
 

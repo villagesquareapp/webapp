@@ -2,16 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import SparkMD5 from "spark-md5";
-// import {
-//     startUploadPostGreaterThan6MB,
-//     uploadPostMediaGreaterThan6MB,
-//     completePostMediaGreaterThan6MB,
-//     uploadPostMediaLessThan6MB,
-//     createPost,
-// } from "api/post";
 import { toast } from "sonner";
 
-// Re-using types from hook
 import { getSession } from "next-auth/react";
 import { baseApiCall } from "lib/api/base";
 
@@ -77,13 +69,9 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
         toast.info("Upload cancelled");
     }, [abortController]);
 
-    // Helper to get token client-side if needed, but we can't use getToken from lib/getToken because it uses headers()
-    // We'll use getSession from next-auth/react
-
 
     const getClientToken = async () => {
         const session = await getSession();
-        // @ts-ignore
         return session?.user?.token;
     }
 
@@ -180,7 +168,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                         eTag: p.eTag.replace(/"/g, ""),
                     }));
 
-                // Complete Upload
                 const completeResponse = await baseApiCall<any>("POST", "posts/upload/complete", {
                     body: JSON.stringify({
                         filename: file.name,
@@ -227,7 +214,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
             const token = await getClientToken();
             if (!token) throw new Error("No authentication token found");
 
-            // Reset or init specific file progress
             setUploadProgress((prev) => ({
                 ...prev,
                 [fileId]: { file, progress: 0, status: 'pending' }
@@ -280,12 +266,10 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
         async (payloadPosts: any[]) => {
             try {
                 setIsPosting(true);
-                // Start a fresh abort controller (not fully used yet but good practice)
                 setAbortController(new AbortController());
 
                 const postBody = { posts: payloadPosts };
 
-                // Using existing API client wrapper
                 const res = await fetch("/api/posts/create", {
                     method: "POST",
                     headers: {
@@ -299,7 +283,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     throw new Error(result?.message || "Failed to create post");
                 }
 
-                // Clear progress after success (maybe delay slighly for UX?)
                 setTimeout(() => {
                     setUploadProgress({});
                     setIsPosting(false);
@@ -308,7 +291,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                 return result.data;
             } catch (err) {
                 console.error("createPostFunc error", err);
-                setIsPosting(false); // Stop posting state on error
+                setIsPosting(false); 
                 throw err;
             }
         },
