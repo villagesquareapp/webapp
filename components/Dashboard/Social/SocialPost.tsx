@@ -13,6 +13,7 @@ import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
 import PostSkeleton from "./PostSkeleton";
+import ProgressBar from "./ProgressBar";
 
 type TabType = "explore" | "connections";
 
