@@ -17,8 +17,9 @@ import {
 import { useState, useMemo, useRef, useCallback } from "react";
 import { IoVideocamOutline } from "react-icons/io5";
 import { toast } from "sonner";
-import { createPost } from "api/post";
-import { usePostUploader } from "src/hooks/usePostUploader";
+// import { createPost } from "api/post";
+// import { usePostUploader } from "src/hooks/usePostUploader";
+import { usePostUploadContext } from "context/PostUploadContext";
 import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
 import { Label } from "@radix-ui/react-label";
 import { LiaGlobeAmericasSolid } from "react-icons/lia";
@@ -83,17 +84,26 @@ const ReplyModal = ({
     },
   ]);
 
-  const { isPosting, uploadProgress, uploadFileAndGetInfo } = usePostUploader();
+  const { isPosting, uploadFileAndGetInfo, createPostFunc } = usePostUploadContext();
 
   const createReplyFunc = async () => {
     if (!post?.uuid || isReplyButtonDisabled) return;
 
     try {
+      setIsLoading(true); // Keep local loading for button state if desired, or use global isPosting
+
       let uploadedFiles: { key: string; mime_type: string }[] = [];
       if (selectedFile) {
         const fileId = `${post.uuid}-${Date.now()}`;
-        const fileInfo = await uploadFileAndGetInfo(selectedFile, fileId);
-        uploadedFiles.push(fileInfo);
+        try {
+          const fileInfo = await uploadFileAndGetInfo(selectedFile, fileId);
+          uploadedFiles.push(fileInfo);
+        } catch (err) {
+          console.error("Error uploading file for reply", err);
+          toast.error("Failed to upload media");
+          setIsLoading(false);
+          return;
+        }
       }
 
       const replyPayload = {
@@ -105,35 +115,33 @@ const ReplyModal = ({
         longitude: null,
         privacy: "everyone",
       };
-      setIsLoading(true);
-      const result = await createPost({ posts: [replyPayload] });
 
-      if (result?.status && result?.data) {
+      // Use the global create function (which calls the API route)
+      const result = await createPostFunc([replyPayload]);
+
+      if (result) {
         toast.success("Reply created successfully");
-        // onReplySuccess();
-        // const newReply: IPostComment = {
-        //   uuid: result.data?.uuid || `temp-${Date.now()}`,
-        //   caption: newComment,
-        //   user: {
-        //     uuid: user.uuid,
-        //     name: user.name,
-        //     username: user.username,
-        //     profile_picture: user.profile_picture,
-        //   },
-        //   likes_count: "0",
-        //   replies_count: "0",
-        //   is_liked: false,
-        //   is_saved: false,
-        //   formatted_time: "now",
-        //   media: uploadedFiles.length > 0 ? [] : [], // You might want to construct media objects here
-        //   created_at: new Date(),
-        // };
+
+        // Construct the new reply object for optimistic/local update
+        // Note: The API response might differ, checking apiCreatePost usually returns the created post(s) or status. 
+        // We assume 'result' contains the data we need or we construct it manually as before.
+        // If result is the array of created posts, take the first one?
+        // Let's assume result structure match. If not, we fall back to manual construction or just using what we have.
+        // Actually AddPost uses onRefreshPosts. Here we update state manually.
+
+        // The result from createPostFunc (context) returns result.data.
+        // If result.data is { uuid: ... } or array?
+        // AddPost: payloadPosts -> API returns ?
+
+        // Let's rely on the manual construction logic but use ID from result if available
+        const createdUuid = Array.isArray(result) ? result[0]?.uuid : result?.uuid;
+
         const newReply: IPostComment = {
-          uuid: result.data?.uuid || `temp-${Date.now()}`,
+          uuid: createdUuid || `temp-${Date.now()}`,
           caption: newComment,
-          user_id: user.uuid, 
-          parent_post_id: "",
-          root_post_id: "",
+          user_id: user.uuid,
+          parent_post_id: post.uuid,
+          root_post_id: post.uuid, // Best guess or empty
           quote_post_id: null,
           thread_id: "",
           address: null,
@@ -154,14 +162,14 @@ const ReplyModal = ({
           is_saved: false,
           is_liked: false,
           is_thread_continuation: false,
-          media: uploadedFiles.length > 0 ? [] : [],
+          media: uploadedFiles.length > 0 ? [] : [], // Placeholder
 
           user: {
             uuid: user.uuid,
             name: user.name,
             username: user.username,
             profile_picture: user.profile_picture,
-            email: user.email ?? "", 
+            email: user.email ?? "",
             verified_status: user.verified_status ?? 0,
             checkmark_verification_status:
               user.checkmark_verification_status ?? false,
@@ -175,13 +183,13 @@ const ReplyModal = ({
           onReplySuccess(newReply);
         }
 
-         setPosts((prev) =>
+        setPosts((prev) =>
           prev.map((p) =>
             p.uuid === post.uuid
               ? {
-                  ...p,
-                  replies_count: (Number(p.replies_count) + 1).toString(),
-                }
+                ...p,
+                replies_count: (Number(p.replies_count) + 1).toString(),
+              }
               : p
           )
         );
@@ -190,9 +198,8 @@ const ReplyModal = ({
         setSelectedFile(null);
         setMediaPreviewUrl(null);
         onClose();
-        setIsLoading(false);
       } else {
-        toast.error(result?.message || "Failed to create reply");
+        toast.error("Failed to create reply");
       }
     } catch (error) {
       toast.error("Failed to create reply");
@@ -265,7 +272,7 @@ const ReplyModal = ({
     }
     return {
       // text: `Replying to @${post?.user?.username}`,
-      text:(
+      text: (
         <>
           Replying to {" "}
           <span className="text-blue-500">@{post.user.username}</span>
@@ -394,9 +401,8 @@ const ReplyModal = ({
               </div>
             </div>
             <span
-              className={`text-sm ${
-                charCount > 500 ? "text-red-500" : "text-gray-400"
-              }`}
+              className={`text-sm ${charCount > 500 ? "text-red-500" : "text-gray-400"
+                }`}
             >
               {charCount}/500
             </span>
@@ -488,9 +494,8 @@ const ReplyModal = ({
                     {items[0].privacy}
                   </span>
                   <IoIosArrowDown
-                    className={`size-5 duration-500 transition-transform ${
-                      isAudienceDialogOpen ? "-rotate-180 " : ""
-                    }`}
+                    className={`size-5 duration-500 transition-transform ${isAudienceDialogOpen ? "-rotate-180 " : ""
+                      }`}
                   />
                 </div>
               </div>
@@ -503,8 +508,8 @@ const ReplyModal = ({
                 items[0].privacy === "everyone"
                   ? "default"
                   : items[0].privacy === "followers"
-                  ? "comfortable"
-                  : "private"
+                    ? "comfortable"
+                    : "private"
               }
               onValueChange={handleAudienceChange}
               className="flex flex-col gap-y-4 mt-1 ml-10"
@@ -558,11 +563,10 @@ const ReplyModal = ({
           <button
             onClick={createReplyFunc}
             disabled={isReplyButtonDisabled || isLoading}
-            className={`w-full py-3 rounded-full font-semibold text-white transition-colors duration-200 ${
-              isReplyButtonDisabled || isLoading
-                ? "bg-blue-800 cursor-not-allowed opacity-50"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className={`w-full py-3 rounded-full font-semibold text-white transition-colors duration-200 ${isReplyButtonDisabled || isLoading
+              ? "bg-blue-800 cursor-not-allowed opacity-50"
+              : "bg-blue-600 hover:bg-blue-700"
+              }`}
           >
             {isLoading ? "Posting..." : "Post Reply"}
           </button>
