@@ -257,7 +257,6 @@ const AddPost = ({
     ]);
 
 
-    // ASYNC UPLOAD (Fire and Forget from UI perspective)
     (async () => {
       try {
         const payloadPosts: any[] = [];

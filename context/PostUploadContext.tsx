@@ -12,9 +12,9 @@ import {
 import { toast } from "sonner";
 
 // Re-using types from hook
-const CHUNK_SIZE = 5 * 1024 * 1024;
+const CHUNK_SIZE = 2 * 1024 * 1024; 
 const MAX_PARALLEL_UPLOADS = 3;
-const MAX_SMALL_FILE_SIZE = 6 * 1024 * 1024;
+const MAX_SMALL_FILE_SIZE = 3 * 1024 * 1024; 
 
 interface UploadedPart {
     partNumber: string;
