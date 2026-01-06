@@ -2,19 +2,22 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import SparkMD5 from "spark-md5";
-import {
-    startUploadPostGreaterThan6MB,
-    uploadPostMediaGreaterThan6MB,
-    completePostMediaGreaterThan6MB,
-    uploadPostMediaLessThan6MB,
-    createPost,
-} from "api/post";
+// import {
+//     startUploadPostGreaterThan6MB,
+//     uploadPostMediaGreaterThan6MB,
+//     completePostMediaGreaterThan6MB,
+//     uploadPostMediaLessThan6MB,
+//     createPost,
+// } from "api/post";
 import { toast } from "sonner";
 
 // Re-using types from hook
-const CHUNK_SIZE = 2 * 1024 * 1024; 
+import { getSession } from "next-auth/react";
+import { baseApiCall } from "lib/api/base";
+
+const CHUNK_SIZE = 6 * 1024 * 1024; 
 const MAX_PARALLEL_UPLOADS = 3;
-const MAX_SMALL_FILE_SIZE = 3 * 1024 * 1024; 
+const MAX_SMALL_FILE_SIZE = 6 * 1024 * 1024;
 
 interface UploadedPart {
     partNumber: string;
@@ -74,12 +77,32 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
         toast.info("Upload cancelled");
     }, [abortController]);
 
+    // Helper to get token client-side if needed, but we can't use getToken from lib/getToken because it uses headers()
+    // We'll use getSession from next-auth/react
+
+
+    const getClientToken = async () => {
+        const session = await getSession();
+        // @ts-ignore
+        return session?.user?.token;
+    }
+
     const handleLargeFileUpload = useCallback(
         async (file: File, fileId: string) => {
             try {
-                const startResponse = await startUploadPostGreaterThan6MB(file.name, file.type);
+                const token = await getClientToken();
+                if (!token) throw new Error("No authentication token found");
+
+                // Start Upload
+                const startResponse = await baseApiCall<any>("POST", "posts/upload/start", {
+                    body: JSON.stringify({
+                        filename: file.name,
+                        mime_type: file.type,
+                    })
+                }, token);
+
                 if (!startResponse?.status || !startResponse?.data)
-                    throw new Error("Failed to start multipart upload");
+                    throw new Error("Failed to start multipart upload: " + startResponse.message);
                 const uploadId = startResponse.data.UploadId;
                 if (!uploadId) throw new Error("No upload id from server");
 
@@ -113,7 +136,11 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     formData.append("part_number", String(partNumber));
                     formData.append("checksum", checksum);
 
-                    const uploadPromise = uploadPostMediaGreaterThan6MB(formData).then(
+                    // Upload Chunk
+                    const uploadPromise = baseApiCall<any>("POST", "posts/upload/chunk", {
+                        body: formData,
+                        isFormData: true
+                    }, token).then(
                         (res) => {
                             if (res?.status && res?.data) {
                                 const { partNumber: pn, eTag } = res.data;
@@ -131,7 +158,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                                 }));
                                 return res;
                             } else {
-                                throw new Error("Chunk upload failed");
+                                throw new Error("Chunk upload failed: " + res.message);
                             }
                         }
                     );
@@ -153,11 +180,18 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                         eTag: p.eTag.replace(/"/g, ""),
                     }));
 
-                const completeResponse = await completePostMediaGreaterThan6MB({
-                    filename: file.name,
-                    upload_id: uploadId,
-                    parts: sortedParts,
-                });
+                // Complete Upload
+                const completeResponse = await baseApiCall<any>("POST", "posts/upload/complete", {
+                    body: JSON.stringify({
+                        filename: file.name,
+                        upload_id: uploadId,
+                        parts: sortedParts,
+                    })
+                }, token);
+
+                if (!completeResponse?.status) {
+                    throw new Error("Failed to complete upload: " + completeResponse.message);
+                }
 
                 setUploadProgress((prev) => ({
                     ...prev,
@@ -171,7 +205,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                 }));
 
                 return completeResponse;
-            } catch (err) {
+            } catch (err: any) {
                 setUploadProgress((prev) => ({
                     ...prev,
                     [fileId]: {
@@ -181,6 +215,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     },
                 }));
                 console.error("Large upload error", err);
+                toast.error(`Upload error: ${err.message}`);
                 throw err;
             }
         },
@@ -189,14 +224,14 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
 
     const uploadFileAndGetInfo = useCallback(
         async (file: File, fileId: string) => {
+            const token = await getClientToken();
+            if (!token) throw new Error("No authentication token found");
+
             // Reset or init specific file progress
             setUploadProgress((prev) => ({
                 ...prev,
                 [fileId]: { file, progress: 0, status: 'pending' }
             }));
-
-            // NOTE: We could use AbortController here if we want to support true cancellation of fetch requests
-            // For now, simple state reset is implemented.
 
             if (file.size <= MAX_SMALL_FILE_SIZE) {
                 const fd = new FormData();
@@ -206,9 +241,14 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     [fileId]: { ...prev[fileId], status: "uploading" },
                 }));
 
-                const uploadResponse = await uploadPostMediaLessThan6MB(fd);
+                // Direct Upload
+                const uploadResponse = await baseApiCall<any>("POST", "posts/upload/single", {
+                    body: fd,
+                    isFormData: true
+                }, token);
+
                 if (!uploadResponse?.status || !uploadResponse?.data) {
-                    throw new Error("Direct upload failed");
+                    throw new Error("Direct upload failed: " + uploadResponse.message);
                 }
                 setUploadProgress((prev) => ({
                     ...prev,
