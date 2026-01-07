@@ -100,27 +100,14 @@ const PostDetails = ({
     likeUnlikePost(postId);
   };
 
-  // const handleSaveMainPost = (postId: string) => {
-  //   setLocalPost(prev => ({
-  //     ...prev,
-  //     is_saved: !prev.is_saved,
-  //   }));
-
-  //   saveUnsavePost(postId);
-  // };
-
-  // Update handleReplySuccess to add reply to local list
   const handleLocalReplySuccess = (newReply: IPostComment) => {
-    // Add to local replies list
     setReplies(prev => [newReply, ...prev]);
 
-    // Update local post reply count
     setLocalPost(prev => ({
       ...prev,
       replies_count: (Number(prev.replies_count) + 1).toString(),
     }));
 
-    // Call parent's onReplySuccess
     if (onReplySuccess) {
       onReplySuccess(newReply);
     }
@@ -160,13 +147,7 @@ const PostDetails = ({
     handleFetchReplies(1);
   }, [post.uuid, post.replies_count]);
 
-  // const handleReplySuccess = useCallback((newReply: IPostComment) => {
-  //   setReplies((prev) => [newReply, ...prev]);
 
-  //   if (onReplySuccess) {
-  //     onReplySuccess(newReply);
-  //   }
-  // }, [onReplySuccess]);
 
   const handleLikeReply = useCallback(async (replyId: string) => {
     setReplies((prev) =>
@@ -184,14 +165,11 @@ const PostDetails = ({
     );
 
     try {
-      // Make API call
-      // const formData = new FormData();
-      // const result = await likeOrUnlikePost(replyId, formData);
+
       if (!user?.token) return;
       const result = await likeOrUnlikePostClient(replyId, user.token);
 
       if (!result?.status) {
-        // Revert optimistic update on failure
         setReplies((prev) =>
           prev.map((reply) =>
             reply.uuid === replyId
