@@ -6,7 +6,7 @@ import SocialPostDetails from "./SocialPostDetails";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useCallback, useEffect, useState } from "react";
 import { likeOrUnlikePost, saveOrUnsavePost } from "api/post";
-import { getPostCommentsClient } from "app/api/post.client";
+import { getPostCommentsClient, likeOrUnlikePostClient } from "app/api/post.client";
 import Image from "next/image";
 import PostVideo from "./PostVideo";
 import {
@@ -185,8 +185,10 @@ const PostDetails = ({
 
     try {
       // Make API call
-      const formData = new FormData();
-      const result = await likeOrUnlikePost(replyId, formData);
+      // const formData = new FormData();
+      // const result = await likeOrUnlikePost(replyId, formData);
+      if (!user?.token) return;
+      const result = await likeOrUnlikePostClient(replyId, user.token);
 
       if (!result?.status) {
         // Revert optimistic update on failure
