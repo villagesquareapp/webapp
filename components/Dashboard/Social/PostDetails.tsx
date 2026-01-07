@@ -5,7 +5,8 @@ import usePost from "src/hooks/usePost";
 import SocialPostDetails from "./SocialPostDetails";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useCallback, useEffect, useState } from "react";
-import { getPostComments, likeOrUnlikePost, saveOrUnsavePost } from "api/post";
+import { likeOrUnlikePost, saveOrUnsavePost } from "api/post";
+import { getPostCommentsClient } from "app/api/post.client";
 import Image from "next/image";
 import PostVideo from "./PostVideo";
 import {
@@ -109,26 +110,27 @@ const PostDetails = ({
   // };
 
   // Update handleReplySuccess to add reply to local list
-const handleLocalReplySuccess = (newReply: IPostComment) => {
-  // Add to local replies list
-  setReplies(prev => [newReply, ...prev]);
-  
-  // Update local post reply count
-  setLocalPost(prev => ({
-    ...prev,
-    replies_count: (Number(prev.replies_count) + 1).toString(),
-  }));
-  
-  // Call parent's onReplySuccess
-  if (onReplySuccess) {
-    onReplySuccess(newReply);
-  }
-};
+  const handleLocalReplySuccess = (newReply: IPostComment) => {
+    // Add to local replies list
+    setReplies(prev => [newReply, ...prev]);
+
+    // Update local post reply count
+    setLocalPost(prev => ({
+      ...prev,
+      replies_count: (Number(prev.replies_count) + 1).toString(),
+    }));
+
+    // Call parent's onReplySuccess
+    if (onReplySuccess) {
+      onReplySuccess(newReply);
+    }
+  };
 
   const refetchReplies = useCallback(async () => {
+    if (!user?.token) return;
     setIsLoadingReplies(true);
     try {
-      const response = await getPostComments(post.uuid, 1);
+      const response = await getPostCommentsClient(post.uuid, user.token, 1);
       if (response?.status && response.data) {
         setReplies(response.data.data);
       }
@@ -137,12 +139,13 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
     } finally {
       setIsLoadingReplies(false);
     }
-  }, [post.uuid]);
+  }, [post.uuid, user.token]);
 
   const handleFetchReplies = async (page: number) => {
+    if (!user?.token) return;
     setIsLoadingReplies(true);
     try {
-      const response = await getPostComments(post.uuid, page);
+      const response = await getPostCommentsClient(post.uuid, user.token, page);
       if (response?.status && response.data) {
         setReplies(response.data.data);
       }
@@ -170,12 +173,12 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
       prev.map((reply) =>
         reply.uuid === replyId
           ? {
-              ...reply,
-              likes_count: reply.is_liked
-                ? (Number(reply.likes_count) - 1).toString()
-                : (Number(reply.likes_count) + 1).toString(),
-              is_liked: !reply.is_liked,
-            }
+            ...reply,
+            likes_count: reply.is_liked
+              ? (Number(reply.likes_count) - 1).toString()
+              : (Number(reply.likes_count) + 1).toString(),
+            is_liked: !reply.is_liked,
+          }
           : reply
       )
     );
@@ -191,12 +194,12 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
           prev.map((reply) =>
             reply.uuid === replyId
               ? {
-                  ...reply,
-                  likes_count: reply.is_liked
-                    ? (Number(reply.likes_count) + 1).toString()
-                    : (Number(reply.likes_count) - 1).toString(),
-                  is_liked: !reply.is_liked,
-                }
+                ...reply,
+                likes_count: reply.is_liked
+                  ? (Number(reply.likes_count) + 1).toString()
+                  : (Number(reply.likes_count) - 1).toString(),
+                is_liked: !reply.is_liked,
+              }
               : reply
           )
         );
@@ -208,12 +211,12 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
         prev.map((reply) =>
           reply.uuid === replyId
             ? {
-                ...reply,
-                likes_count: reply.is_liked
-                  ? (Number(reply.likes_count) + 1).toString()
-                  : (Number(reply.likes_count) - 1).toString(),
-                is_liked: !reply.is_liked,
-              }
+              ...reply,
+              likes_count: reply.is_liked
+                ? (Number(reply.likes_count) + 1).toString()
+                : (Number(reply.likes_count) - 1).toString(),
+              is_liked: !reply.is_liked,
+            }
             : reply
         )
       );
@@ -328,7 +331,7 @@ const handleLocalReplySuccess = (newReply: IPostComment) => {
                             if (
                               carouselApi &&
                               typeof carouselApi.selectedScrollSnap ===
-                                "function"
+                              "function"
                             ) {
                               const newIndex = carouselApi.selectedScrollSnap();
                               setActiveReplyCarouselIndex(newIndex);
