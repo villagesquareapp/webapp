@@ -5,13 +5,19 @@ import { usePostUploadContext } from "context/PostUploadContext";
 import ProgressBar from "components/Dashboard/Social/ProgressBar";
 
 const GlobalUploadProgress = () => {
-  const { isPosting, uploadProgress, overallProgress, cancelUpload } = usePostUploadContext();
+  const { status, overallProgress, cancelUpload, retryPost } = usePostUploadContext();
 
-  const hasActiveUploads = Object.keys(uploadProgress).length > 0;
+  // Show if uploading OR error
+  if (status !== "uploading" && status !== "error") return null;
 
-  if (!isPosting && !hasActiveUploads) return null;
-
-  return <ProgressBar progress={overallProgress} onCancel={cancelUpload} />;
+  return (
+    <ProgressBar
+      progress={overallProgress}
+      onCancel={cancelUpload}
+      status={status}
+      onRetry={retryPost}
+    />
+  );
 }
 
 export default GlobalUploadProgress;
