@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { getSession } from "next-auth/react";
 import { baseApiCall } from "lib/api/base";
 
-const CHUNK_SIZE = 6 * 1024 * 1024; 
+const CHUNK_SIZE = 6 * 1024 * 1024;
 const MAX_PARALLEL_UPLOADS = 3;
 const MAX_SMALL_FILE_SIZE = 6 * 1024 * 1024;
 
@@ -26,9 +26,11 @@ interface UploadProgress {
 
 interface PostUploadContextType {
     isPosting: boolean;
+    status: "idle" | "uploading" | "success" | "error";
     uploadProgress: Record<string, UploadProgress>;
     uploadFileAndGetInfo: (file: File, fileId: string) => Promise<{ key: string; mime_type: string }>;
     createPostFunc: (payloadPosts: any[]) => Promise<any>;
+    retryPost: () => void;
     cancelUpload: () => void;
     overallProgress: number;
 }
@@ -46,9 +48,12 @@ const calculateChecksum = async (chunk: Blob): Promise<string> => {
 };
 
 export const PostUploadProvider = ({ children }: { children: React.ReactNode }) => {
-    const [isPosting, setIsPosting] = useState<boolean>(false);
+    const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
     const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
     const [abortController, setAbortController] = useState<AbortController | null>(null);
+    const [lastPostPayload, setLastPostPayload] = useState<any[] | null>(null);
+
+    const isPosting = status === "uploading";
 
     const overallProgress = useMemo(() => {
         const fileKeys = Object.keys(uploadProgress);
@@ -64,8 +69,9 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
         if (abortController) {
             abortController.abort();
         }
-        setIsPosting(false);
+        setStatus("idle");
         setUploadProgress({});
+        setLastPostPayload(null);
         toast.info("Upload cancelled");
     }, [abortController]);
 
@@ -265,7 +271,8 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
     const createPostFunc = useCallback(
         async (payloadPosts: any[]) => {
             try {
-                setIsPosting(true);
+                setStatus("uploading");
+                setLastPostPayload(payloadPosts); // Save for retry
                 setAbortController(new AbortController());
 
                 const postBody = { posts: payloadPosts };
@@ -283,28 +290,43 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     throw new Error(result?.message || "Failed to create post");
                 }
 
+                setStatus("success");
                 setTimeout(() => {
                     setUploadProgress({});
-                    setIsPosting(false);
-                }, 1000);
+                    setStatus("idle");
+                    setLastPostPayload(null);
+                }, 2000);
 
                 return result.data;
             } catch (err) {
                 console.error("createPostFunc error", err);
-                setIsPosting(false); 
+                setStatus("error");
+                // Do NOT throw error here if we want to show the persistent error UI instead of crashing the component logic
+                // But the component might expect a return. 
+                // Let's throw so the component knows it failed, but we keep the global status as 'error'
                 throw err;
             }
         },
         []
     );
 
+    const retryPost = useCallback(() => {
+        if (lastPostPayload) {
+            createPostFunc(lastPostPayload).catch(err => {
+                // Already handled in createPostFunc
+            });
+        }
+    }, [lastPostPayload, createPostFunc]);
+
     return (
         <PostUploadContext.Provider
             value={{
                 isPosting,
+                status,
                 uploadProgress,
                 uploadFileAndGetInfo,
                 createPostFunc,
+                retryPost,
                 cancelUpload,
                 overallProgress
             }}

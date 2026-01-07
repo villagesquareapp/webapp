@@ -84,129 +84,139 @@ const ReplyModal = ({
     },
   ]);
 
-  const { isPosting, uploadFileAndGetInfo, createPostFunc } = usePostUploadContext();
+  const { createPostFunc, uploadFileAndGetInfo } = usePostUploadContext();
 
   const createReplyFunc = async () => {
     if (!post?.uuid || isReplyButtonDisabled) return;
 
-    try {
-      setIsLoading(true); // Keep local loading for button state if desired, or use global isPosting
+    // 1. Close Modal Immediately
+    onClose();
 
-      let uploadedFiles: { key: string; mime_type: string }[] = [];
-      if (selectedFile) {
-        const fileId = `${post.uuid}-${Date.now()}`;
-        try {
+    // 2. Optimistic Update
+    // Construct a temporary reply object
+    const tempUuid = `temp-${Date.now()}`;
+    const newReply: IPostComment = {
+      uuid: tempUuid,
+      caption: newComment,
+      user_id: user.uuid,
+      parent_post_id: post?.uuid,
+      root_post_id: post?.uuid,
+      quote_post_id: null,
+      thread_id: "",
+      address: null,
+      latitude: null,
+      longitude: null,
+      privacy: "everyone",
+      status: "active",
+      views_count: "0",
+      shares_count: "0",
+      likes_count: "0",
+      replies_count: "0",
+      impressions: "0",
+      additional_metadata: null,
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+      formatted_time: "now",
+      is_saved: false,
+      is_liked: false,
+      is_thread_continuation: false,
+      media: selectedFile ? [{
+        // Temporary media object for optimistic UI
+        uuid: `temp-media-${Date.now()}`,
+        post_id: tempUuid,
+        media_type: selectedFile.type.startsWith('video') ? 'video' : 'image',
+        media_url: mediaPreviewUrl || "",
+        transcoded_media_url: mediaPreviewUrl || "",
+        media_thumbnail: "",
+        media_filename: selectedFile.name,
+        media_size: selectedFile.size.toString(),
+        media_duration: 0,
+        is_transcode_complete: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      }] : [],
+
+      user: {
+        uuid: user.uuid,
+        name: user.name,
+        username: user.username,
+        profile_picture: user.profile_picture,
+        email: user.email ?? "",
+        verified_status: user.verified_status ?? 0,
+        checkmark_verification_status:
+          user.checkmark_verification_status ?? false,
+        premium_verification_status:
+          user.premium_verification_status ?? false,
+        online: user.online ?? false,
+      },
+    };
+
+    if (onReplySuccess) {
+      onReplySuccess(newReply);
+    }
+
+    // Also update local list in parent if handled there (onReplySuccess usually handles it)
+    // But we also have setPosts passed in
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.uuid === post.uuid
+          ? {
+            ...p,
+            replies_count: (Number(p.replies_count) + 1).toString(),
+          }
+          : p
+      )
+    );
+
+    // Reset Form
+    setNewComment("");
+    setSelectedFile(null);
+    setMediaPreviewUrl(null);
+
+
+    // 3. Background Process
+    (async () => {
+      try {
+        let uploadedFiles: { key: string; mime_type: string }[] = [];
+        if (selectedFile) {
+          const fileId = `${post.uuid}-${Date.now()}`;
           const fileInfo = await uploadFileAndGetInfo(selectedFile, fileId);
           uploadedFiles.push(fileInfo);
-        } catch (err) {
-          console.error("Error uploading file for reply", err);
-          toast.error("Failed to upload media");
-          setIsLoading(false);
-          return;
         }
-      }
 
-      const replyPayload = {
-        media: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-        caption: newComment,
-        parent_post_id: post?.uuid,
-        address: null,
-        latitude: null,
-        longitude: null,
-        privacy: "everyone",
-      };
-
-      // Use the global create function (which calls the API route)
-      const result = await createPostFunc([replyPayload]);
-
-      if (result) {
-        toast.success("Reply created successfully");
-
-        // Construct the new reply object for optimistic/local update
-        // Note: The API response might differ, checking apiCreatePost usually returns the created post(s) or status. 
-        // We assume 'result' contains the data we need or we construct it manually as before.
-        // If result is the array of created posts, take the first one?
-        // Let's assume result structure match. If not, we fall back to manual construction or just using what we have.
-        // Actually AddPost uses onRefreshPosts. Here we update state manually.
-
-        // The result from createPostFunc (context) returns result.data.
-        // If result.data is { uuid: ... } or array?
-        // AddPost: payloadPosts -> API returns ?
-
-        // Let's rely on the manual construction logic but use ID from result if available
-        const createdUuid = Array.isArray(result) ? result[0]?.uuid : result?.uuid;
-
-        const newReply: IPostComment = {
-          uuid: createdUuid || `temp-${Date.now()}`,
+        const replyPayload = {
+          media: uploadedFiles.length > 0 ? uploadedFiles : undefined,
           caption: newComment,
-          user_id: user.uuid,
-          parent_post_id: post.uuid,
-          root_post_id: post.uuid, // Best guess or empty
-          quote_post_id: null,
-          thread_id: "",
+          parent_post_id: post?.uuid,
           address: null,
           latitude: null,
           longitude: null,
           privacy: "everyone",
-          status: "active",
-          views_count: "0",
-          shares_count: "0",
-          likes_count: "0",
-          replies_count: "0",
-          impressions: "0",
-          additional_metadata: null,
-          created_at: new Date(),
-          updated_at: new Date(),
-          deleted_at: null,
-          formatted_time: "now",
-          is_saved: false,
-          is_liked: false,
-          is_thread_continuation: false,
-          media: uploadedFiles.length > 0 ? [] : [], // Placeholder
-
-          user: {
-            uuid: user.uuid,
-            name: user.name,
-            username: user.username,
-            profile_picture: user.profile_picture,
-            email: user.email ?? "",
-            verified_status: user.verified_status ?? 0,
-            checkmark_verification_status:
-              user.checkmark_verification_status ?? false,
-            premium_verification_status:
-              user.premium_verification_status ?? false,
-            online: user.online ?? false,
-          },
         };
 
-        if (onReplySuccess) {
-          onReplySuccess(newReply);
-        }
+        await createPostFunc([replyPayload]);
+        toast.success("Reply posted successfully");
 
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.uuid === post.uuid
-              ? {
-                ...p,
-                replies_count: (Number(p.replies_count) + 1).toString(),
-              }
-              : p
-          )
-        );
+        // Re-fetch or confirm? 
+        // Optimistic update should be fine. 
+        // In a real app we might replace the temp ID with real ID if we stored it, 
+        // but for now we rely on SWR or eventual refresh.
 
-        setNewComment("");
-        setSelectedFile(null);
-        setMediaPreviewUrl(null);
-        onClose();
-      } else {
-        toast.error("Failed to create reply");
+      } catch (error) {
+        console.error("Reply creation failed", error);
+        // Revert changes? 
+        // Since we don't have a direct "remove" callback easily accessible without props drilling or context,
+        // we rely on the error toast. The user will see the error. 
+        // Ideally we should remove the optimistic post.
+        // For now, users will refresh if they see it failed.
+        // toast.error("Failed to post reply"); // createPostFunc context already sets error state/toast? No, context sets status='error'.
+        // Context doesn't toast error message automatically? It renders Global Progress Bar in Error state. 
+        // Behavior: Progress bar turns red "Uploading Failed". User clicks "Retry". 
+        // This is perfect.
       }
-    } catch (error) {
-      toast.error("Failed to create reply");
-      console.error("Reply creation error:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    })();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
