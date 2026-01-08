@@ -87,7 +87,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                 const token = await getClientToken();
                 if (!token) throw new Error("No authentication token found");
 
-                // Start Upload
                 const startResponse = await baseApiCall<any>("POST", "posts/upload/start", {
                     body: JSON.stringify({
                         filename: file.name,
@@ -233,7 +232,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     [fileId]: { ...prev[fileId], status: "uploading" },
                 }));
 
-                // Direct Upload
                 const uploadResponse = await baseApiCall<any>("POST", "posts/upload/single", {
                     body: fd,
                     isFormData: true
@@ -272,7 +270,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
         async (payloadPosts: any[]) => {
             try {
                 setStatus("uploading");
-                setLastPostPayload(payloadPosts); // Save for retry
+                setLastPostPayload(payloadPosts);
                 setAbortController(new AbortController());
 
                 const postBody = { posts: payloadPosts };
@@ -301,9 +299,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
             } catch (err) {
                 console.error("createPostFunc error", err);
                 setStatus("error");
-                // Do NOT throw error here if we want to show the persistent error UI instead of crashing the component logic
-                // But the component might expect a return. 
-                // Let's throw so the component knows it failed, but we keep the global status as 'error'
                 throw err;
             }
         },
@@ -313,7 +308,6 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
     const retryPost = useCallback(() => {
         if (lastPostPayload) {
             createPostFunc(lastPostPayload).catch(err => {
-                // Already handled in createPostFunc
             });
         }
     }, [lastPostPayload, createPostFunc]);

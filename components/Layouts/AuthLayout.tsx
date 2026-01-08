@@ -24,7 +24,6 @@ export default function AuthLayout({
 
   return (
     <div className="min-h-[100dvh] relative">
-      {/* Background */}
       <div className="absolute top-0 left-0 w-full h-full z-0">
         <Image
           src="/images/login_bg_clip.png"
@@ -44,11 +43,7 @@ export default function AuthLayout({
               height={150}
             />
             <div className="flex flex-col items-start justify-center mt-2">
-              {/* <p className="font-ogonek font-black text-[55px] tracking-tight">
-                Villagesquare
-              </p> */}
               <Image src="https://cdn-assets.villagesquare.io/assets/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
-              {/*<Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />*/}
               <p className="font-poppins text-[23px] mt-2">
                 Where Connections Flourish.
               </p>
