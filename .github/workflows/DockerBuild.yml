@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ dev-webapps ]
+    paths-ignore:
+      - 'kubernetes/webapp.yml'
   pull_request:
-    branches: [ dev ]
+    branches: [  dev-webapps]
 
 jobs:
   build:
@@ -18,6 +20,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: dev-webapps
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # Step 2: Set up Node.js
@@ -106,7 +110,7 @@ jobs:
 
           git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
 
-          git push origin dev
+          git push origin  dev-webapps
 
       # Step 16: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
