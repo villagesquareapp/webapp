@@ -509,7 +509,7 @@ const AddPost = ({
                   {items.map((it, idx) => (
                     <div
                       key={it.id}
-                      className="rounded-lg bg-[#0f1724] overflow-hidden"
+                      className="rounded-lg bg-background overflow-hidden"
                     >
                       <div className="px-4 py-3">
                         <div className="flex items-start gap-3">
