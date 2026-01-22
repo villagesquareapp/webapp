@@ -5,15 +5,24 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function SplashScreen() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2500);
+    // Check if we've already shown the splash screen in this session
+    const hasShownSplash = sessionStorage.getItem("hasShownSplash");
 
-    return () => clearTimeout(timer);
+    if (!hasShownSplash) {
+      setShowSplash(true);
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+        sessionStorage.setItem("hasShownSplash", "true");
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
   }, []);
+
+  if (!showSplash) return null;
 
   return (
     <AnimatePresence>
@@ -36,9 +45,10 @@ export default function SplashScreen() {
               height={120}
               priority
             />
-            <p className="font-ogonek text-4xl font-black tracking-tight">
+            {/* <p className="font-ogonek text-4xl font-black tracking-tight">
               Villagesquare
-            </p>
+            </p> */}
+            <Image src="/images/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
             <motion.div
               className="w-12 h-1 bg-blue-500 rounded-full mt-2"
               initial={{ width: 0 }}

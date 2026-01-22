@@ -1,10 +1,6 @@
 "use client";
 
 import {
-  getPosts,
-  getFollowingPosts,
-  likeOrUnlikePost,
-  saveOrUnsavePost,
   getPostComments,
 } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,6 +12,8 @@ import SocialPostFilterDialog from "./SocialPostFilterDialog";
 import AddPost from "./AddPost";
 import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
+import PostSkeleton from "./PostSkeleton";
+import ProgressBar from "./ProgressBar";
 
 type TabType = "explore" | "connections";
 
@@ -48,31 +46,33 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((post) =>
         post.uuid === postId
           ? {
-              ...post,
-              likes_count: post?.is_liked
-                ? (Number(post.likes_count) - 1).toString()
-                : (Number(post.likes_count) + 1).toString(),
-              is_liked: !post.is_liked,
-            }
+            ...post,
+            likes_count: post?.is_liked
+              ? (Number(post.likes_count) - 1).toString()
+              : (Number(post.likes_count) + 1).toString(),
+            is_liked: !post.is_liked,
+          }
           : post
       )
     );
 
     try {
-      const formData = new FormData();
-      const result = await likeOrUnlikePost(postId, formData);
+      // const formData = new FormData();
+      // const result = await likeOrUnlikePost(postId, formData);
+      const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      const result = await res.json();
 
       if (!result?.status) {
         setPosts((prev) =>
           prev.map((post) =>
             post.uuid === postId
               ? {
-                  ...post,
-                  likes_count: post.is_liked
-                    ? (Number(post.likes_count) + 1).toString()
-                    : (Number(post.likes_count) - 1).toString(),
-                  is_liked: !post.is_liked,
-                }
+                ...post,
+                likes_count: post.is_liked
+                  ? (Number(post.likes_count) + 1).toString()
+                  : (Number(post.likes_count) - 1).toString(),
+                is_liked: !post.is_liked,
+              }
               : post
           )
         );
@@ -83,12 +83,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
         prev.map((post) =>
           post.uuid === postId
             ? {
-                ...post,
-                likes_count: post.is_liked
-                  ? (Number(post.likes_count) + 1).toString()
-                  : (Number(post.likes_count) - 1).toString(),
-                is_liked: !post.is_liked,
-              }
+              ...post,
+              likes_count: post.is_liked
+                ? (Number(post.likes_count) + 1).toString()
+                : (Number(post.likes_count) - 1).toString(),
+              is_liked: !post.is_liked,
+            }
             : post
         )
       );
@@ -97,16 +97,24 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, []);
 
   const saveUnsavePost = async (postId: string) => {
-    const formData = new FormData();
-    const result = await saveOrUnsavePost(postId, formData);
-    if (result?.status) {
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
-        )
-      );
-    } else {
-      toast.error(result?.message);
+    // const formData = new FormData();
+    // const result = await saveOrUnsavePost(postId, formData);
+    try {
+      const res = await fetch(`/api/posts/${postId}/save`, { method: "POST" });
+      const result = await res.json();
+
+      if (result?.status) {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
+          )
+        );
+      } else {
+        toast.error(result?.message || "Failed to save post");
+      }
+    } catch (e) {
+      console.error("Error saving post", e);
+      toast.error("Failed to save post");
     }
   };
 
@@ -118,20 +126,40 @@ const SocialPost = ({ user }: { user: IUser }) => {
         setLoadingMorePost(true);
       }
 
-      const params = {
-        order: "latest" as const,
+      const params = new URLSearchParams({
+        order: "latest",
         location: "lagos",
         include: "livestream,echo,post",
-        page: pageNumber,
-      };
+        page: pageNumber.toString(),
+        type: tab === "explore" ? "foryou" : "following",
+      });
 
-      // Choose endpoint based on active tab
-      const response =
-        tab === "explore"
-          ? await getPosts(params)
-          : await getFollowingPosts(params);
+      const res = await fetch(`/api/posts/social?${params.toString()}`);
 
-      const newPosts = response?.data;
+      let response: any = null;
+      try {
+        response = await res.json();
+      } catch (e) {
+        console.error("Failed to parse JSON", e);
+      }
+
+      if (!response) {
+        toast.error("Failed to load posts: No response from server");
+        setIsPostLoading(false);
+        setLoadingMorePost(false);
+        return;
+      }
+
+      if (!response.status) {
+        toast.error(response.message || "Failed to load posts");
+        console.error("API Error:", response.message);
+        setIsPostLoading(false);
+        setLoadingMorePost(false);
+        return;
+      }
+
+      const postsData = response.data;
+      const newPosts = postsData?.data;
 
       if (Array.isArray(newPosts)) {
         if (pageNumber === 1) {
@@ -140,12 +168,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setPosts((prev) => [...prev, ...newPosts]);
         }
 
-        const totalPosts = response?.total || 0;
+        const totalPosts = postsData?.total || 0;
         const currentTotal =
-          (pageNumber - 1) * (response?.per_page || 10) + newPosts.length;
+          (pageNumber - 1) * (postsData?.per_page || 10) + newPosts.length;
         setHasMore(currentTotal < totalPosts);
       } else {
-        toast.error("Failed to load posts");
+        toast.error("Failed to load posts: Invalid data format");
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -297,19 +325,19 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((p) =>
         p.uuid === postForReplyModal?.uuid
           ? {
-              ...p,
-              replies_count: (Number(p.replies_count) + 1).toString(),
-              replies: p.caption ? [...p.caption, newReply] : [newReply],
-            }
+            ...p,
+            replies_count: (Number(p.replies_count) + 1).toString(),
+            replies: p.caption ? [...p.caption, newReply] : [newReply],
+          }
           : p
       )
     );
     if (selectedPost && selectedPost.uuid === postForReplyModal?.uuid) {
-    setSelectedPost(prev => prev ? {
-      ...prev,
-      replies_count: (Number(prev.replies_count) + 1).toString(),
-    } : null);
-  }
+      setSelectedPost(prev => prev ? {
+        ...prev,
+        replies_count: (Number(prev.replies_count) + 1).toString(),
+      } : null);
+    }
     handleCloseReplyModal();
   };
 
@@ -322,6 +350,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   return (
     <>
+    {/* <ProgressBar progress={50} /> */}
       {selectedPost ? (
         <PostDetails
           post={selectedPost}
@@ -350,26 +379,19 @@ const SocialPost = ({ user }: { user: IUser }) => {
               <div className="flex flex-row w-full md:w-auto">
                 <button
                   onClick={() => handleTabChange("explore")}
-                  // className={`py-3 px-2 md:px-5 text-sm md:text-lg flex-1 md:flex-none text-center md:text-left transition-colors ${
-                  //   activeTab === "explore"
-                  //     ? "border-b-4 border-primary font-semibold"
-                  //     : "text-gray-400 hover:text-foreground"
-                  // }`}
-                  className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "explore"
-                      ? "text-white border-b-2 border-blue-500"
-                      : "text-gray-400"
-                  }`}
+                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "explore"
+                    ? "text-foreground border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   Explore
                 </button>
                 <button
                   onClick={() => handleTabChange("connections")}
-                  className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "connections"
-                      ? "text-white border-b-2 border-blue-500"
-                      : "text-gray-400"
-                  }`}
+                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "connections"
+                    ? "text-foreground border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   Connections
                 </button>
@@ -379,7 +401,13 @@ const SocialPost = ({ user }: { user: IUser }) => {
               </div>
             </div>
 
-            {isPostLoading && <LoadingSpinner />}
+            {isPostLoading && (
+              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <PostSkeleton key={index} />
+                ))}
+              </div>
+            )}
 
             {!isPostLoading && posts?.length > 0 && (
               <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">

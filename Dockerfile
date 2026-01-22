@@ -1,30 +1,64 @@
-# Use Node.js 20 Alpine as the base image
-FROM node:20-alpine AS builder
+###################################
+# Stage 1: Dependencies
+###################################
+FROM node:20-alpine AS deps
 
-# Set working directory
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the lockfile
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Copy the rest of the application code and build it
+###################################
+# Stage 2: Builder
+###################################
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Disable telemetry
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build-time public envs (MUST be provided by CI)
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+ARG NEXTAUTH_URL
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+
+# Build
 RUN npm run build
 
-# Production image
+###################################
+# Stage 3: Runner
+###################################
 FROM node:20-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-ENV GOOGLE_CLIENT_ID=1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com
-ENV GOOGLE_CLIENT_SECRET=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
 
-# Copy necessary files from the builder stage
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/next.config.ts ./next.config.ts
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
+
+# Copy standalone output
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
+
+# Runtime envs (injected by Kubernetes)
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+# Permissions
+RUN chown -R nextjs:nodejs /app
+USER nextjs
 
 EXPOSE 3000
-CMD ["npm", "start"]
+
+CMD ["node", "server.js"]
