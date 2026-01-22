@@ -1,9 +1,9 @@
 "use client";
 
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import VflixFeed from './VflixFeed';
 
-const VFlixPage = ({user}: {user: IUser}) => {
+const VFlixPage = ({ user }: { user: IUser }) => {
   const [activeTab, setActiveTab] = useState<"for-you" | "following">("for-you");
 
   return (
@@ -12,21 +12,19 @@ const VFlixPage = ({user}: {user: IUser}) => {
       <div className="flex justify-center border-b border-gray-700">
         <button
           onClick={() => setActiveTab("for-you")}
-          className={`px-6 py-3 text-sm font-medium ${
-            activeTab === "for-you"
-              ? "text-white border-b-2 border-blue-500"
-              : "text-gray-400"
-          }`}
+          className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "for-you"
+              ? "text-foreground border-b-2 border-primary"
+              : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           Explore
         </button>
         <button
           onClick={() => setActiveTab("following")}
-          className={`px-6 py-3 text-sm font-medium ${
-            activeTab === "following"
-              ? "text-white border-b-2 border-blue-500"
-              : "text-gray-400"
-          }`}
+          className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "following"
+              ? "text-foreground border-b-2 border-primary"
+              : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           Connections
         </button>

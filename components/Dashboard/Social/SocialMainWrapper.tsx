@@ -24,9 +24,9 @@ const SocialMainWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       ref={containerRef}
-      className="flex flex-row justify-between w-[700px] mx-auto h-full pt-4 relative"
+      className="flex flex-row justify-between w-full max-w-[700px] mx-auto h-full pt-4 relative"
     >
-      <div className="flex w-[700px] rounded-lg pb-8">{children}</div>
+      <div className="flex w-full max-w-[700px] rounded-lg pb-8">{children}</div>
     </div>
   );
 };

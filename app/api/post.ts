@@ -24,17 +24,9 @@ export async function getPosts(params: GetPostsParams = {}) {
 
   const response = await apiGet<IPostsResponse>(route, token);
   // console.log("Response from API: ", response);
-  if (!response.status) {
-    console.error("Error fetching posts:", response.message);
-    return null;
-  }
-  return response.data || null;
+  return response;
 }
-
-// Add this to your app/api/post.ts file
-
 export async function getFollowingPosts(params: GetPostsParams = {}) {
-  // Get the session
   const token = await getToken();
   const queryParams = new URLSearchParams();
 
@@ -46,12 +38,8 @@ export async function getFollowingPosts(params: GetPostsParams = {}) {
   const route = `/posts/social/following?${queryParams.toString()}`;
 
   const response = await apiGet<IPostsResponse>(route, token);
-  
-  if (!response.status) {
-    console.error("Error fetching following posts:", response.message);
-    return null;
-  }
-  return response.data || null;
+
+  return response;
 }
 
 export async function createPost(newPost: INewPost) {
@@ -101,19 +89,6 @@ export const getPostComments = async (postId: string, page: number = 1) => {
   );
   return response;
 };
-
-// export const createComments = async (
-//   postId: string,
-//   newCommentData: INewComment
-// ) => {
-//   const token = await getToken();
-//   const response = await apiPost<IPostComment>(
-//     `posts/${postId}/comments/add`,
-//     newCommentData,
-//     token
-//   );
-//   return response;
-// };
 
 export const getCommentReplies = async (
   postId: string,

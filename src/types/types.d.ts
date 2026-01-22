@@ -118,6 +118,11 @@ interface IUser {
   followers: number;
   following: number;
   is_blocked: boolean;
+  relationship: {
+    is_self: boolean;
+    is_following: boolean;
+    is_followed_by: boolean;
+  }
   token: string;
   access_token?: string;
   refresh_token?: string;

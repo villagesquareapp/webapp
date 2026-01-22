@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nextjs-app
-  namespace: webapp  
+  namespace: default
   labels:
     app: nextjs-app
 spec:
@@ -17,16 +17,16 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20251104091558
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260114082320
           ports:
             - containerPort: 3000
           env:
-            - name: API_URL
-              value: "https://staging-api.villagesquare.io/v2"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://production-api.villagesquare.io/v2"
             - name: NEXTAUTH_SECRET
               value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="
             - name: NEXTAUTH_URL
-              value: "https://webdev.villagesquare.io"              
+              value: "https://villagesquare.io"
             - name: GOOGLE_CLIENT_ID
               value: "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com"
             - name: GOOGLE_CLIENT_SECRET

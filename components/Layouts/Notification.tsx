@@ -330,9 +330,9 @@ const Notification = () => {
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-[380px] rounded-xl p-0 shadow-xl"
-        side="left"
-        align="start"
+        className="w-screen max-w-[380px] md:w-[380px] rounded-xl p-0 shadow-xl mx-2 md:mx-0"
+        side="bottom"
+        align="end"
         sideOffset={10}
       >
         {/* Header */}
@@ -368,7 +368,7 @@ const Notification = () => {
                         />
                       ) : (
                         <CustomAvatar
-                        src="https://cdn-assets.villagesquare.io/profile_pictures/default_user.png"
+                          src="https://cdn-assets.villagesquare.io/profile_pictures/default_user.png"
                           name={notification.subject?.name || "?"}
                           className="size-9"
                         />

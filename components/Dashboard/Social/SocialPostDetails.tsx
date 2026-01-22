@@ -154,7 +154,7 @@ const SocialPostDetails = ({
         user={user}
         onOpenReplyModal={onOpenReplyModal}
       />
-      <Separator className="my-2" />
+      <Separator className="my-2 opacity-40" />
     </div>
   );
 };
