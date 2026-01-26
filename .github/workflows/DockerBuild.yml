@@ -1,27 +1,67 @@
-name: CI - PR Validation
+name: CI/CD
 
 on:
+  push:
+    branches:
+      - main
+      - dev-webapps
   pull_request:
-    branches: [ dev-webapps ]
+    branches:
+      - main
 
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Generate Image Tag
+        run: echo "IMAGE_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+      # Build happens for EVERY event
+      - name: Build Docker Image
+        run: |
+          docker build --no-cache \
+          --build-arg NEXT_PUBLIC_API_URL=https://production-api.villagesquare.io/v2 \
+          --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
+          --build-arg NEXTAUTH_URL=https://villagesquare.io \
+          -t webapps:${{ env.IMAGE_TAG }} .
+
+      # -----------------------------
+      # DEPLOY PART — ONLY ON MAIN
+      # -----------------------------
+      - name: Configure AWS Credentials
+        if: github.ref == 'refs/heads/main'
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          node-version: 20
+          role-to-assume: arn:aws:iam::606802968668:role/GitHubOIDCRole
+          aws-region: af-south-1
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Login to ECR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          aws ecr get-login-password --region af-south-1 \
+          | docker login --username AWS --password-stdin 606802968668.dkr.ecr.af-south-1.amazonaws.com
 
-      - name: Build application
-        run: npm run build --if-present
+      - name: Tag and Push Image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag webapps:${{ env.IMAGE_TAG }} \
+          606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
 
-      - name: Run tests
-        run: npm test --if-present
+      - name: Update Manifest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
+
+      - name: Deploy to EKS
+        if: github.ref == 'refs/heads/main'
+        run: |
+          aws eks update-kubeconfig --region af-south-1 --name kitops-eks
+          kubectl apply -f kubernetes/webapp.yml --validate=false
