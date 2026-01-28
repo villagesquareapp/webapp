@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260128194831
+          # Use dev-webapps ECR image
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:20260104055845
           ports:
             - containerPort: 3000
           env:
@@ -30,8 +31,6 @@ spec:
             - name: GOOGLE_CLIENT_ID
               value: "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com"
             - name: GOOGLE_CLIENT_SECRET
-              value: "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"             
-
+              value: "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"
             - name: FACEBOOK_CLIENT_ID
-              value: "1042025886605241" 
-            
+              value: "1042025886605241"
