@@ -86,6 +86,7 @@ jobs:
 
       # Step 15: Commit and push manifest update
       - name: Commit and Push Changes
+        if: github.event_name == 'push'
         run: |
           git config --global user.name "villagesquareltd"
           git config --global user.email "villagesquare130@gmail.com"
