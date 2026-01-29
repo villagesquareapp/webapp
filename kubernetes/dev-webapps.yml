@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextjs-app
+  namespace: webapp
+  labels:
+    app: nextjs-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextjs-app
+  template:
+    metadata:
+      labels:
+        app: nextjs-app
+    spec:
+      containers:
+        - name: webapp
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:20250926090044
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://production-api.villagesquare.io"
+            - name: NEXTAUTH_SECRET
+              value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="
+            - name: NEXTAUTH_URL
+              value: "https://webdev.villagesquare.io"              
+            - name: GOOGLE_CLIENT_ID
+              value: "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "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"   

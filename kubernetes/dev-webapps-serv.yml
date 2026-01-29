@@ -1,0 +1,13 @@
+Version: v1
+kind: Service
+metadata:
+  name: nextjs-service
+  namespace: webapp  
+spec:
+  selector:
+    app: nextjs-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
