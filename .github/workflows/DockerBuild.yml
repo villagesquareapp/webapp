@@ -1,12 +1,11 @@
-name: CI
+name: CI/CD
 
 on:
   push:
     branches: 
-      - main
-      - dev
+      - dev-webapps
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
 
 jobs:
   build:
@@ -66,27 +65,28 @@ jobs:
       - name: Tag Docker Image
         run: |
           docker tag webapps:${{ env.IMAGE_TAG }} \
-          606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+          606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
 
       # Step 12: Push Docker image to ECR
       - name: Push Docker Image to ECR
         run: |
-          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}
 
       # Step 13: Output ECR image URI
       - name: Output Image URI
         run: |
-          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
+          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:${{ env.IMAGE_TAG }}"
 
       # Step 14: Update Kubernetes manifests with new image tag
       - name: Update Kubernetes manifests with new image tag
         run: |
-          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
+          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
           echo "=== File after update ==="
           cat kubernetes/webapp.yml
 
       # Step 15: Commit and push manifest update
       - name: Commit and Push Changes
+        if: github.event_name == 'push'
         run: |
           git config --global user.name "villagesquareltd"
           git config --global user.email "villagesquare130@gmail.com"
@@ -95,7 +95,7 @@ jobs:
 
           git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
 
-          git push origin dev
+          git push origin dev-webapps
 
       # Step 16: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
