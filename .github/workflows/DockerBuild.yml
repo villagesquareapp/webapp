@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -19,8 +19,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
       # Step 6: Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -94,7 +94,7 @@ jobs:
 
           git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
 
-          git push origin dev-webapps
+          git push origin HEAD:${{ github.ref_name }}
 
       # Step 16: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
