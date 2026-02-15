@@ -12,7 +12,6 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
         try {
             formData = await request.formData();
         } catch (e) {
-            // No form data
         }
 
         const response = await apiPost<ISaveOrUnsavePostResponse>(
