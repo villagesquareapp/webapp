@@ -90,19 +90,6 @@ export const getPostComments = async (postId: string, page: number = 1) => {
   return response;
 };
 
-// export const createComments = async (
-//   postId: string,
-//   newCommentData: INewComment
-// ) => {
-//   const token = await getToken();
-//   const response = await apiPost<IPostComment>(
-//     `posts/${postId}/comments/add`,
-//     newCommentData,
-//     token
-//   );
-//   return response;
-// };
-
 export const getCommentReplies = async (
   postId: string,
   commentId: string,

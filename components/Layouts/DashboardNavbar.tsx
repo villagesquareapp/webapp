@@ -35,12 +35,9 @@ const DashboardNavbar = () => {
         </div>
         <VsCustomLogo />
       </div>
-      <div className="flex-1 flex justify-end md:justify-center px-2 md:px-0">
-        <div className="w-full max-w-[800px] flex items-center justify-end md:justify-center">
-          {/* What we have in the design was commented out for now. */}
-          {/* <div className="w-[700px] ml-[180px] relative"> */}
-          <div className="w-full md:w-[500px] lg:w-[700px] md:ml-[190px] relative">
-          {/* <div className="w-full md:w-[600px] lg:w-[900px] xl:w-[800px] relative"> */}
+      <div className="flex-1 flex items-center justify-center relative px-2 md:px-0">
+        <div className="w-full max-w-[800px] flex items-center justify-center">
+          <div className="w-full md:w-[500px] lg:w-[700px] mx-auto relative">
             <input
               type="search"
               placeholder="Search"
@@ -83,24 +80,24 @@ const DashboardNavbar = () => {
             )}
           </div>
         </div>
-      </div>
 
-      <div className="w-auto md:w-[280px] flex items-center justify-end gap-x-2 md:gap-x-4 pr-2 md:pr-8">
-        <Notification />
-        <Popover>
-          <PopoverTrigger>
-            <CustomAvatar
-              src={user?.profile_picture || ""}
-              name={getInitials(user?.name || "")}
-              className="size-9 md:size-11 border-foreground border-2"
-            />
-          </PopoverTrigger>
-          <PopoverContent>
-            <Button variant="outline" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
-              Logout
-            </Button>
-          </PopoverContent>
-        </Popover>
+        <div className="absolute right-0 top-0 h-full w-auto flex items-center justify-end gap-x-2 md:gap-x-4 pr-2 md:pr-8">
+          <Notification />
+          <Popover>
+            <PopoverTrigger>
+              <CustomAvatar
+                src={user?.profile_picture || ""}
+                name={getInitials(user?.name || "")}
+                className="size-9 md:size-11 border-foreground border-2"
+              />
+            </PopoverTrigger>
+            <PopoverContent>
+              <Button variant="outline" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
+                Logout
+              </Button>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
     </div>
   );

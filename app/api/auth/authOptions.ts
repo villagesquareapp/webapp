@@ -123,7 +123,6 @@ export const authOptions: NextAuthOptions = {
             timezone: getTimeZone(),
           };
 
-          // console.log("[GoogleSignIn] Payload:", JSON.stringify(payload)); // Be careful logging tokens in prod logs if not necessary
 
           const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
             method: "POST",
@@ -149,8 +148,7 @@ export const authOptions: NextAuthOptions = {
               "[GoogleSignIn] Social account registration/login failed:",
               data.message || "Unknown error"
             );
-            // We can throw an error here to show a specific message on the error page
-            // throw new Error(data.message || "Backend authentication failed");
+            
             return false;
           }
 
@@ -168,7 +166,6 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // For credentials or other providers, just allow sign in
       console.log("Non-Google provider, allow sign in");
 
       return true;

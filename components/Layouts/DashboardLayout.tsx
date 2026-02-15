@@ -8,6 +8,7 @@ import CustomToaster from "components/ui/custom/custom-toaster";
 import MobileBlockScreen from "./MobileBlockScreen";
 import { Splash } from "next/font/google";
 import SplashScreen from "./SplashScreen";
+import GlobalUploadProgress from "./GlobalUploadProgress";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   return (
     <>
       <SplashScreen />
+      <GlobalUploadProgress />
       <main className="relative font-albert-sans min-h-screen">
         <SidebarProvider>
           <DashboardNavbar />
