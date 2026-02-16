@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import PageTitle from "components/Layouts/PageTitle";
 import React from "react";
 
 export default function AboutUsPage() {
   return (
     <div className="min-h-screen bg-white text-gray-800 py-16 px-6 md:px-24 lg:px-40">
+      <PageTitle title="About Us | Village Square" />
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-center gap-3">
           <Image src={"/images/vs_logo.png"} alt="VillageSquare logo" width={200} height={100} />

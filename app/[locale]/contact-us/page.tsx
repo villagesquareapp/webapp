@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import PageTitle from "components/Layouts/PageTitle";
 import React, { useState, FormEvent } from "react";
 
 interface FormData {
@@ -119,6 +120,7 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2332] to-[#0f1823] flex flex-col items-center px-5 py-10">
+      <PageTitle title="Contact Us | Village Square" />
       {/* Logo */}
       <div className="flex items-center gap-3 mb-10">
         <Image
