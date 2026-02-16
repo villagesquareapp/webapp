@@ -157,12 +157,16 @@
 
 // export default LiveStreamDetailPage;
 
-
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
 import { getFeaturedLivestreams, getLivestreamDetails } from "api/livestreams";
 import StreamHostSetup from "components/Dashboard/LiveStream/StreamHostSetup";
 import LivestreamViewer from "components/Dashboard/LiveStream/LivestreamViewer";
+
+export const metadata: Metadata = {
+  title: "Live Stream | Village Square Dashboard",
+};
 
 const LiveStreamDetailPage = async ({
   params,

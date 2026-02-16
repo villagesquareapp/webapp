@@ -21,9 +21,11 @@ const albertSans = Albert_Sans({
 export const metadata: Metadata = {
   title: `VILLAGE SQUARE`,
   description: "",
-  // icons: {
-  //   icon: "/images/vs-logo.ico",
-  // },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
