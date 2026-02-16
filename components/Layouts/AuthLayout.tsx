@@ -12,7 +12,9 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const footerLinks = [
+    { name: "About Us", path: "/about-us" },
     { name: "Privacy Policy", path: "/privacy-policy" },
+    { name: "Refund Policy", path: "/refund-policy" },
     { name: "Terms & Conditions", path: "/tac" },
     { name: "EULA FOR VILLAGESQUARE", path: "/eula" },
     { name: "Disclaimer for VILLAGESQUARE", path: "/disclaimer" },
