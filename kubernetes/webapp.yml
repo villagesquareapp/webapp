@@ -18,9 +18,9 @@ spec:
       containers:
         - name: webapp
 <<<<<<< HEAD
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260216180616
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260217130023
 =======
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260217123704
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260217130023
 >>>>>>> origin/main
           ports:
             - containerPort: 3000
