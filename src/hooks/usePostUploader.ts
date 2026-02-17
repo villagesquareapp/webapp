@@ -7,7 +7,6 @@ import {
   uploadPostMediaGreaterThan6MB,
   completePostMediaGreaterThan6MB,
   uploadPostMediaLessThan6MB,
-  createPost,
 } from "api/post";
 
 const CHUNK_SIZE = 5 * 1024 * 1024;
@@ -198,7 +197,17 @@ export const usePostUploader = () => {
       try {
         setIsPosting(true);
         const postBody = { posts: payloadPosts };
-        const result = await createPost(postBody as any);
+
+        // const result = await createPost(postBody as any);
+        const res = await fetch("/api/posts/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postBody),
+        });
+        const result = await res.json();
+
         if (!result?.status || !result?.data) {
           throw new Error(result?.message || "Failed to create post");
         }

@@ -159,7 +159,7 @@ const EachSocialPost = ({
         user={user}
         onOpenReplyModal={onOpenReplyModal}
       />
-      <Separator className="my-2 md:my-0 hidden md:block" />
+      <Separator className="my-2 md:my-0 hidden md:block opacity-40" />
     </div>
   );
 };

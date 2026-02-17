@@ -1,8 +1,13 @@
 // app/dashboard/live-streams/setup/page.tsx
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
 import { getFeaturedLivestreams } from "api/livestreams";
 import StreamSetupPage from "components/Dashboard/LiveStream/StreamSetupPage";
+
+export const metadata: Metadata = {
+  title: "Live Stream Setup | Village Square Dashboard",
+};
 
 const LiveStreamSetupPage = async () => {
   const session = await getServerSession(authOptions);

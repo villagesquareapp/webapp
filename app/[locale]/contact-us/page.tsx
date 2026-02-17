@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import PageTitle from "components/Layouts/PageTitle";
 import React, { useState, FormEvent } from "react";
 
 interface FormData {
@@ -119,6 +120,7 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2332] to-[#0f1823] flex flex-col items-center px-5 py-10">
+      <PageTitle title="Contact Us | Village Square" />
       {/* Logo */}
       <div className="flex items-center gap-3 mb-10">
         <Image
@@ -159,6 +161,7 @@ export default function SupportPage() {
               support@villagesquare.io
             </a>
           </p>
+
           <p className="text-slate-200">
             Visit our{" "}
             <a
@@ -282,10 +285,12 @@ export default function SupportPage() {
           </button>
         </form>
       </div>
+      {/* Footer / Address */}
       <div className="mt-12 pb-6 flex items-center justify-center gap-2">
         <p className="text-slate-400 text-sm font-medium">
           TheVillagesquare LTD
         </p>
+        <span className="text-slate-500 text-xs"></span>
         <p className="text-slate-500 text-xs">22 cocacola road, Ilorin Kwara</p>
         <p className="text-slate-600 text-xs">
           &copy; {new Date().getFullYear()} TheVillagesquare. All rights

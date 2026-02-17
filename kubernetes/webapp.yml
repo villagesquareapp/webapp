@@ -17,11 +17,15 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20251222085219
+<<<<<<< HEAD
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260217130023
+=======
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:20260217130023
+>>>>>>> origin/main
           ports:
             - containerPort: 3000
           env:
-            - name: API_URL
+            - name: NEXT_PUBLIC_API_URL
               value: "https://production-api.villagesquare.io/v2"
             - name: NEXTAUTH_SECRET
               value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="

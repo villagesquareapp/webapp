@@ -37,7 +37,7 @@ const SocialPostActionButtons = ({
           /> */}
           <PiHeartFill
             onClick={() => likeUnlikePost(post.uuid)}
-            className={`size-5 cursor-pointer text-gray-500 ${
+            className={`hover:scale-125 transition-transform pointer-events-auto size-5 cursor-pointer text-gray-500 ${
               post.is_liked && "text-red-600"
             }`}
           />
