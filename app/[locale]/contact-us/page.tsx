@@ -119,7 +119,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center px-5 py-10">
+    <div className="min-h-screen bg-background flex flex-col items-center px-5 py-10">
       <PageTitle title="Contact Us | Village Square" />
       {/* Logo */}
       <div className="flex items-center gap-3 mb-10">
