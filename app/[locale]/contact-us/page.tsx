@@ -66,7 +66,7 @@ export default function SupportPage() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -281,6 +281,16 @@ export default function SupportPage() {
             {isSubmitting ? "Sending..." : "Send Message"}
           </button>
         </form>
+      </div>
+      <div className="mt-12 pb-6 flex items-center justify-center gap-2">
+        <p className="text-slate-400 text-sm font-medium">
+          TheVillagesquare LTD
+        </p>
+        <p className="text-slate-500 text-xs">22 cocacola road, Ilorin Kwara</p>
+        <p className="text-slate-600 text-xs">
+          &copy; {new Date().getFullYear()} TheVillagesquare. All rights
+          reserved.
+        </p>
       </div>
     </div>
   );
