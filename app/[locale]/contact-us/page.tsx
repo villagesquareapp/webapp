@@ -282,19 +282,6 @@ export default function SupportPage() {
           </button>
         </form>
       </div>
-      {/* Footer / Address */}
-      <div className="mt-12 text-center pb-6">
-        <p className="text-slate-400 text-sm font-medium">
-          TheVillagesquare LTD
-        </p>
-        <p className="text-slate-500 text-xs mt-1">
-          22 cocacola road, Ilorin Kwara
-        </p>
-        <p className="text-slate-600 text-xs mt-3">
-          &copy; {new Date().getFullYear()} TheVillagesquare. All rights
-          reserved.
-        </p>
-      </div>
     </div>
   );
 }
