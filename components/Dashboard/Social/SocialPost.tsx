@@ -350,6 +350,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   return (
     <>
+    {/* <ProgressBar progress={50} /> */}
       {selectedPost ? (
         <PostDetails
           post={selectedPost}
