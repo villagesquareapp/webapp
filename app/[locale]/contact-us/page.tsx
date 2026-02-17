@@ -161,6 +161,7 @@ export default function SupportPage() {
               support@villagesquare.io
             </a>
           </p>
+
           <p className="text-slate-200">
             Visit our{" "}
             <a
@@ -197,9 +198,8 @@ export default function SupportPage() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Your Name"
-              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${
-                errors.name ? "border-red-500" : "border-transparent"
-              } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all`}
+              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${errors.name ? "border-red-500" : "border-transparent"
+                } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all`}
             />
             {errors.name && (
               <p className="text-red-400 text-sm mt-1.5">{errors.name}</p>
@@ -220,9 +220,8 @@ export default function SupportPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Your Email"
-              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${
-                errors.email ? "border-red-500" : "border-transparent"
-              } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all`}
+              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${errors.email ? "border-red-500" : "border-transparent"
+                } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all`}
             />
             {errors.email && (
               <p className="text-red-400 text-sm mt-1.5">{errors.email}</p>
@@ -243,9 +242,8 @@ export default function SupportPage() {
               value={formData.subject}
               onChange={handleChange}
               placeholder="Subject"
-              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${
-                errors.subject ? "border-red-500" : "border-transparent"
-              } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all`}
+              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${errors.subject ? "border-red-500" : "border-transparent"
+                } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all`}
             />
             {errors.subject && (
               <p className="text-red-400 text-sm mt-1.5">{errors.subject}</p>
@@ -266,9 +264,8 @@ export default function SupportPage() {
               onChange={handleChange}
               placeholder="Your Message"
               rows={5}
-              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${
-                errors.message ? "border-red-500" : "border-transparent"
-              } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all resize-vertical`}
+              className={`w-full px-4 py-3.5 bg-slate-700/50 border ${errors.message ? "border-red-500" : "border-transparent"
+                } rounded-lg text-white placeholder-slate-500 focus:outline-none focus:bg-slate-700/70 focus:border-blue-500 transition-all resize-vertical`}
             />
             {errors.message && (
               <p className="text-red-400 text-sm mt-1.5">{errors.message}</p>
@@ -283,6 +280,14 @@ export default function SupportPage() {
             {isSubmitting ? "Sending..." : "Send Message"}
           </button>
         </form>
+      </div>
+
+      {/* Footer / Address */}
+      <div className="mt-12 text-center pb-6">
+        <p className="text-slate-500 text-xs text-opacity-70">
+          TheVillagesquare LTD • 22 cocacola road, Ilorin Kwara • &copy;{" "}
+          {new Date().getFullYear()} TheVillagesquare. All rights reserved.
+        </p>
       </div>
     </div>
   );
