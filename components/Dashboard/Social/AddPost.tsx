@@ -26,8 +26,7 @@ import ProgressBar from "./ProgressBar";
 import { BookImage } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
 
-// Import the custom hook
-import { usePostUploader } from "src/hooks/usePostUploader";
+import { usePostUploadContext } from "context/PostUploadContext";
 import { set } from "zod";
 
 const ReactCrop = dynamic(() => import("react-image-crop"), { ssr: false });
@@ -54,14 +53,13 @@ const AddPost = ({
   onRefreshPosts: () => void;
 }) => {
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState<boolean>(false);
-  const [isPostInitiated, setIsPostInitiated] = useState<boolean>(false);
 
   const {
     isPosting,
     uploadProgress,
     uploadFileAndGetInfo,
     createPostFunc: apiCreatePost,
-  } = usePostUploader();
+  } = usePostUploadContext();
 
   const [imageEditing, setImageEditing] = useState<boolean>(false);
   const [imagePreviewing, setImagePreviewing] = useState<boolean>(false);
@@ -99,16 +97,6 @@ const AddPost = ({
       privacy: "everyone",
     },
   ]);
-
-    const overallProgress = useMemo(() => {
-    const fileKeys = Object.keys(uploadProgress);
-    if (fileKeys.length === 0) return 0;
-    const totalProgress = fileKeys.reduce(
-      (sum, key) => sum + (uploadProgress[key]?.progress || 0),
-      0
-    );
-    return totalProgress / fileKeys.length;
-  }, [uploadProgress]);
 
   const addThreadItem = () =>
     setItems((prev) => [
@@ -243,76 +231,82 @@ const AddPost = ({
   };
 
   const localCreatePostFunc = async () => {
-    setIsPostInitiated(true)
-    try {
-      const validation = validateDraft();
-      if (validation) {
-        toast.error(validation);
-        return;
-      }
 
-      const payloadPosts: any[] = [];
+    const validation = validateDraft();
+    if (validation) {
+      toast.error(validation);
+      return;
+    }
 
-      for (let pIndex = 0; pIndex < items.length; pIndex++) {
-        const it = items[pIndex];
-        const uploadedFiles: { key: string; mime_type: string }[] = [];
+    setIsNewPostDialogOpen(false);
 
-        for (let fIndex = 0; fIndex < it.media.length; fIndex++) {
-          const file = it.media[fIndex];
-          const fileId = `${pIndex}-${file.name}-${fIndex}-${Date.now()}`;
+    const currentItems = [...items];
 
-          try {
-            const fileInfo = await uploadFileAndGetInfo(file, fileId);
-            uploadedFiles.push(fileInfo);
-          } catch (err) {
-            console.error(
-              "Error uploading file for post",
-              pIndex,
-              file.name,
-              err
-            );
-            toast.error(`Failed to upload: ${file.name}`);
-            setIsPostInitiated(false);
-            return;
+    // Reset form immediately
+    setItems([
+      {
+        id: String(Date.now()),
+        caption: "",
+        media: [],
+        address: "",
+        latitude: "",
+        longitude: "",
+        privacy: "everyone",
+      },
+    ]);
+
+
+    (async () => {
+      try {
+        const payloadPosts: any[] = [];
+
+        for (let pIndex = 0; pIndex < currentItems.length; pIndex++) {
+          const it = currentItems[pIndex];
+          const uploadedFiles: { key: string; mime_type: string }[] = [];
+
+          for (let fIndex = 0; fIndex < it.media.length; fIndex++) {
+            const file = it.media[fIndex];
+            const fileId = `${pIndex}-${file.name}-${fIndex}-${Date.now()}`;
+
+            try {
+              const fileInfo = await uploadFileAndGetInfo(file, fileId);
+              uploadedFiles.push(fileInfo);
+            } catch (err) {
+              console.error(
+                "Error uploading file for post",
+                pIndex,
+                file.name,
+                err
+              );
+              toast.error(`Failed to upload: ${file.name}`);
+              // setIsPostInitiated(false);
+              return;
+            }
           }
+
+          payloadPosts.push({
+            media: uploadedFiles.length ? uploadedFiles : undefined,
+            caption: it.caption,
+            address: it.address || null,
+            latitude: it.latitude ? Number(it.latitude) : null,
+            longitude: it.longitude ? Number(it.longitude) : null,
+            privacy: it.privacy,
+          });
         }
 
-        payloadPosts.push({
-          media: uploadedFiles.length ? uploadedFiles : undefined,
-          caption: it.caption,
-          address: it.address || null,
-          latitude: it.latitude ? Number(it.latitude) : null,
-          longitude: it.longitude ? Number(it.longitude) : null,
-          privacy: it.privacy,
-        });
-      }
+        const result = await apiCreatePost(payloadPosts);
 
-      const result = await apiCreatePost(payloadPosts);
-
-      if (result) {
-        toast.success("Post created successfully");
-        onRefreshPosts();
-        setIsNewPostDialogOpen(false);
-        setItems([
-          {
-            id: String(Date.now()),
-            caption: "",
-            media: [],
-            address: "",
-            latitude: "",
-            longitude: "",
-            privacy: "everyone",
-          },
-        ]);
-      } else {
+        if (result) {
+          toast.success("Post created successfully");
+          onRefreshPosts();
+        } else {
+          toast.error("Failed to create post");
+        }
+      } catch (err) {
+        console.error("createPostFunc error", err);
         toast.error("Failed to create post");
       }
-    } catch (err) {
-      console.error("createPostFunc error", err);
-      toast.error("Failed to create post");
-    } finally {
-      setIsPostInitiated(false)
-    }
+    })();
   };
 
   const handleAudienceChange = (value: string) => {
@@ -338,15 +332,12 @@ const AddPost = ({
     return null;
   };
 
-  const handleCancelUpload = () => {
-    setIsPostInitiated(false);
-  };
 
   const canAddMorePost = useMemo(() => {
-  return items.some(
-    (it) => it.caption.trim().length > 0 || it.media.length > 0
-  );
-}, [items]);
+    return items.some(
+      (it) => it.caption.trim().length > 0 || it.media.length > 0
+    );
+  }, [items]);
 
 
 
@@ -358,7 +349,7 @@ const AddPost = ({
         addImage={handleFileFromNewSocialField}
       />
 
-      {isPostInitiated && <ProgressBar progress={overallProgress} onCancel={handleCancelUpload} />}
+
 
       <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
         <DialogContent className="flex flex-col !max-w-[720px] w-full max-h-[90vh] p-0 rounded-2xl overflow-hidden">
@@ -518,7 +509,7 @@ const AddPost = ({
                   {items.map((it, idx) => (
                     <div
                       key={it.id}
-                      className="rounded-lg bg-[#0f1724] overflow-hidden"
+                      className="rounded-lg bg-background overflow-hidden"
                     >
                       <div className="px-4 py-3">
                         <div className="flex items-start gap-3">
@@ -556,10 +547,10 @@ const AddPost = ({
                                 updateItem(idx, { caption: e.target.value })
                               }
                               placeholder="What's on your mind?"
-                              className="w-full resize-none bg-transparent mt-3 text-white placeholder:text-gray-500 min-h-[80px] max-h-[180px] outline-none"
+                              className="w-full resize-none bg-transparent mt-3 text-white placeholder:text-gray-500 min-h-[40px] max-h-[80px] outline-none"
                               maxLength={500}
                             />
-                            <div className="flex items-center justify-between text-xs text-gray-400 mt-2">
+                            <div className="flex items-center justify-between text-xs text-gray-400">
                               <div className="flex items-center gap-3">
                                 <label className="flex items-center gap-2 cursor-pointer text-gray-400 hover:text-white">
                                   <input
@@ -575,7 +566,7 @@ const AddPost = ({
 
                                 <button
                                   className="flex items-center gap-2 text-gray-400 hover:text-white"
-                                  onClick={() => {}}
+                                  onClick={() => { }}
                                 >
                                   <HiLocationMarker className="w-4 h-4" />
                                 </button>
@@ -586,7 +577,7 @@ const AddPost = ({
                               </div>
                             </div>
 
-                            <div className="border-t border-white/5 mt-3 pt-3" />
+                            <div className="border-t border-white/5 mt-3 pt-0" />
 
                             <div className="mt-3 flex flex-wrap gap-3">
                               {it.media.map((file, fIdx) => {
@@ -673,9 +664,8 @@ const AddPost = ({
                           {items[0].privacy}
                         </span>
                         <IoIosArrowDown
-                          className={`size-5 duration-500 transition-transform ${
-                            isAudienceDialogOpen ? "-rotate-180 " : ""
-                          }`}
+                          className={`size-5 duration-500 transition-transform ${isAudienceDialogOpen ? "-rotate-180 " : ""
+                            }`}
                         />
                       </div>
                     </div>
@@ -687,8 +677,8 @@ const AddPost = ({
                       items[0].privacy === "everyone"
                         ? "default"
                         : items[0].privacy === "followers"
-                        ? "comfortable"
-                        : "private"
+                          ? "comfortable"
+                          : "private"
                     }
                     onValueChange={handleAudienceChange}
                     className="flex flex-col gap-y-4 mt-1 ml-10"
@@ -741,14 +731,13 @@ const AddPost = ({
                 <div>
                   <Button
                     onClick={localCreatePostFunc}
-                    disabled={canAddMorePost && isPostInitiated && isPosting}
-                    className={`w-full mt-6 h-[52px] bg-blue-600 hover:bg-blue-700 text-white rounded-xl ${
-                      isPosting
-                        ? "bg-background cursor-not-allowed opacity-50"
-                        : "bg-blue-500 hover:bg-blue-600"
-                    }`}
+                    disabled={canAddMorePost && isPosting}
+                    className={`w-full mt-6 h-[52px] bg-blue-600 hover:bg-blue-700 text-white rounded-xl ${isPosting
+                      ? "bg-background cursor-not-allowed opacity-50"
+                      : "bg-blue-500 hover:bg-blue-600"
+                      }`}
                   >
-                    {isPosting ? "Posting..." : "Post"}
+                    {isPosting ? "Posting and Uploading in Background..." : "Post"}
                   </Button>
                 </div>
               </div>

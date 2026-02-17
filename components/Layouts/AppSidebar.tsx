@@ -149,7 +149,7 @@ export function AppSidebar() {
                       onMouseEnter={() => setHoveredItem(item.title)}
                       onMouseLeave={() => setHoveredItem(null)}
                     >
-                      <Link href={item.url} className="flex items-center p-3">
+                      <Link href={item.url} prefetch={false} className="flex items-center p-3">
                         {Icon}
                         <span className="font-medium text-base">{item.title}</span>
                       </Link>

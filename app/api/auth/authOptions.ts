@@ -1,17 +1,19 @@
+import { getAuthSecret, getAuthUrl } from "lib/authConfig";
 import { messageHandler } from "lib/messageHandler";
 import { getTimeZone } from "lib/timezone";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 const API_BASE_URL =
-  process.env.API_URL && process.env.API_URL.trim().length > 0
-    ? process.env.API_URL.replace(/\/+$/, "")
+  process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
     : "https://staging-api.villagesquare.io/v2";
 
+const authSecret = getAuthSecret();
+getAuthUrl();
+
 export const authOptions: NextAuthOptions = {
-  secret:
-    process.env.NEXTAUTH_SECRET ||
-    "zSLADSxHudaAtzEkWbPfbVaXa3D3Ls1Ey6f/Kn5YNVs=",
+  secret: authSecret,
   providers: [
     GoogleProvider({
       clientId:
@@ -108,46 +110,62 @@ export const authOptions: NextAuthOptions = {
         console.log("Google provider_token (ID token):", account.id_token);
 
         try {
+          console.log(`[GoogleSignIn] Attempting to register/login with backend at ${API_BASE_URL}/auth/social-account`);
+
+          const payload = {
+            audience: "web",
+            auth_type: "google",
+            device: "browser",
+            device_id: null,
+            fcm_token: null,
+            provider: "google",
+            provider_token: account.id_token || account.access_token,
+            timezone: getTimeZone(),
+          };
+
+
           const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              audience: "web",
-              auth_type: "google",
-              device: "browser",
-              device_id: null,
-              fcm_token: null,
-              provider: "google",
-              provider_token: account.id_token || account.access_token,
-              timezone: getTimeZone(),
-            }),
+            body: JSON.stringify(payload),
           });
 
-          const data = await res.json();
+          console.log(`[GoogleSignIn] Backend response status: ${res.status}`);
+
+          const textData = await res.text();
+          console.log(`[GoogleSignIn] Backend response body (text): ${textData.substring(0, 500)}`); // Log first 500 chars
+
+          let data;
+          try {
+            data = JSON.parse(textData);
+          } catch (e) {
+            console.error("[GoogleSignIn] Failed to parse backend response as JSON");
+            return false;
+          }
 
           if (!res.ok || !data.status) {
-            console.log(
-              "Social account registration/login failed:",
-              data.message
+            console.error(
+              "[GoogleSignIn] Social account registration/login failed:",
+              data.message || "Unknown error"
             );
+            
             return false;
           }
 
           if (data.data) {
             (user as any).backendData = data.data;
-            console.log("Social account data:", data.data);
+            console.log("[GoogleSignIn] Social account data attached to user object.");
           }
 
-          console.log("Social login approved");
+          console.log("[GoogleSignIn] Social login approved");
 
           return true;
         } catch (error) {
-          console.error("Error in social account signIn callback:", error);
+          console.error("[GoogleSignIn] Error in social account signIn callback:", error);
           return false;
         }
       }
 
-      // For credentials or other providers, just allow sign in
       console.log("Non-Google provider, allow sign in");
 
       return true;
@@ -172,7 +190,7 @@ export const authOptions: NextAuthOptions = {
 
           token = {
             ...token,
-            ...essentialData, 
+            ...essentialData,
           };
         }
         else {

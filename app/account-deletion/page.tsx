@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent } from 'react';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import PageTitle from 'components/Layouts/PageTitle';
 
 interface FormData {
   email: string;
@@ -312,6 +313,7 @@ export default function AccountDeletionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2332] to-[#0f1823] flex items-center justify-center px-5 py-10">
+      <PageTitle title="Account Deletion | Village Square" />
       <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 md:p-10 max-w-2xl w-full shadow-2xl">
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-white">
           Account Deletion Request for VillageSquare
