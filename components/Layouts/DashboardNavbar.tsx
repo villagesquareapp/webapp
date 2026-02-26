@@ -34,7 +34,7 @@ const DashboardNavbar = () => {
           <SidebarTrigger />
         </div>
 
-        <div className="flex-1 w-full max-w-[650px] px-4 lg:px-10 mr-16">
+        <div className="flex-1 w-full px-4 lg:px-6 mr-16">
           <div className="relative">
             <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
             <input

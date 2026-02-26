@@ -378,7 +378,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
             onRefreshPosts={() => fetchPosts(1, activeTab)}
           /> */}
 
-          <div className="flex flex-col gap-y-2">
+          <div className="flex flex-col gap-y-2 w-full">
             {/* Header with tabs - Responsive */}
             <div className="flex justify-between items-center mb-1 z-40 sticky top-16 pt-2 pb-2 bg-background">
               <div className="flex bg-transparent gap-x-3 w-fit">
