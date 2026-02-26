@@ -28,16 +28,15 @@ const DashboardNavbar = () => {
   }
 
   return (
-    <div className="flex fixed w-full h-16 z-50 border-b bg-background items-center">
-      <div className="w-auto flex items-center pl-2 md:pl-8 md:w-[280px] gap-x-2">
-        <div className="md:hidden">
+    <div className="flex w-full h-16 z-50 bg-background border-b border-white/10 items-center justify-end sticky top-0 shrink-0">
+      <div className="flex w-full lg:pr-20 pr-8 items-center h-full">
+        <div className="md:hidden ml-4 mr-2 shrink-0">
           <SidebarTrigger />
         </div>
-        <VsCustomLogo />
-      </div>
-      <div className="flex-1 flex items-center justify-center relative px-2 md:px-0">
-        <div className="w-full max-w-[800px] flex items-center justify-center">
-          <div className="w-full md:w-[500px] lg:w-[700px] mx-auto relative">
+
+        <div className="flex-1 w-full max-w-[650px] px-4 lg:px-10 mr-16">
+          <div className="relative">
+            <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
             <input
               type="search"
               placeholder="Search"
@@ -49,9 +48,8 @@ const DashboardNavbar = () => {
                   setIsSearchFocused(false);
                 }
               }}
-              className="bg-accent h-10 w-full placeholder:text-foreground pl-4 pr-12 font-medium rounded-lg !outline-none !border-none !ring-0 text-sm"
+              className="bg-[#1C1C1E] h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm"
             />
-            <IoSearch className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none" />
             {searchValue.length > 0 && isSearchFocused && (
               <div className="search-results absolute left-0 top-[52px] w-full bg-background rounded-lg border shadow-lg z-50">
                 <div className="w-full h-fit relative p-4" tabIndex={-1}>
@@ -62,7 +60,7 @@ const DashboardNavbar = () => {
                     </div>
                   </div>
                   <div className="flex flex-col gap-y-2 mt-4">
-                    {[1, 2, 3, 4, 5].map((_, index) => (
+                    {[1, 2, 3].map((_, index) => (
                       <div
                         key={index}
                         className="w-full text-muted-foreground flex items-center justify-between hover:bg-accent/50 py-2 rounded-md cursor-pointer"
@@ -81,18 +79,52 @@ const DashboardNavbar = () => {
           </div>
         </div>
 
-        <div className="absolute right-0 top-0 h-full w-auto flex items-center justify-end gap-x-2 md:gap-x-4 pr-2 md:pr-8">
-          <Notification />
+        <div className="flex items-center ml-auto gap-x-4 pl-2">
+          {/* Theme Toggle (Placeholder) */}
+          <button className="text-muted-foreground hover:text-foreground hidden sm:block">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+
+          <div className="relative">
+            <Notification />
+            <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border border-background"></div>
+          </div>
+
+          {/* Wallet Icon */}
+          <button className="text-muted-foreground hover:text-foreground hidden sm:block">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+            </svg>
+          </button>
+
           <Popover>
-            <PopoverTrigger>
-              <CustomAvatar
-                src={user?.profile_picture || ""}
-                name={getInitials(user?.name || "")}
-                className="size-9 md:size-11 border-foreground border-2"
-              />
+            <PopoverTrigger asChild>
+              <div className="flex items-center gap-x-2 cursor-pointer">
+                <CustomAvatar
+                  src={user?.profile_picture || ""}
+                  name={getInitials(user?.name || "User")}
+                  className="size-9 md:size-10"
+                />
+                <div className="hidden lg:flex flex-col items-start leading-tight">
+                  <span className="text-sm font-bold uppercase">{user?.name || "User"}</span>
+                  <span className="text-xs text-muted-foreground">@{user?.username || "username"}</span>
+                </div>
+              </div>
             </PopoverTrigger>
-            <PopoverContent>
-              <Button variant="outline" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
+            <PopoverContent className="w-40" align="end">
+              <Button variant="outline" className="w-full" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
                 Logout
               </Button>
             </PopoverContent>

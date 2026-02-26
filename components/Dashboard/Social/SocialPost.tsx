@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  getPostComments,
-} from "app/api/post";
+import { getPostComments } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
@@ -14,6 +12,7 @@ import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
 import PostSkeleton from "./PostSkeleton";
 import ProgressBar from "./ProgressBar";
+import { Button } from "components/ui/button";
 
 type TabType = "explore" | "connections";
 
@@ -32,7 +31,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
   const [postForReplyModal, setPostForReplyModal] = useState<IPost | null>(
-    null
+    null,
   );
   const [replyToReply, setReplyToReply] = useState<IPostComment | null>(null);
 
@@ -46,14 +45,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((post) =>
         post.uuid === postId
           ? {
-            ...post,
-            likes_count: post?.is_liked
-              ? (Number(post.likes_count) - 1).toString()
-              : (Number(post.likes_count) + 1).toString(),
-            is_liked: !post.is_liked,
-          }
-          : post
-      )
+              ...post,
+              likes_count: post?.is_liked
+                ? (Number(post.likes_count) - 1).toString()
+                : (Number(post.likes_count) + 1).toString(),
+              is_liked: !post.is_liked,
+            }
+          : post,
+      ),
     );
 
     try {
@@ -67,14 +66,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
           prev.map((post) =>
             post.uuid === postId
               ? {
-                ...post,
-                likes_count: post.is_liked
-                  ? (Number(post.likes_count) + 1).toString()
-                  : (Number(post.likes_count) - 1).toString(),
-                is_liked: !post.is_liked,
-              }
-              : post
-          )
+                  ...post,
+                  likes_count: post.is_liked
+                    ? (Number(post.likes_count) + 1).toString()
+                    : (Number(post.likes_count) - 1).toString(),
+                  is_liked: !post.is_liked,
+                }
+              : post,
+          ),
         );
         toast.error(result?.message || "Failed to update like");
       }
@@ -83,14 +82,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
         prev.map((post) =>
           post.uuid === postId
             ? {
-              ...post,
-              likes_count: post.is_liked
-                ? (Number(post.likes_count) + 1).toString()
-                : (Number(post.likes_count) - 1).toString(),
-              is_liked: !post.is_liked,
-            }
-            : post
-        )
+                ...post,
+                likes_count: post.is_liked
+                  ? (Number(post.likes_count) + 1).toString()
+                  : (Number(post.likes_count) - 1).toString(),
+                is_liked: !post.is_liked,
+              }
+            : post,
+        ),
       );
       console.error("Error liking post:", error);
     }
@@ -106,8 +105,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
       if (result?.status) {
         setPosts((prev) =>
           prev.map((post) =>
-            post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
-          )
+            post.uuid === postId
+              ? { ...post, is_saved: !post?.is_saved }
+              : post,
+          ),
         );
       } else {
         toast.error(result?.message || "Failed to save post");
@@ -214,7 +215,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
         root: null,
         rootMargin: "100px",
         threshold: 0.1,
-      }
+      },
     );
     observerRef.current = observer;
 
@@ -264,7 +265,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           }
         }
       },
-      { threshold: thresholds }
+      { threshold: thresholds },
     );
 
     return () => {
@@ -325,18 +326,22 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((p) =>
         p.uuid === postForReplyModal?.uuid
           ? {
-            ...p,
-            replies_count: (Number(p.replies_count) + 1).toString(),
-            replies: p.caption ? [...p.caption, newReply] : [newReply],
-          }
-          : p
-      )
+              ...p,
+              replies_count: (Number(p.replies_count) + 1).toString(),
+              replies: p.caption ? [...p.caption, newReply] : [newReply],
+            }
+          : p,
+      ),
     );
     if (selectedPost && selectedPost.uuid === postForReplyModal?.uuid) {
-      setSelectedPost(prev => prev ? {
-        ...prev,
-        replies_count: (Number(prev.replies_count) + 1).toString(),
-      } : null);
+      setSelectedPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              replies_count: (Number(prev.replies_count) + 1).toString(),
+            }
+          : null,
+      );
     }
     handleCloseReplyModal();
   };
@@ -350,7 +355,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   return (
     <>
-    {/* <ProgressBar progress={50} /> */}
+      {/* <ProgressBar progress={50} /> */}
       {selectedPost ? (
         <PostDetails
           post={selectedPost}
@@ -368,36 +373,38 @@ const SocialPost = ({ user }: { user: IUser }) => {
         />
       ) : (
         <>
-          <AddPost
+          {/* <AddPost
             user={user}
             onRefreshPosts={() => fetchPosts(1, activeTab)}
-          />
+          /> */}
 
           <div className="flex flex-col gap-y-2">
             {/* Header with tabs - Responsive */}
-            <div className="border-b-[1.5px] flex justify-between sticky top-16 -mt-4 bg-background z-10 md:static md:top-0">
-              <div className="flex flex-row w-full md:w-auto">
+            <div className="flex justify-between items-center mb-1 z-40 sticky top-16 pt-2 pb-2 bg-background">
+              <div className="flex bg-transparent gap-x-3 w-fit">
+                {/* Explore Button */}
                 <button
                   onClick={() => handleTabChange("explore")}
-                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "explore"
-                    ? "text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`px-8 text-sm font-normal rounded-xl border transition-all duration-300 ${
+                    activeTab === "explore"
+                      ? "border-[#0D52D2] bg-[#1C1C1E] text-white" 
+                      : "border-white/10 bg-transparent text-white/50 hover:text-white"
+                  }`}
                 >
                   Explore
                 </button>
+
+                {/* Connections Button */}
                 <button
                   onClick={() => handleTabChange("connections")}
-                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "connections"
-                    ? "text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`px-8 py-2.5 text-sm font-normal rounded-xl border transition-all duration-300 ${
+                    activeTab === "connections"
+                      ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
+                      : "border-white/10 bg-transparent text-white/50 hover:text-white"
+                  }`}
                 >
                   Connections
                 </button>
-              </div>
-              <div className="hidden md:flex items-center">
-                <SocialPostFilterDialog />
               </div>
             </div>
 
