@@ -1,14 +1,10 @@
 "use client";
 
-import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover";
 import {
   VFlixFill,
   VFlixOutline,
   VSCameraFill,
   VSMailFill,
-  VSMore,
-  VSWalletFill,
-  VSWalletOutline,
 } from "components/icons/village-square";
 import {
   Sidebar,
@@ -18,16 +14,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
+  SidebarHeader,
 } from "components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { BsBriefcase, BsCalendar, BsMic } from "react-icons/bs";
-import { FaComments, FaHeart, FaShoppingBasket, FaUsers } from "react-icons/fa";
+import { BsMic, BsMicFill } from "react-icons/bs";
+import { FaHeart, FaShoppingBasket, FaUsers } from "react-icons/fa";
 import { GoHome, GoHomeFill } from "react-icons/go";
 import { HiOutlineVideoCamera } from "react-icons/hi";
-import { IoChatbubbleEllipsesOutline, IoPersonOutline, IoPersonSharp } from "react-icons/io5";
 import { MdMailOutline } from "react-icons/md";
+import { BiWorld } from "react-icons/bi";
+import { FaHeartCircleCheck } from "react-icons/fa6";
+import { AiFillShopping } from "react-icons/ai";
+import { FaUserGroup } from "react-icons/fa6";
+import { MdOutlinePublic } from "react-icons/md";
+import VsCustomLogo from "components/ui/custom/vs-custom-logo";
+import { Button } from "components/ui/button";
+import { Plus } from "lucide-react";
 
 const items = [
   {
@@ -42,116 +46,81 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },
-  // {
-  //   title: "Live Streams",
-  //   url: "/dashboard/live-streams",
-  //   icon: <HiOutlineVideoCamera className="!size-6" />,
-  //   activeIcon: <VSCameraFill className="fill-black !size-6" />,
-  // },
-  // {
-  //   title: "Messages",
-  //   url: "/dashboard/messages",
-  //   icon: <MdMailOutline className="!size-6" />,
-  //   activeIcon: <VSMailFill className="fill-black !size-6" />,
-  // },
-  // {
-  //   title: "Wallet",
-  //   url: "/dashboard/wallet",
-  //   icon: <VSWalletOutline className="!size-6" />,
-  //   activeIcon: <VSWalletFill className="fill-black !size-6" />,
-  // },
-  // {
-  //   title: "Profile",
-  //   url: "/dashboard/profile",
-  //   icon: <IoPersonOutline className="!size-6" />,
-  //   activeIcon: <IoPersonSharp className="fill-black !size-6" />,
-  // },
-  // {
-  //   title: "More Pages",
-  //   url: "#",
-  //   icon: <VSMore className="!size-6" />,
-  // },
-];
-
-const morePageItems = [
-  { title: "Dating", icon: <FaHeart className="!size-6" />, url: "#" },
-  { title: "Marketplace", icon: <FaShoppingBasket />, url: "#" },
-  { title: "Audio Hub", icon: <BsMic />, url: "#" },
-  { title: "Forums", icon: <FaComments />, url: "#" },
-  { title: "Event", icon: <BsCalendar />, url: "#" },
-  { title: "Chat", icon: <IoChatbubbleEllipsesOutline />, url: "#" },
-  { title: "Search Users", icon: <FaUsers />, url: "#" },
-  { title: "Jobs", icon: <BsBriefcase />, url: "#" },
+  {
+    title: "Messages",
+    url: "/dashboard/messages",
+    icon: <MdMailOutline className="!size-6" />,
+    activeIcon: <VSMailFill className="fill-black !size-6" />,
+  },
+  {
+    title: "Dating hub",
+    url: "#",
+    icon: <FaHeart className="!size-5 ml-0.5" />,
+    activeIcon: <FaHeartCircleCheck className="fill-black !size-5 ml-0.5" />,
+  },
+  {
+    title: "Echo",
+    url: "#",
+    icon: <BsMic className="!size-5 ml-0.5" />,
+    activeIcon: <BsMicFill className="fill-black !size-5 ml-0.5" />,
+  },
+  {
+    title: "Livestream",
+    url: "/dashboard/live-streams",
+    icon: <HiOutlineVideoCamera className="!size-6" />,
+    activeIcon: <VSCameraFill className="fill-black !size-6" />,
+  },
+  {
+    title: "Marketsquare",
+    url: "#",
+    icon: <FaShoppingBasket className="!size-5 ml-0.5" />,
+    activeIcon: <AiFillShopping className="fill-black !size-5 ml-0.5" />,
+  },
+  {
+    title: "Tribes",
+    url: "#",
+    icon: <FaUsers className="!size-5 ml-0.5" />,
+    activeIcon: <FaUserGroup className="fill-black !size-5 ml-0.5" />,
+  },
+  {
+    title: "ATC",
+    url: "#",
+    icon: <BiWorld className="!size-5 ml-0.5" />,
+    activeIcon: <MdOutlinePublic className="fill-black !size-5 ml-0.5" />,
+  },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
-    <Sidebar className="w-[280px]" collapsible="icon" mobileVariant="sheet">
+    <Sidebar className="border-r border-white/10 shadow-none bg-background pl-10" collapsible="icon" mobileVariant="sheet">
+      <SidebarHeader className="pt-6 pb-4 border-none bg-background">
+        <div className="">
+          <VsCustomLogo />
+        </div>
+      </SidebarHeader>
+
       <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupContent className="pt-4 md:pt-20 px-3">
+          <SidebarGroupContent className="pt-4 px-3">
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
-                const isActive = pathname.includes(item.url);
-                const isHovered = hoveredItem === item.title;
-                const Icon: any =
-                  item.title === "Social" && (isActive || isHovered)
-                    ? item.activeIcon
-                    : item.icon;
-
-                if (item.title === "More Pages") {
-                  return (
-                    <SidebarMenuItem key={item.title} className="px-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <SidebarMenuButton
-                            className={`w-full flex items-center px-3 py-3 rounded-md transition-colors h-11 ${isActive || isHovered
-                              ? "bg-foreground text-background"
-                              : "text-foreground"
-                              }`}
-                            onMouseEnter={() => setHoveredItem(item.title)}
-                            onMouseLeave={() => setHoveredItem(null)}
-                          >
-                            {Icon}
-                            <span className="text-base mt-1">{item.title}</span>
-                          </SidebarMenuButton>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-56 p-2" side="bottom">
-                          <div className="flex flex-col space-y-1">
-                            {morePageItems.map((moreItem) => (
-                              <Link
-                                key={moreItem.title}
-                                href={moreItem.url}
-                                className="flex flex-row items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
-                              >
-                                {moreItem.icon}
-                                <span className="font-medium text-xl">{moreItem.title}</span>
-                              </Link>
-                            ))}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </SidebarMenuItem>
-                  );
-                }
+                const isActive = pathname.includes(item.url) && item.url !== "#";
+                const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
                   <SidebarMenuItem key={item.title} className="px-2">
                     <SidebarMenuButton
                       asChild
-                      className={`w-full rounded-lg transition-colors h-11 ${isActive || isHovered
+                      className={`w-full rounded-lg transition-colors h-12 ${isActive
                         ? "bg-foreground text-background"
-                        : "text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                         }`}
-                      onMouseEnter={() => setHoveredItem(item.title)}
-                      onMouseLeave={() => setHoveredItem(null)}
                     >
-                      <Link href={item.url} prefetch={false} className="flex items-center p-3">
-                        {Icon}
-                        <span className="font-medium text-base">{item.title}</span>
+                      <Link href={item.url} prefetch={false} className="flex items-center p-3 gap-x-4">
+                        <span className="shrink-0">{Icon}</span>
+                        <span className="font-semibold text-base">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -161,6 +130,13 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="bg-background pb-8 px-6">
+        <Button className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center gap-2">
+          {/* <Plus className="size-5" /> */}
+          New Post
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }

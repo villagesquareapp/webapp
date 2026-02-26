@@ -1,4 +1,4 @@
-import { SidebarProvider } from "components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "components/ui/sidebar";
 import React from "react";
 import { AppSidebar } from "./AppSidebar";
 import DashboardNavbar from "./DashboardNavbar";
@@ -19,16 +19,45 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     <>
       <SplashScreen />
       <GlobalUploadProgress />
-      <main className="relative font-albert-sans min-h-screen">
-        <SidebarProvider>
-          <DashboardNavbar />
-          <AppSidebar />
-          <div className="flex-1 mt-16 pl-0 md:pl-6 relative w-full overflow-x-hidden">{children}</div>
-        </SidebarProvider>
+      <main className="relative font-albert-sans min-h-screen bg-black flex justify-center">
+        {/* This wrapper ensures the entire app stays centered with equal side margins */}
+        <div className="w-full flex min-h-screen h-full">
+          <SidebarProvider style={{ "--sidebar-width": "350px" } as React.CSSProperties}>
+            <AppSidebar />
+            <SidebarInset className="bg-background flex flex-col relative w-full p-0 m-0 min-h-screen">
+              <DashboardNavbar />
+              <div className="flex-1 w-full relative">
+                {children}
+              </div>
+            </SidebarInset>
+          </SidebarProvider>
+        </div>
         <CustomToaster />
       </main>
     </>
   );
 };
+
+// const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
+//   return (
+//     <>
+//       <SplashScreen />
+//       <GlobalUploadProgress />
+//       <main className="relative font-albert-sans min-h-screen">
+//         <SidebarProvider>
+//           <AppSidebar />
+//           <SidebarInset className="bg-background flex flex-col relative w-full p-0 m-0 min-h-screen h-full">
+//             <DashboardNavbar />
+//             <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 md:px-8">
+//               <div className="relative w-full h-full">{children}</div>
+//             </div>
+//             {/* <div className="flex-1 w-full relative">{children}</div> */}
+//           </SidebarInset>
+//         </SidebarProvider>
+//         <CustomToaster />
+//       </main>
+//     </>
+//   );
+// };
 
 export default DashboardLayout;
