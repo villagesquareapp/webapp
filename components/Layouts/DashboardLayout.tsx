@@ -19,14 +19,13 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     <>
       <SplashScreen />
       <GlobalUploadProgress />
-      <main className="relative font-albert-sans min-h-screen bg-black flex justify-center">
-        {/* This wrapper ensures the entire app stays centered with equal side margins */}
+      <main className="relative font-albert-sans min-h-screen bg-background flex justify-center">
         <div className="w-full flex min-h-screen h-full">
           <SidebarProvider style={{ "--sidebar-width": "350px" } as React.CSSProperties}>
             <AppSidebar />
             <SidebarInset className="bg-background flex flex-col relative w-full p-0 m-0 min-h-screen">
               <DashboardNavbar />
-              <div className="flex-1 w-full relative">
+              <div className="flex-1">
                 {children}
               </div>
             </SidebarInset>
