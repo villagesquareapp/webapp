@@ -16,6 +16,7 @@ export default function AuthLayout({
     { name: "Privacy Policy", path: "/privacy-policy" },
     { name: "Refund Policy", path: "/refund-policy" },
     { name: "Terms & Conditions", path: "/tac" },
+    { name: "How Payments Work", path: "/how-payments-work" },
     { name: "EULA FOR VILLAGESQUARE", path: "/eula" },
     { name: "Disclaimer for VILLAGESQUARE", path: "/disclaimer" },
     { name: "Contact Us", path: "/contact-us" },
