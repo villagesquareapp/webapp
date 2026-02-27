@@ -25,7 +25,7 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
             echo "ENV_DIR=kubernetes/production" >> $GITHUB_ENV
-            echo "ECR_REPO=prod-webapps" >> $GITHUB_ENV
+            echo "ECR_REPO=webapps" >> $GITHUB_ENV
             echo "API_URL=https://production-api.villagesquare.io/v2" >> $GITHUB_ENV
             echo "AUTH_URL=https://villagesquare.io" >> $GITHUB_ENV
           else
