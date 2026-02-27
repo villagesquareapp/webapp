@@ -82,20 +82,19 @@ export default function HowPaymentsWorkPage() {
         {/* Section 4 */}
         <section className="mb-10">
           <h2 className="text-2xl font-semibold text-primary mb-4">
-            4. Transaction Flow
+            4. How You Pay
           </h2>
           <ol className="list-decimal list-inside space-y-1 text-gray-700">
-            <li>User selects a coin recharge package in the mobile app</li>
-            <li>The app requests payment configuration from the VillageSquare API</li>
-            <li>The API creates a payment record and generates a unique transaction reference</li>
-            <li>The API returns Flutterwave SDK configuration to the mobile app</li>
-            <li>The Flutterwave SDK displays the payment sheet with available payment methods</li>
-            <li>The user enters payment details and completes authentication</li>
-            <li>Flutterwave processes the payment with the bank or card network</li>
-            <li>The app verifies the transaction with the VillageSquare API</li>
-            <li>The API verifies the transaction with the Flutterwave API</li>
-            <li>On success, the API credits VS Coins to the user balance</li>
+            <li>You select a VS Coins package within the app</li>
+            <li>You are directed to a secure payment page powered by Flutterwave</li>
+            <li>You choose your preferred payment method and complete the payment</li>
+            <li>Your payment is securely verified</li>
+            <li>VS Coins are credited to your account</li>
           </ol>
+          <p className="text-gray-700 mt-3">
+            All payment processing is handled entirely by Flutterwave.
+            VillageSquare never sees or stores your payment details.
+          </p>
         </section>
 
         {/* Section 5 */}
@@ -125,10 +124,9 @@ export default function HowPaymentsWorkPage() {
             6. Security
           </h2>
           <ul className="list-disc list-inside space-y-1 text-gray-700">
-            <li>All data in transit is encrypted using HTTPS/TLS 1.2 or higher</li>
-            <li>VillageSquare does not store card data; Flutterwave handles all sensitive payment data (PCI compliance)</li>
-            <li>Webhook signature verification is used for payment confirmations</li>
-            <li>Idempotent processing and database-level safeguards prevent duplicate crediting of VS Coins</li>
+            <li>All connections are encrypted using industry-standard HTTPS encryption</li>
+            <li>VillageSquare does not store your card or bank details — Flutterwave handles all sensitive payment data in compliance with PCI-DSS standards</li>
+            <li>Every payment is verified before coins are credited to prevent errors or duplicate charges</li>
           </ul>
         </section>
 
