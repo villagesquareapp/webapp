@@ -6,7 +6,7 @@ metadata:
   labels:
     app: nextjs-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: nextjs-app
@@ -17,17 +17,19 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:20250926090044
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/prod-webapps:latest
           ports:
             - containerPort: 3000
           env:
             - name: NEXT_PUBLIC_API_URL
-              value: "https://staging-api.villagesquare.io"
+              value: "https://production-api.villagesquare.io/v2"
             - name: NEXTAUTH_SECRET
-              value: "G9xp6nsz7DwCkGSIpYBOpuWKL3ONHviDO2xzJVCcHOg="
+              value: "REPLACE_WITH_PRODUCTION_SECRET"
             - name: NEXTAUTH_URL
-              value: "https://webdev.villagesquare.io"              
+              value: "https://villagesquare.io"
             - name: GOOGLE_CLIENT_ID
-              value: "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com"
+              value: "REPLACE_WITH_PRODUCTION_GOOGLE_CLIENT_ID"
             - name: GOOGLE_CLIENT_SECRET
-              value: "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"   
+              value: "REPLACE_WITH_PRODUCTION_GOOGLE_CLIENT_SECRET"
+            - name: FACEBOOK_CLIENT_ID
+              value: "REPLACE_WITH_PRODUCTION_FACEBOOK_CLIENT_ID"

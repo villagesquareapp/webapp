@@ -17,7 +17,6 @@ spec:
     spec:
       containers:
         - name: webapp
-          # Use dev-webapps ECR image
           image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:20260226124707
           ports:
             - containerPort: 3000
