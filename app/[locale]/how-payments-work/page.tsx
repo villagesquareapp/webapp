@@ -15,6 +15,9 @@ export default function HowPaymentsWorkPage() {
             How Payments Work
           </h1>
         </div>
+        <p className="text-sm text-gray-500 mb-8 mt-6">
+          Last Updated: <span className="font-semibold">February 2026</span>
+        </p>
 
         {/* Section 1 */}
         <section className="mb-10">
