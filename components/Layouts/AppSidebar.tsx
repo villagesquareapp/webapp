@@ -32,6 +32,7 @@ import { MdOutlinePublic } from "react-icons/md";
 import VsCustomLogo from "components/ui/custom/vs-custom-logo";
 import { Button } from "components/ui/button";
 import { Plus } from "lucide-react";
+import { useAddPost } from "context/AddPostContext";
 
 const items = [
   {
@@ -92,9 +93,10 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { openAddPost } = useAddPost();
 
   return (
-    <Sidebar className="border-r border-white/10 shadow-none bg-background pl-10" collapsible="icon" mobileVariant="sheet">
+    <Sidebar className="border-r border-white/10 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
       <SidebarHeader className="pt-6 pb-4 border-none bg-background">
         <div className="">
           <VsCustomLogo />
@@ -132,7 +134,10 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="bg-background pb-8 px-6">
-        <Button className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center gap-2">
+        <Button
+          onClick={openAddPost}
+          className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center gap-2"
+        >
           {/* <Plus className="size-5" /> */}
           New Post
         </Button>

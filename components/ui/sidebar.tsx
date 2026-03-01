@@ -212,7 +212,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "group peer text-sidebar-foreground",
+          "group peer text-sidebar-foreground sticky top-0 h-svh",
           isMobile && mobileVariant === "icon" ? "block" : "hidden md:block"
         )}
         data-state={currentState}
@@ -232,7 +232,7 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "duration-200 fixed inset-y-0 z-10 h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear flex",
+            "duration-200 absolute inset-y-0 z-10 h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear flex",
             isMobile && mobileVariant === "icon" ? "left-0" : "hidden md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"

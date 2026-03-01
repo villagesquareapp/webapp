@@ -28,13 +28,13 @@ const DashboardNavbar = () => {
   }
 
   return (
-    <div className="flex w-full h-16 z-50 bg-background border-b border-white/10 items-center justify-end sticky top-0 shrink-0">
-      <div className="flex w-full lg:pr-20 pr-8 items-center h-full">
-        <div className="md:hidden ml-4 mr-2 shrink-0">
+    <div className="relative flex h-16 z-50 bg-background items-center justify-center top-0 shrink-0 after:fixed after:top-16 after:left-0 after:right-0 after:border-b after:border-white/10 pointer-events-none after:pointer-events-none">
+      <div className="flex w-full items-center h-full pointer-events-auto">
+        <div className="md:hidden mr-4 shrink-0 pl-4">
           <SidebarTrigger />
         </div>
 
-        <div className="flex-1 w-full px-4 lg:px-6 mr-16">
+        <div className="w-[650px] px-4 lg:px-6">
           <div className="relative">
             <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
             <input
@@ -78,8 +78,8 @@ const DashboardNavbar = () => {
             )}
           </div>
         </div>
-
-        <div className="flex items-center ml-auto gap-x-4 pl-2">
+        {/* Right hand side Navbar */}
+        <div className="w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6">
           {/* Theme Toggle (Placeholder) */}
           <button className="text-muted-foreground hover:text-foreground hidden sm:block">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -114,12 +114,12 @@ const DashboardNavbar = () => {
               <div className="flex items-center gap-x-2 cursor-pointer">
                 <CustomAvatar
                   src={user?.profile_picture || ""}
-                  name={getInitials(user?.name || "User")}
+                  name={getInitials(user?.name || "")}
                   className="size-9 md:size-10"
                 />
                 <div className="hidden lg:flex flex-col items-start leading-tight">
-                  <span className="text-sm font-bold uppercase">{user?.name || "User"}</span>
-                  <span className="text-xs text-muted-foreground">@{user?.username || "username"}</span>
+                  <span className="text-sm font-bold uppercase">{user?.name.split(" ")[0]}</span>
+                  <span className="text-xs text-muted-foreground">@{user?.username || ""}</span>
                 </div>
               </div>
             </PopoverTrigger>

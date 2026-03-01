@@ -15,7 +15,7 @@ interface INewComment {
   parent_id?: string;
 }
 
-type PrivacyType = "everyone" | "followers" | "private";
+type PrivacyType = "everyone" | "followers" | "only_me" | "private" | string;
 
 interface IFileUploadCompleteBodyPart {
   partNumber: string;
@@ -131,7 +131,7 @@ interface IUser {
   provider_token?: string;
 }
 
-interface IRegisterResponse extends IUser {}
+interface IRegisterResponse extends IUser { }
 
 type IRegistrationType = "google" | "password" | "apple" | "facebook";
 interface ISignup {
@@ -189,7 +189,7 @@ interface IFeaturedLivestream {
 }
 
 interface IFeaturedLivestreamResponse
-  extends IPaginatedResponse<IFeaturedLivestream> {}
+  extends IPaginatedResponse<IFeaturedLivestream> { }
 
 interface IStartLivestream {
   title: string;
@@ -230,7 +230,7 @@ interface IStartLivestreamData {
 }
 
 interface IStreamLivestreamResponse
-  extends IPaginatedResponse<IStartLivestreamData> {}
+  extends IPaginatedResponse<IStartLivestreamData> { }
 
 interface ILivestreamDetails {
   uuid: string;
@@ -324,7 +324,7 @@ interface INotifications {
   time_ago: string;
 }
 
-interface INotificationsResponse extends IPaginatedResponse<INotifications> {}
+interface INotificationsResponse extends IPaginatedResponse<INotifications> { }
 
 interface IVflix {
   uuid: string;
@@ -418,11 +418,11 @@ interface IPaginatedResponse<T> {
   last_page: number;
 }
 
-interface IPostsResponse extends IPaginatedResponse<IPost> {}
+interface IPostsResponse extends IPaginatedResponse<IPost> { }
 
-interface IVFlixResponse extends IPaginatedResponse<IVflix> {}
+interface IVFlixResponse extends IPaginatedResponse<IVflix> { }
 
-interface ICommentsResponse extends IPaginatedResponse<IPostComment> {}
+interface ICommentsResponse extends IPaginatedResponse<IPostComment> { }
 
 interface IPostComment {
   uuid: string;
@@ -522,9 +522,9 @@ interface INewVflixCommentResponse {
 }
 
 interface IGetVflixCommentResponse
-  extends IPaginatedResponse<IGetVflixComments> {}
+  extends IPaginatedResponse<IGetVflixComments> { }
 
-interface INewPostResponse extends IPost {}
+interface INewPostResponse extends IPost { }
 
 interface ILikeOrUnlikePostResponse {
   is_liked: boolean;

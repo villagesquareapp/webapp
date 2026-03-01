@@ -45,7 +45,7 @@ const ConnectWithData = [
 
 const RightSidebar = () => {
     return (
-        <div className="flex flex-col gap-6 w-full sticky top-24 pb-12 h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden no-scrollbar">
+        <div className="flex flex-col gap-6 sticky top-24 pb-12 h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden no-scrollbar">
             {/* Hot Trends Section */}
             <div className="w-full border border-white/5 rounded-[20px] flex flex-col p-5">
                 <h3 className="font-bold flex items-center gap-2 mb-4 text-base">

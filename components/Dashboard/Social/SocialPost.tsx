@@ -373,14 +373,16 @@ const SocialPost = ({ user }: { user: IUser }) => {
         />
       ) : (
         <>
-          {/* <AddPost
+          <div className="hidden">
+            <AddPost
             user={user}
             onRefreshPosts={() => fetchPosts(1, activeTab)}
-          /> */}
+          />
+            </div>
 
           <div className="flex flex-col gap-y-2 w-full">
             {/* Header with tabs - Responsive */}
-            <div className="flex justify-between items-center mb-1 z-40 sticky top-16 pt-2 pb-2 bg-background">
+            <div className="flex justify-between items-center mb-1 z-40 sticky -top-5 pt-4 pb-4 bg-background">
               <div className="flex bg-transparent gap-x-3 w-fit">
                 {/* Explore Button */}
                 <button
