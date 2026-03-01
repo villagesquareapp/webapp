@@ -1,37 +1,48 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: 
-      - main
+    branches:
       - dev
+      - main
   pull_request:
-    branches: [ main ]
+    branches: [dev, main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: write    
+      contents: write
 
     steps:
-      # Step 1: Checkout current repo
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 6: Configure AWS credentials
+      - name: Set environment config
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "ENV_DIR=kubernetes/production" >> $GITHUB_ENV
+            echo "ECR_REPO=webapps" >> $GITHUB_ENV
+            echo "API_URL=https://production-api.villagesquare.io/v2" >> $GITHUB_ENV
+            echo "AUTH_URL=https://villagesquare.io" >> $GITHUB_ENV
+          else
+            echo "ENV_DIR=kubernetes/staging" >> $GITHUB_ENV
+            echo "ECR_REPO=dev-webapps" >> $GITHUB_ENV
+            echo "API_URL=https://staging-api.villagesquare.io/v2" >> $GITHUB_ENV
+            echo "AUTH_URL=https://webdev.villagesquare.io" >> $GITHUB_ENV
+          fi
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::606802968668:role/GitHubOIDCRole
-          role-session-name: github-actions  
+          role-session-name: github-actions
           aws-region: af-south-1
           audience: sts.amazonaws.com
 
-      # Step 7: Configure kubeconfig for EKS
       - name: Configure kubeconfig for EKS
         run: |
           aws eks update-kubeconfig \
@@ -39,66 +50,53 @@ jobs:
             --name kitops-eks \
             --role-arn arn:aws:iam::606802968668:role/GitHubOIDCRole
 
-      # Step 8: Log in to Amazon ECR
       - name: Log in to Amazon ECR
-        id: login-ecr
         run: |
           aws ecr get-login-password --region af-south-1 \
             | docker login --username AWS --password-stdin 606802968668.dkr.ecr.af-south-1.amazonaws.com
 
-      # Step 9: Generate Docker image tag
       - name: Generate Image Tag
         run: |
           IMAGE_TAG=$(date +%Y%m%d%H%M%S)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      # Step 10: Build Docker image
       - name: Build Docker Image
         run: |
-          echo "Building Docker image without cache..."
           docker build --no-cache \
-          --build-arg NEXT_PUBLIC_API_URL=https://production-api.villagesquare.io/v2 \
-          --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
-          --build-arg NEXTAUTH_URL=https://villagesquare.io \
-          -t webapps:${{ env.IMAGE_TAG }} .
+            --build-arg NEXT_PUBLIC_API_URL=${{ env.API_URL }} \
+            --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
+            --build-arg NEXTAUTH_URL=${{ env.AUTH_URL }} \
+            -t webapps:${{ env.IMAGE_TAG }} .
 
-      # Step 11: Tag Docker image for ECR
       - name: Tag Docker Image
         run: |
           docker tag webapps:${{ env.IMAGE_TAG }} \
-          606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+            606802968668.dkr.ecr.af-south-1.amazonaws.com/${{ env.ECR_REPO }}:${{ env.IMAGE_TAG }}
 
-      # Step 12: Push Docker image to ECR
       - name: Push Docker Image to ECR
         run: |
-          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}
+          docker push 606802968668.dkr.ecr.af-south-1.amazonaws.com/${{ env.ECR_REPO }}:${{ env.IMAGE_TAG }}
 
-      # Step 13: Output ECR image URI
       - name: Output Image URI
         run: |
-          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps:${{ env.IMAGE_TAG }}"
+          echo "Image pushed to: 606802968668.dkr.ecr.af-south-1.amazonaws.com/${{ env.ECR_REPO }}:${{ env.IMAGE_TAG }}"
 
-      # Step 14: Update Kubernetes manifests with new image tag
-      - name: Update Kubernetes manifests with new image tag
+      - name: Update deployment manifest with new image tag
         run: |
-          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/webapps\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" kubernetes/webapp.yml
-          echo "=== File after update ==="
-          cat kubernetes/webapp.yml
+          sed -i "s|\(606802968668.dkr.ecr.af-south-1.amazonaws.com/${{ env.ECR_REPO }}\):[a-zA-Z0-9._-]*|\1:${{ env.IMAGE_TAG }}|" ${{ env.ENV_DIR }}/deployment.yml
+          echo "=== Deployment after update ==="
+          cat ${{ env.ENV_DIR }}/deployment.yml
 
-      # Step 15: Commit and push manifest update
       - name: Commit and Push Changes
+        if: github.event_name == 'push'
         run: |
           git config --global user.name "villagesquareltd"
           git config --global user.email "villagesquare130@gmail.com"
+          git add ${{ env.ENV_DIR }}/deployment.yml
+          git commit -m "Updated ${{ github.ref_name }} image tag to ${{ env.IMAGE_TAG }}" || echo "No changes to commit"
+          git push origin ${{ github.ref_name }}
 
-          git add kubernetes/webapp.yml
-
-          git commit -m "Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
-
-          git push origin main
-
-      # Step 16: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
         run: |
           aws eks update-kubeconfig --region af-south-1 --name kitops-eks
-          kubectl apply -f kubernetes/webapp.yml --validate=false
+          kubectl apply -f ${{ env.ENV_DIR }}/ --validate=false
