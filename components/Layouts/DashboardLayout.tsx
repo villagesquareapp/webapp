@@ -9,6 +9,7 @@ import MobileBlockScreen from "./MobileBlockScreen";
 import { Splash } from "next/font/google";
 import SplashScreen from "./SplashScreen";
 import GlobalUploadProgress from "./GlobalUploadProgress";
+import { AddPostProvider } from "context/AddPostContext";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -19,20 +20,22 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     <>
       <SplashScreen />
       <GlobalUploadProgress />
-      <main className="relative font-albert-sans min-h-screen bg-background flex justify-center">
-        <div className="w-full flex min-h-screen h-full">
-          <SidebarProvider style={{ "--sidebar-width": "350px" } as React.CSSProperties}>
-            <AppSidebar />
-            <SidebarInset className="bg-background flex flex-col relative w-full p-0 m-0 min-h-screen">
-              <DashboardNavbar />
-              <div className="flex-1">
-                {children}
-              </div>
-            </SidebarInset>
-          </SidebarProvider>
-        </div>
-        <CustomToaster />
-      </main>
+      <AddPostProvider>
+        <main className="max-w-[1440px] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
+          <div className="w-full flex h-screen">
+            <SidebarProvider style={{ "--sidebar-width": "350px" } as React.CSSProperties}>
+              <AppSidebar />
+              <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
+                <DashboardNavbar />
+                <div className="flex-1 overflow-hidden h-full">
+                  {children}
+                </div>
+              </SidebarInset>
+            </SidebarProvider>
+          </div>
+          <CustomToaster />
+        </main>
+      </AddPostProvider>
     </>
   );
 };
