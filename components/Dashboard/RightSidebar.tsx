@@ -49,7 +49,7 @@ const RightSidebar = () => {
     <div className="flex flex-col gap-6 sticky top-24 pb-12 h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden no-scrollbar">
       {/* Hot Trends Section */}
       <div className="w-full border border-white/5 rounded-[20px] flex flex-col">
-        <div className="px-5 pt-5 pb-4 border-b border-white/5">
+        <div className="px-3 py-2 border-b border-white/5">
           <h3 className="font-bold flex items-center gap-2 text-base">
             <span className="text-xl">🔥</span> Hot Trends
           </h3>
@@ -59,7 +59,7 @@ const RightSidebar = () => {
 
         <div className="pb-5 flex flex-col gap-y-5">
           {HotTrendsData.map((post, idx) => (
-            <div key={idx} className="px-5 flex flex-col border-b border-white/5 pb-3">
+            <div key={idx} className="px-3 flex flex-col border-b border-white/5 pb-3">
               <div className="flex justify-between items-start my-2">
                 <div className="flex items-center gap-x-2">
                   <CustomAvatar

@@ -382,7 +382,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
           <div className="flex flex-col gap-y-2 w-full">
             {/* Header with tabs - Responsive */}
-            <div className="flex justify-between items-center mb-1 z-40 sticky -top-5 pt-4 pb-4 bg-background">
+            <div className="flex justify-between items-center z-40 sticky -top-4 py-3 bg-background">
               <div className="flex bg-transparent gap-x-3 w-fit">
                 {/* Explore Button */}
                 <button
@@ -390,7 +390,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
                   className={`px-8 text-sm font-normal rounded-xl border transition-all duration-300 ${
                     activeTab === "explore"
                       ? "border-[#0D52D2] bg-[#1C1C1E] text-white" 
-                      : "border-white/10 bg-transparent text-white/50 hover:text-white"
+                      : "border-white/5 bg-transparent text-white/50 hover:text-white"
                   }`}
                 >
                   Explore
@@ -399,10 +399,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 {/* Connections Button */}
                 <button
                   onClick={() => handleTabChange("connections")}
-                  className={`px-8 py-2.5 text-sm font-normal rounded-xl border transition-all duration-300 ${
+                  className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${
                     activeTab === "connections"
                       ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
-                      : "border-white/10 bg-transparent text-white/50 hover:text-white"
+                      : "border-white/5 bg-transparent text-white/50 hover:text-white"
                   }`}
                 >
                   Connections
@@ -419,7 +419,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
             )}
 
             {!isPostLoading && posts?.length > 0 && (
-              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+              <div className="border-0 md:border border-white/5 md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
                 {posts.map((post) => (
                   <EachSocialPost
                     key={post.uuid}

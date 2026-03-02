@@ -363,7 +363,7 @@ const AddPost = ({
       />
 
       <Dialog open={isNewPostDialogOpen} onOpenChange={handleDialogChange}>
-        <DialogContent className="flex flex-col !max-w-[650px] w-full p-0 rounded-[32px] overflow-hidden border border-white/10 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden min-h-[400px]">
+        <DialogContent className="flex flex-col !max-w-[650px] w-full p-0 rounded-[32px] overflow-hidden border border-white/5 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden min-h-[400px]">
           {!imagePreviewing && !imageEditing && (
             <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-4">
               {/* Threaded Post Boxes */}
@@ -371,7 +371,7 @@ const AddPost = ({
                 {items.map((it, idx) => (
                   <div
                     key={it.id}
-                    className="relative border border-white/10 rounded-2xl p-6 bg-transparent"
+                    className="relative border border-white/5 rounded-2xl p-3 bg-transparent"
                   >
                     {/* Inner Header: User Profile and Close Button */}
                     <div className="flex items-start justify-between mb-6">
@@ -516,10 +516,10 @@ const AddPost = ({
                 {canAddMorePost && (
                   <button
                     onClick={addThreadItem}
-                    className="flex items-center gap-2 text-[14px] text-[#8E8E93] hover:text-white transition-colors pt-2 font-normal"
+                    className="flex items-center gap-2 text-[12px] text-[#8E8E93] hover:text-white transition-colors font-normal"
                   >
                     <TbPlus
-                      size={20}
+                      size={16}
                       className="border border-[#8E8E93] rounded-full p-0.5"
                     />
                     Add more to post
@@ -549,7 +549,7 @@ const AddPost = ({
                       <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                       <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    <span className="text-[14px] capitalize">
+                    <span className="text-[14px] font-normal capitalize">
                       {items[0].privacy === "only_me"
                         ? "Only Me"
                         : items[0].privacy}
@@ -568,7 +568,7 @@ const AddPost = ({
                 <Button
                   onClick={localCreatePostFunc}
                   disabled={!canAddMorePost || isPosting}
-                  className="bg-[#094DB5BF] hover:bg-[#094DB5] text-white px-12 h-[50px] rounded-full font-medium text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
+                  className="bg-[#094DB5BF] hover:bg-[#094DB5] text-white px-12 h-[40px] rounded-full font-medium text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
                 >
                   {isPosting ? "Posting..." : "Post"}
                 </Button>

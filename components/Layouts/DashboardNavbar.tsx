@@ -28,7 +28,7 @@ const DashboardNavbar = () => {
   }
 
   return (
-    <div className="relative flex h-16 z-50 bg-background items-center justify-center top-0 shrink-0 after:fixed after:top-16 after:left-0 after:right-0 after:border-b after:border-white/10 pointer-events-none after:pointer-events-none">
+    <div className="relative flex h-16 z-50 bg-background items-center justify-center top-0 shrink-0 after:fixed after:top-16 after:left-0 after:right-0 after:border-b after:border-white/5 pointer-events-none after:pointer-events-none">
       <div className="flex w-full items-center h-full pointer-events-auto">
         <div className="md:hidden mr-4 shrink-0 pl-4">
           <SidebarTrigger />
