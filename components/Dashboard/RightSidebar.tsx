@@ -57,7 +57,7 @@ const RightSidebar = () => {
 
         {/* <Separator className="md:my-0 hidden md:block opacity-40" /> */}
 
-        <div className="pb-5 flex flex-col gap-y-5">
+        <div className="pb-2 flex flex-col">
           {HotTrendsData.map((post, idx) => (
             <div key={idx} className="px-3 flex flex-col border-b border-white/5 pb-3">
               <div className="flex justify-between items-start my-2">
@@ -122,7 +122,7 @@ const RightSidebar = () => {
           ))}
           <Button
             variant="link"
-            className="text-blue-500 justify-start px-5 -mt-2 h-auto text-sm font-medium"
+            className="text-blue-500 justify-start px-3 text-sm font-medium"
           >
             View more
           </Button>
