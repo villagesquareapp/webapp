@@ -20,7 +20,7 @@ import { PiHeartFill } from "react-icons/pi";
 import { TbDots } from "react-icons/tb";
 
 const SocialPage = ({ user }: { user: IUser }) => {
-  let showDailyLoginReward = false;
+  let showDailyLoginReward = true;
   let showHome = true;
 
   let showSearchMain = false;

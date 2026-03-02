@@ -73,7 +73,7 @@ const SocialPostDetails = ({
     <div className="flex flex-col gap-y-2">
       <PostHeader post={post} />
 
-      <div className="flex flex-col gap-y-4">
+      <div className="flex flex-col">
         {/* Post text with highlighted hashtags */}
         <PostText text={post?.caption} />
         {!!post?.media?.length && (
