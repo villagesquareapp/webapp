@@ -363,7 +363,7 @@ const AddPost = ({
       />
 
       <Dialog open={isNewPostDialogOpen} onOpenChange={handleDialogChange}>
-        <DialogContent className="flex flex-col !max-w-[650px] w-full p-0 rounded-[32px] overflow-hidden border bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden min-h-[400px]">
+        <DialogContent className="flex flex-col !max-w-[650px] w-full p-0 rounded-[32px] overflow-hidden border border-white/10 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden min-h-[400px]">
           {!imagePreviewing && !imageEditing && (
             <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-4">
               {/* Threaded Post Boxes */}
@@ -549,7 +549,7 @@ const AddPost = ({
                       <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                       <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    <span className="text-[16px] capitalize">
+                    <span className="text-[14px] capitalize">
                       {items[0].privacy === "only_me"
                         ? "Only Me"
                         : items[0].privacy}
@@ -568,7 +568,7 @@ const AddPost = ({
                 <Button
                   onClick={localCreatePostFunc}
                   disabled={!canAddMorePost || isPosting}
-                  className="bg-[#094DB5BF] hover:bg-[#094DB5] text-white px-12 h-[50px] rounded-full font-bold text-[16px] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
+                  className="bg-[#094DB5BF] hover:bg-[#094DB5] text-white px-12 h-[50px] rounded-full font-medium text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
                 >
                   {isPosting ? "Posting..." : "Post"}
                 </Button>

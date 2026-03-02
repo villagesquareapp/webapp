@@ -27,7 +27,7 @@ const ReplyPostActionButtons = ({
   onOpenReplyModal: () => void;
 }) => {
   return (
-    <div className="flex flex-row justify-between items-center mt-2">
+    <div className="flex flex-row justify-between items-center mt-2 px-4 pb-2">
       <div className="flex flex-row gap-x-5 items-center">
         <div className="flex flex-row gap-x-1 items-center">
           <PiHeartFill

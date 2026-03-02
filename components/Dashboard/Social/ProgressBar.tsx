@@ -116,11 +116,10 @@ const ProgressBar = ({
               )}
               <button
                 onClick={onCancel}
-                className={`transition-colors font-medium ${
-                  status === "error"
+                className={`transition-colors font-medium ${status === "error"
                     ? "text-gray-400 hover:text-white"
                     : "text-blue-500 hover:text-blue-600"
-                }`}
+                  }`}
               >
                 <IoClose size={20} />
               </button>
