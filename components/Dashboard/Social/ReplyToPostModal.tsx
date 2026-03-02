@@ -305,7 +305,7 @@ const ReplyModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="flex flex-col !max-w-[600px] w-full p-0 rounded-[32px] overflow-hidden border border-white/10 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden max-h-[85vh]">
+      <DialogContent className="flex flex-col !max-w-[600px] w-full p-0 rounded-[32px] overflow-hidden border border-white/5 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden max-h-[85vh]">
         <div className="flex flex-col h-full p-4 pb-2">
           {/* Header: Replying to */}
           <p className="text-[15px] italic text-[#8E8E93] pb-4">
@@ -315,7 +315,7 @@ const ReplyModal = ({
             </span>
           </p>
           {post && (
-            <div className="border border-white/10 rounded-[24px] p-5 mb-5 bg-transparent flex justify-between items-start gap-1">
+            <div className="border border-white/5 rounded-[24px] p-5 mb-5 bg-transparent flex justify-between items-start gap-1">
               <div>
                 <div className="flex gap-4">
                   <CustomAvatar

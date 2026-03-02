@@ -129,7 +129,7 @@ const SocialPostDetails = ({
             </Carousel>
           </div>
         )}
-        <span className="flex flex-row items-center gap-x-1 px-4 -mt-4">
+        <span className="flex flex-row items-center gap-x-1 px-4 mt-4">
           {post?.address && (
             <>
               <span className="text-xs text-muted-foreground">

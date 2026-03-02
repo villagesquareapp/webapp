@@ -140,7 +140,7 @@ const EachSocialPost = ({
             })}
           </div>
         )}
-        <span className="flex flex-row items-center gap-x-1 md:px-4">
+        <span className="flex flex-row items-center gap-x-1 md:px-4 mt-2">
           {post?.address && (
             <>
               <span className="text-xs text-muted-foreground">

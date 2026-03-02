@@ -96,7 +96,7 @@ export function AppSidebar() {
   const { openAddPost } = useAddPost();
 
   return (
-    <Sidebar className="border-r border-white/10 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
+    <Sidebar className="border-r border-white/5 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
       <SidebarHeader className="pt-6 pb-4 border-none bg-background">
         <div className="">
           <VsCustomLogo />
