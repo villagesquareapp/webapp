@@ -13,9 +13,10 @@ import VFlixSkeleton from "./VFlixSkeleton";
 interface Props {
   activeTab: "for-you" | "following";
   user: IUser;
+  onVideosLoaded?: (videos: IVflix[]) => void;
 }
 
-export default function VflixFeed({ activeTab, user }: Props) {
+export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
   const [videos, setVideos] = useState<IVflix[]>([]);
   const [page, setPage] = useState<number>(1);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -34,7 +35,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
   };
 
   const likeUnlikeVflix = async (postId: string) => {
-    
+
     try {
       const res = await fetch(`/api/posts/vflix/${postId}/like`, { method: "POST" });
       const result = await res.json();
@@ -74,10 +75,16 @@ export default function VflixFeed({ activeTab, user }: Props) {
 
         if (response?.status) {
           if (page === 1) {
-            setVideos(response.data?.data || []);
+            const newVideos = response.data?.data || [];
+            setVideos(newVideos);
             setCurrentIndex(0);
+            onVideosLoaded?.(newVideos);
           } else {
-            setVideos((prev) => [...prev, ...(response.data?.data ?? [])]);
+            setVideos((prev) => {
+              const updated = [...prev, ...(response.data?.data ?? [])];
+              onVideosLoaded?.(updated);
+              return updated;
+            });
           }
         } else {
           console.error("Failed to fetch Vflix posts: ", response?.message);
@@ -126,7 +133,7 @@ export default function VflixFeed({ activeTab, user }: Props) {
         </button>
       )}
 
-      <div className="relative w-full md:w-[550px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0">
+      <div className="relative w-full md:w-[565px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0">
         {videos[currentIndex] && (
           <VflixCard
             post={videos[currentIndex]}
