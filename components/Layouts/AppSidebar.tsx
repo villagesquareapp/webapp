@@ -47,48 +47,48 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-black !size-6 " />,
   },
-  {
-    title: "Messages",
-    url: "/dashboard/messages",
-    icon: <MdMailOutline className="!size-6" />,
-    activeIcon: <VSMailFill className="fill-black !size-6" />,
-  },
-  {
-    title: "Dating hub",
-    url: "#",
-    icon: <FaHeart className="!size-5 ml-0.5" />,
-    activeIcon: <FaHeartCircleCheck className="fill-black !size-5 ml-0.5" />,
-  },
-  {
-    title: "Echo",
-    url: "#",
-    icon: <BsMic className="!size-5 ml-0.5" />,
-    activeIcon: <BsMicFill className="fill-black !size-5 ml-0.5" />,
-  },
+  // {
+  //   title: "Messages",
+  //   url: "/dashboard/messages",
+  //   icon: <MdMailOutline className="!size-6" />,
+  //   activeIcon: <VSMailFill className="fill-black !size-6" />,
+  // },
+  // {
+  //   title: "Dating hub",
+  //   url: "#",
+  //   icon: <FaHeart className="!size-5 ml-0.5" />,
+  //   activeIcon: <FaHeartCircleCheck className="fill-black !size-5 ml-0.5" />,
+  // },
+  // {
+  //   title: "Echo",
+  //   url: "#",
+  //   icon: <BsMic className="!size-5 ml-0.5" />,
+  //   activeIcon: <BsMicFill className="fill-black !size-5 ml-0.5" />,
+  // },
   {
     title: "Livestream",
     url: "/dashboard/live-streams",
     icon: <HiOutlineVideoCamera className="!size-6" />,
     activeIcon: <VSCameraFill className="fill-black !size-6" />,
   },
-  {
-    title: "Marketsquare",
-    url: "#",
-    icon: <FaShoppingBasket className="!size-5 ml-0.5" />,
-    activeIcon: <AiFillShopping className="fill-black !size-5 ml-0.5" />,
-  },
-  {
-    title: "Tribes",
-    url: "#",
-    icon: <FaUsers className="!size-5 ml-0.5" />,
-    activeIcon: <FaUserGroup className="fill-black !size-5 ml-0.5" />,
-  },
-  {
-    title: "ATC",
-    url: "#",
-    icon: <BiWorld className="!size-5 ml-0.5" />,
-    activeIcon: <MdOutlinePublic className="fill-black !size-5 ml-0.5" />,
-  },
+  // {
+  //   title: "Marketsquare",
+  //   url: "#",
+  //   icon: <FaShoppingBasket className="!size-5 ml-0.5" />,
+  //   activeIcon: <AiFillShopping className="fill-black !size-5 ml-0.5" />,
+  // },
+  // {
+  //   title: "Tribes",
+  //   url: "#",
+  //   icon: <FaUsers className="!size-5 ml-0.5" />,
+  //   activeIcon: <FaUserGroup className="fill-black !size-5 ml-0.5" />,
+  // },
+  // {
+  //   title: "ATC",
+  //   url: "#",
+  //   icon: <BiWorld className="!size-5 ml-0.5" />,
+  //   activeIcon: <MdOutlinePublic className="fill-black !size-5 ml-0.5" />,
+  // },
 ];
 
 export function AppSidebar() {
