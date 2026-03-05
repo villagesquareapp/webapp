@@ -25,11 +25,14 @@ import SparkMD5 from "spark-md5";
 import ProgressBar from "./ProgressBar";
 import { BookImage, Users, Lock } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
-
+import { VscMention } from "react-icons/vsc";
+import { FiHash } from "react-icons/fi";
 import { usePostUploadContext } from "context/PostUploadContext";
 import { set } from "zod";
 import { useAddPost } from "context/AddPostContext";
 import { FaAngleRight } from "react-icons/fa";
+import MentionsModal from "../Reusable/MentionsModal";
+import HashtagsModal from "../Reusable/HashtagsModal";
 
 const ReactCrop = dynamic(() => import("react-image-crop"), { ssr: false });
 
@@ -103,6 +106,25 @@ const AddPost = ({
 
   const [isAudienceDialogOpen, setIsAudienceDialogOpen] =
     useState<boolean>(false);
+
+  const [activeMentionItemIndex, setActiveMentionItemIndex] = useState<number | null>(null);
+  const [activeHashtagItemIndex, setActiveHashtagItemIndex] = useState<number | null>(null);
+
+  const handleSelectMention = (username: string) => {
+    if (activeMentionItemIndex !== null) {
+      const currentCaption = items[activeMentionItemIndex].caption;
+      const newCaption = currentCaption ? `${currentCaption} @${username}` : `@${username}`;
+      updateItem(activeMentionItemIndex, { caption: newCaption });
+    }
+  };
+
+  const handleSelectHashtag = (hashtag: string) => {
+    if (activeHashtagItemIndex !== null) {
+      const currentCaption = items[activeHashtagItemIndex].caption;
+      const newCaption = currentCaption ? `${currentCaption} #${hashtag}` : `#${hashtag}`;
+      updateItem(activeHashtagItemIndex, { caption: newCaption });
+    }
+  };
 
   const [items, setItems] = useState<DraftItem[]>([
     {
@@ -419,11 +441,10 @@ const AddPost = ({
                       {it.media.map((file, fIdx) => (
                         <div
                           key={fIdx}
-                          className={`relative w-[130px] h-[150px] rounded-2xl overflow-hidden bg-black/40 group ${
-                            fIdx === it.media.length - 1
+                          className={`relative w-[130px] h-[150px] rounded-2xl overflow-hidden bg-black/40 group ${fIdx === it.media.length - 1
                               ? "border-2"
                               : ""
-                          }`}
+                            }`}
                         >
                           <img
                             src={URL.createObjectURL(file)}
@@ -443,7 +464,7 @@ const AddPost = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-5">
                         {/* Emoji Toggle */}
-                        <button className="text-[#8E8E93] hover:text-white transition-colors">
+                        {/* <button className="text-[#8E8E93] hover:text-white transition-colors">
                           <svg
                             width="20"
                             height="20"
@@ -459,7 +480,7 @@ const AddPost = ({
                             <line x1="9" y1="9" x2="9.01" y2="9"></line>
                             <line x1="15" y1="9" x2="15.01" y2="9"></line>
                           </svg>
-                        </button>
+                        </button> */}
 
                         {/* Media Upload */}
                         <label className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
@@ -496,6 +517,18 @@ const AddPost = ({
                         {/* Location */}
                         <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
                           <IoLocationSharp size={20} />
+                        </div>
+                        <div
+                          className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+                          onClick={() => setActiveMentionItemIndex(idx)}
+                        >
+                          <VscMention size={20} />
+                        </div>
+                        <div
+                          className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+                          onClick={() => setActiveHashtagItemIndex(idx)}
+                        >
+                          <FiHash size={20} />
                         </div>
                       </div>
 
@@ -678,6 +711,20 @@ const AddPost = ({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Mentions Modal */}
+      <MentionsModal
+        open={activeMentionItemIndex !== null}
+        onClose={() => setActiveMentionItemIndex(null)}
+        onSelectUser={handleSelectMention}
+      />
+
+      {/* Hashtags Modal */}
+      <HashtagsModal
+        open={activeHashtagItemIndex !== null}
+        onClose={() => setActiveHashtagItemIndex(null)}
+        onSelectHashtag={handleSelectHashtag}
+      />
     </>
   );
 };

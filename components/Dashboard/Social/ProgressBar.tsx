@@ -78,8 +78,8 @@ const ProgressBar = ({
   onRetry,
 }: ProgressBarProps) => {
   return (
-    <div className="fixed top-0 right-0 left-0 md:left-[280px] z-[1000] px-0 pointer-events-none">
-      <div className="w-full md:w-[500px] lg:w-[700px] mx-auto pointer-events-auto">
+    <div className="fixed top-0 md:right-20 right-0 left-0 md:left-0 z-[1000] px-0 pointer-events-none">
+      <div className="w-full md:w-[500px] mx-auto pointer-events-auto">
         <div
           className={`
             bg-background/50 backdrop-blur-md
@@ -88,7 +88,6 @@ const ProgressBar = ({
             ${status === "error" ? "border-red-500/40" : ""}
           `}
         >
-          {/* HEADER */}
           <div className="flex items-center justify-between text-sm mb-2">
             {status === "error" ? (
               <div className="flex items-center gap-3">
