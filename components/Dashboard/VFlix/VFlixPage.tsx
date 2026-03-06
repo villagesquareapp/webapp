@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import VflixFeed from "./VflixFeed";
 import HotOnVflix from "./HotOnVflix";
 
-const VFlixPage = ({ user }: { user: IUser }) => {
+const VFlixPage = React.memo(({ user }: { user: IUser }) => {
   const [activeTab, setActiveTab] = useState<"for-you" | "following">(
     "for-you",
   );
@@ -55,6 +55,8 @@ const VFlixPage = ({ user }: { user: IUser }) => {
       </div>
     </div>
   );
-};
+});
+
+VFlixPage.displayName = "VFlixPage";
 
 export default VFlixPage;

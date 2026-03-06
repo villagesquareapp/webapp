@@ -18,8 +18,9 @@ import { HiBell, HiShare } from "react-icons/hi";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import { PiHeartFill } from "react-icons/pi";
 import { TbDots } from "react-icons/tb";
+import React from "react";
 
-const SocialPage = ({ user }: { user: IUser }) => {
+const SocialPage = React.memo(({ user }: { user: IUser }) => {
   let showDailyLoginReward = true;
   let showHome = true;
 
@@ -189,6 +190,8 @@ const SocialPage = ({ user }: { user: IUser }) => {
       </div>
     </>
   );
-};
+});
+
+SocialPage.displayName = "SocialPage";
 
 export default SocialPage;
