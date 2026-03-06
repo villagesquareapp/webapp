@@ -11,9 +11,11 @@ import { PopoverContent } from "@radix-ui/react-popover";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "components/ui/button";
 import { SidebarTrigger } from "components/ui/sidebar";
+import { usePathname } from "next/navigation";
 
 const DashboardNavbar = () => {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const user = session?.user;
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -34,8 +36,8 @@ const DashboardNavbar = () => {
           <SidebarTrigger />
         </div>
 
-        <div className="w-[650px] px-4 lg:px-6">
-          <div className="relative">
+        <div className={pathname.includes("/vflix") ? "w-[565px] ml-[268px]" : "w-[650px] px-4 lg:px-6"}>
+          <div className="relative w-full">
             <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
             <input
               type="search"

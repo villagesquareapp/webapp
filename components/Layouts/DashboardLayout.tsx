@@ -23,7 +23,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
       <AddPostProvider>
         <main className="max-w-[1440px] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
           <div className="w-full flex h-screen">
-            <SidebarProvider style={{ "--sidebar-width": "350px" } as React.CSSProperties}>
+            <SidebarProvider style={{ "--sidebar-width": "350px", "--sidebar-width-icon": "104px" } as React.CSSProperties}>
               <AppSidebar />
               <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
                 <DashboardNavbar />

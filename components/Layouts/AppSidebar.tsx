@@ -33,6 +33,8 @@ import VsCustomLogo from "components/ui/custom/vs-custom-logo";
 import { Button } from "components/ui/button";
 import { Plus } from "lucide-react";
 import { useAddPost } from "context/AddPostContext";
+import { useSidebar } from "components/ui/sidebar";
+import React from "react";
 
 const items = [
   {
@@ -94,35 +96,44 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { openAddPost } = useAddPost();
+  const { setOpen, state } = useSidebar();
+
+  React.useEffect(() => {
+    if (pathname.includes("/dashboard/vflix")) {
+      setOpen(false);
+    } else if (pathname.includes("/dashboard/social")) {
+      setOpen(true);
+    }
+  }, [pathname, setOpen]);
+
+  const isCollapsed = state === "collapsed";
 
   return (
-    <Sidebar className="border-r border-white/5 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
-      <SidebarHeader className="pt-6 pb-4 border-none bg-background">
-        <div className="">
-          <VsCustomLogo />
-        </div>
+    <Sidebar className={`border-r border-white/5 shadow-none bg-background ${isCollapsed ? '' : 'pl-8'}`} collapsible="icon" mobileVariant="sheet">
+      <SidebarHeader className={`pt-6 pb-4 border-none bg-background ${isCollapsed ? 'flex items-center justify-center' : ''}`}>
+        <VsCustomLogo />
       </SidebarHeader>
 
-      <SidebarContent className="bg-background">
+      <SidebarContent className={`bg-background ${isCollapsed ? 'flex items-center pt-8' : ''}`}>
         <SidebarGroup>
-          <SidebarGroupContent className="pt-4 px-3">
+          <SidebarGroupContent className={`pt-4 ${isCollapsed ? 'px-0' : 'px-3'}`}>
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
                 const isActive = pathname.includes(item.url) && item.url !== "#";
                 const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.title} className="px-2">
+                  <SidebarMenuItem key={item.title} className={isCollapsed ? 'px-0 py-2 flex items-center justify-center' : 'px-2'}>
                     <SidebarMenuButton
                       asChild
-                      className={`w-full rounded-lg transition-colors h-12 ${isActive
+                      className={`rounded-lg transition-colors h-12 ${isCollapsed ? '!size-12 !p-0 flex items-center justify-center mx-auto' : 'w-full'} ${isActive
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                         }`}
                     >
-                      <Link href={item.url} prefetch={false} className="flex items-center p-3 gap-x-4">
-                        <span className="shrink-0">{Icon}</span>
-                        <span className="font-semibold text-base">{item.title}</span>
+                      <Link href={item.url} prefetch={false} className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full' : 'p-3 gap-x-4'}`}>
+                        <span className="shrink-0 flex items-center justify-center">{Icon}</span>
+                        {!isCollapsed && <span className="font-semibold text-base">{item.title}</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -133,14 +144,23 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="bg-background pb-8 px-6">
-        <Button
-          onClick={openAddPost}
-          className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center gap-2"
-        >
-          {/* <Plus className="size-5" /> */}
-          New Post
-        </Button>
+      <SidebarFooter className={`bg-background pb-8 ${isCollapsed ? 'px-0 pb-12 flex justify-center items-center' : 'px-6'}`}>
+        {isCollapsed ? (
+          <Button
+            onClick={openAddPost}
+            className="size-[52px] rounded-full bg-[#094DB5] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
+          >
+            <Plus className="size-7" strokeWidth={2.5} />
+          </Button>
+        ) : (
+          <Button
+            onClick={openAddPost}
+            className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center gap-2"
+          >
+            {/* <Plus className="size-5" /> */}
+            New Post
+          </Button>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
