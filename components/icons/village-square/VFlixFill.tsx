@@ -2,7 +2,7 @@ import React, { SVGProps } from "react";
 
 const SvgVFlixFill = (props: SVGProps<SVGSVGElement>) => {
   return (
-    <svg viewBox="0 0 24 24" className="svg-icon" {...props}>
+    <svg viewBox="0 0 20.5 20.5" className="svg-icon" {...props}>
       <path d="M12.5984 0H7.19531V4.31458H12.5984V0Z" fill="#0D1430" />
       <path
         d="M14.0781 0V4.31458H19.6594C19.1547 1.59323 17.1458 0.00989583 14.0781 0Z"
