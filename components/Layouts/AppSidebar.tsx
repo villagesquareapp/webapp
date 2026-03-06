@@ -67,12 +67,12 @@ const items = [
   //   icon: <BsMic className="!size-5 ml-0.5" />,
   //   activeIcon: <BsMicFill className="fill-black !size-5 ml-0.5" />,
   // },
-  {
-    title: "Livestream",
-    url: "/dashboard/live-streams",
-    icon: <HiOutlineVideoCamera className="!size-6" />,
-    activeIcon: <VSCameraFill className="fill-black !size-6" />,
-  },
+  // {
+  //   title: "Livestream",
+  //   url: "/dashboard/live-streams",
+  //   icon: <HiOutlineVideoCamera className="!size-6" />,
+  //   activeIcon: <VSCameraFill className="fill-black !size-6" />,
+  // },
   // {
   //   title: "Marketsquare",
   //   url: "#",
@@ -109,24 +109,24 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
 
   return (
-    <Sidebar className={`border-r border-white/5 shadow-none bg-background ${isCollapsed ? '' : 'pl-8'}`} collapsible="icon" mobileVariant="sheet">
-      <SidebarHeader className={`pt-6 pb-4 border-none bg-background ${isCollapsed ? 'flex items-center justify-center' : ''}`}>
+    <Sidebar className="border-r border-white/5 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
+      <SidebarHeader className="pt-6 pb-4 border-none bg-background">
         <VsCustomLogo />
       </SidebarHeader>
 
-      <SidebarContent className={`bg-background ${isCollapsed ? 'flex items-center' : ''}`}>
+      <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupContent className={`${isCollapsed ? 'px-0' : 'px-3'}`}>
+          <SidebarGroupContent className={`pt-4 ${isCollapsed ? 'pl-3 pr-0' : 'px-3'}`}>
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
                 const isActive = pathname.includes(item.url) && item.url !== "#";
                 const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.title} className={isCollapsed ? 'px-0 py-2 flex items-center justify-center' : 'px-2'}>
+                  <SidebarMenuItem key={item.title} className={isCollapsed ? 'pl-2 pr-0' : 'px-2'}>
                     <SidebarMenuButton
                       asChild
-                      className={`rounded-lg transition-colors h-12 ${isCollapsed ? '!size-12 !p-0 flex items-center justify-center mx-auto' : 'w-full'} ${isActive
+                      className={`rounded-lg transition-colors h-12 ${isCollapsed ? '!w-12 !p-0 my-1.5 flex items-center justify-center' : 'w-full'} ${isActive
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                         }`}
@@ -144,13 +144,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className={`bg-background pb-8 ${isCollapsed ? 'px-0 pb-12 flex justify-center items-center' : 'px-6'}`}>
+      <SidebarFooter className={`bg-background pb-8 ${isCollapsed ? 'pl-6 pr-0' : 'px-6'}`}>
         {isCollapsed ? (
           <Button
             onClick={openAddPost}
-            className="size-[52px] rounded-full bg-[#094DB5] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
+            className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
           >
-            <Plus className="size-7" strokeWidth={2.5} />
+            <Plus className="size-6 text-white shrink-0" strokeWidth={3} />
           </Button>
         ) : (
           <Button
