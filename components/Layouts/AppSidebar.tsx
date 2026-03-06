@@ -114,9 +114,9 @@ export function AppSidebar() {
         <VsCustomLogo />
       </SidebarHeader>
 
-      <SidebarContent className={`bg-background ${isCollapsed ? 'flex items-center pt-8' : ''}`}>
+      <SidebarContent className={`bg-background ${isCollapsed ? 'flex items-center' : ''}`}>
         <SidebarGroup>
-          <SidebarGroupContent className={`pt-4 ${isCollapsed ? 'px-0' : 'px-3'}`}>
+          <SidebarGroupContent className={`${isCollapsed ? 'px-0' : 'px-3'}`}>
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
                 const isActive = pathname.includes(item.url) && item.url !== "#";

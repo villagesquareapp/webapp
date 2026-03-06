@@ -426,15 +426,43 @@ const AddPost = ({
                       </button>
                     </div>
 
-                    <textarea
-                      value={it.caption}
-                      onChange={(e) =>
-                        updateItem(idx, { caption: e.target.value })
-                      }
-                      placeholder="What's on your mind?"
-                      className="w-full resize-none bg-transparent text-[15px] font-normal text-white placeholder:text-[#48484A] min-h-[80px] outline-none border-none ring-0 focus:ring-0 px-0"
-                      maxLength={500}
-                    />
+                    <div className="relative w-full min-h-[80px]">
+                      {/* Highlight Overlay */}
+                      <div
+                        className="absolute inset-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-white"
+                        aria-hidden="true"
+                      >
+                        {!it.caption ? (
+                          <span className="text-[#48484A]">What's on your mind?</span>
+                        ) : (
+                          it.caption.split(/(\s+)/).map((part, i) => {
+                            if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
+                              return <span key={i} className="text-[#0A84FF]">{part}</span>;
+                            }
+                            return <span key={i}>{part}</span>;
+                          })
+                        )}
+                        {/* trailing newline fix for accurate height matching */}
+                        {it.caption.endsWith('\n') && <br />}
+                      </div>
+
+                      {/* Actual Input */}
+                      <textarea
+                        value={it.caption}
+                        onChange={(e) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                          updateItem(idx, { caption: e.target.value });
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-white outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
+                        maxLength={500}
+                        spellCheck={false}
+                      />
+                    </div>
 
                     {/* Post Media Previews */}
                     <div className="mt-4 flex flex-wrap gap-4 mb-3">
@@ -442,8 +470,8 @@ const AddPost = ({
                         <div
                           key={fIdx}
                           className={`relative w-[130px] h-[150px] rounded-2xl overflow-hidden bg-black/40 group ${fIdx === it.media.length - 1
-                              ? "border-2"
-                              : ""
+                            ? "border-2"
+                            : ""
                             }`}
                         >
                           <img
