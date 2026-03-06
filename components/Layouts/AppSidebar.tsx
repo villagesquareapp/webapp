@@ -131,7 +131,7 @@ export function AppSidebar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                         }`}
                     >
-                      <Link href={item.url} prefetch={false} className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full' : 'p-3 gap-x-4'}`}>
+                      <Link href={item.url} prefetch={true} className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full' : 'p-3 gap-x-4'}`}>
                         <span className="shrink-0 flex items-center justify-center">{Icon}</span>
                         {!isCollapsed && <span className="font-semibold text-base">{item.title}</span>}
                       </Link>

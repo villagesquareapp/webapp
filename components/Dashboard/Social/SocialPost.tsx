@@ -74,8 +74,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
     );
 
     try {
-      // const formData = new FormData();
-      // const result = await likeOrUnlikePost(postId, formData);
       const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
       const result = await res.json();
 
@@ -113,9 +111,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
     }
   }, []);
 
-  const saveUnsavePost = async (postId: string) => {
-    // const formData = new FormData();
-    // const result = await saveOrUnsavePost(postId, formData);
+  const saveUnsavePost = useCallback(async (postId: string) => {
     try {
       const res = await fetch(`/api/posts/${postId}/save`, { method: "POST" });
       const result = await res.json();
@@ -135,7 +131,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       console.error("Error saving post", e);
       toast.error("Failed to save post");
     }
-  };
+  }, []);
 
   const fetchPosts = async (pageNumber: number, tab: TabType = activeTab) => {
     try {
@@ -370,12 +366,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
     handleCloseReplyModal();
   };
 
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
     setPage(1);
     setPosts([]);
     setHasMore(true);
-  };
+  }, []);
 
   return (
     <>
