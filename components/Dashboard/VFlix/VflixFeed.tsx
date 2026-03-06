@@ -122,12 +122,12 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
   const currentPost = videos[currentIndex];
 
   return (
-    <div className="flex items-center justify-center gap-0 md:gap-6 w-full max-w-full px-2 md:px-0 relative">
+    <div className="flex items-center gap-0 md:gap-6 w-full max-w-full px-2 md:px-0 relative">
       {/* Left Arrow */}
       {currentIndex > 0 && (
         <button
           onClick={prevVideo}
-          className="absolute left-4 md:static p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
+          className="absolute left-4 md:-ml-12 p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
         >
           <ChevronLeft className="w-6 h-6 text-white" />
         </button>
@@ -150,7 +150,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
       {/* Right Arrow */}
       <button
         onClick={nextVideo}
-        className="absolute right-4 md:static p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
+        className="absolute right-4 md:-mr-12 p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
         disabled={loading}
       >
         {loading ? null : <ChevronRight className="w-6 h-6 text-white" />}

@@ -15,12 +15,12 @@ const VFlixPage = ({ user }: { user: IUser }) => {
       {/* Main content area */}
       <div className="flex-1 flex flex-col h-full overflow-y-auto no-scrollbar">
         {/* Tabs */}
-        <div className="flex justify-center items-center shrink-0">
+        <div className="flex items-center shrink-0 pl-[268px]">
           <button
             onClick={() => setActiveTab("for-you")}
             className={`flex-1 md:flex-none px-4 py-3 text-sm font-medium transition-colors ${activeTab === "for-you"
-                ? "text-foreground border-b-2 border-white"
-                : "text-muted-foreground hover:text-foreground"
+              ? "text-foreground border-b-2 border-white"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             Explore
@@ -31,8 +31,8 @@ const VFlixPage = ({ user }: { user: IUser }) => {
           <button
             onClick={() => setActiveTab("following")}
             className={`flex-1 md:flex-none px-4 py-3 text-sm font-medium transition-colors ${activeTab === "following"
-                ? "text-foreground border-b-2 border-white"
-                : "text-muted-foreground hover:text-foreground"
+              ? "text-foreground border-b-2 border-white"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             Connections
@@ -40,7 +40,7 @@ const VFlixPage = ({ user }: { user: IUser }) => {
         </div>
 
         {/* Feed */}
-        <div className="flex justify-center py-6">
+        <div className="flex py-6 pl-[268px]">
           <VflixFeed
             activeTab={activeTab}
             user={user}
