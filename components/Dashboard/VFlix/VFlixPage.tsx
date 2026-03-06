@@ -50,7 +50,7 @@ const VFlixPage = ({ user }: { user: IUser }) => {
       </div>
 
       {/* Right Sidebar — Hot on VFlix */}
-      <div className="hidden lg:block w-[200px] shrink-0 h-full overflow-y-auto no-scrollbar pt-3 md:mr-16">
+      <div className="hidden lg:block w-[200px] shrink-0 h-full overflow-y-auto no-scrollbar pt-3 mr-4 lg:mr-16">
         <HotOnVflix videos={videos} />
       </div>
     </div>

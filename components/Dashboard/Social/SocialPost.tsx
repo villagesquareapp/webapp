@@ -13,10 +13,13 @@ import ReplyToPostModal from "./ReplyToPostModal";
 import PostSkeleton from "./PostSkeleton";
 import ProgressBar from "./ProgressBar";
 import { Button } from "components/ui/button";
+import { useDataCache } from "context/DataCacheContext";
 
 type TabType = "explore" | "connections";
 
 const SocialPost = ({ user }: { user: IUser }) => {
+  const { getCachedData, setCachedData, isCacheValid } = useDataCache();
+  
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isPostLoading, setIsPostLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
@@ -39,6 +42,21 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
 
   const scrollRef = useRef(0);
+
+  // Check cache on mount
+  useEffect(() => {
+    const cacheKey = `social-posts-${activeTab}`;
+    const cachedPosts = getCachedData<IPost[]>(cacheKey);
+    
+    if (cachedPosts && isCacheValid(cacheKey, 5)) {
+      // Use cached data if it's less than 5 minutes old
+      setPosts(cachedPosts);
+      setIsPostLoading(false);
+    } else {
+      // Fetch fresh data if cache is invalid or doesn't exist
+      fetchPosts(1, activeTab);
+    }
+  }, [activeTab]);
 
   const likeUnlikePost = useCallback(async (postId: string) => {
     setPosts((prev) =>
@@ -165,6 +183,9 @@ const SocialPost = ({ user }: { user: IUser }) => {
       if (Array.isArray(newPosts)) {
         if (pageNumber === 1) {
           setPosts(newPosts);
+          // Cache the first page of posts
+          const cacheKey = `social-posts-${tab}`;
+          setCachedData(cacheKey, newPosts);
         } else {
           setPosts((prev) => [...prev, ...newPosts]);
         }
@@ -186,8 +207,11 @@ const SocialPost = ({ user }: { user: IUser }) => {
   };
 
   useEffect(() => {
-    fetchPosts(page, activeTab);
-  }, [page, activeTab]);
+    // Only fetch if we don't have cached data or if we're loading more pages
+    if (page > 1) {
+      fetchPosts(page, activeTab);
+    }
+  }, [page]);
 
   const observerTarget = useRef(null);
   const observerRef = useRef<IntersectionObserver | null>(null);

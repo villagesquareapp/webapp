@@ -9,6 +9,7 @@ import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
 import VflixComments from "./VflixComments";
 import VFlixSkeleton from "./VFlixSkeleton";
+import { useDataCache } from "context/DataCacheContext";
 
 interface Props {
   activeTab: "for-you" | "following";
@@ -17,12 +18,37 @@ interface Props {
 }
 
 export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
+  const { getCachedData, setCachedData, isCacheValid } = useDataCache();
+  
   const [videos, setVideos] = useState<IVflix[]>([]);
   const [page, setPage] = useState<number>(1);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState<boolean>(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
+
+  // Check cache on mount
+  useEffect(() => {
+    const cacheKey = `vflix-videos-${activeTab}`;
+    const cachedVideos = getCachedData<IVflix[]>(cacheKey);
+    
+    if (cachedVideos && isCacheValid(cacheKey, 5)) {
+      // Use cached data if it's less than 5 minutes old
+      setVideos(cachedVideos);
+      onVideosLoaded?.(cachedVideos);
+      setLoading(false);
+    } else {
+      // Fetch fresh data if cache is invalid or doesn't exist
+      fetchVflixVideos();
+    }
+  }, [activeTab]);
+
+  // Only fetch more when page changes (not on initial mount)
+  useEffect(() => {
+    if (page > 1) {
+      fetchVflixVideos();
+    }
+  }, [page]);
 
   const toggleComments = (postId: string | null = null) => {
     if (isCommentsOpen) {
@@ -63,42 +89,42 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
     }
   };
 
-  useEffect(() => {
-    async function fetchVflixVideos() {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams({
-          page: page.toString(),
-        });
-        const res = await fetch(`/api/posts/vflix?${params.toString()}`);
-        const response = await res.json();
+  const fetchVflixVideos = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+      });
+      const res = await fetch(`/api/posts/vflix?${params.toString()}`);
+      const response = await res.json();
 
-        if (response?.status) {
-          if (page === 1) {
-            const newVideos = response.data?.data || [];
-            setVideos(newVideos);
-            setCurrentIndex(0);
-            onVideosLoaded?.(newVideos);
-          } else {
-            setVideos((prev) => {
-              const updated = [...prev, ...(response.data?.data ?? [])];
-              onVideosLoaded?.(updated);
-              return updated;
-            });
-          }
+      if (response?.status) {
+        if (page === 1) {
+          const newVideos = response.data?.data || [];
+          setVideos(newVideos);
+          setCurrentIndex(0);
+          onVideosLoaded?.(newVideos);
+          // Cache the first page of videos
+          const cacheKey = `vflix-videos-${activeTab}`;
+          setCachedData(cacheKey, newVideos);
         } else {
-          console.error("Failed to fetch Vflix posts: ", response?.message);
-          toast.error(response?.message || "Failed to load Vflix posts");
+          setVideos((prev) => {
+            const updated = [...prev, ...(response.data?.data ?? [])];
+            onVideosLoaded?.(updated);
+            return updated;
+          });
         }
-      } catch (error) {
-        console.error("Failed to fetch Vflix posts: ", error);
-        toast.error("An error occurred while fetching Vflix posts");
-      } finally {
-        setLoading(false);
+      } else {
+        console.error("Failed to fetch Vflix posts: ", response?.message);
+        toast.error(response?.message || "Failed to load Vflix posts");
       }
+    } catch (error) {
+      console.error("Failed to fetch Vflix posts: ", error);
+      toast.error("An error occurred while fetching Vflix posts");
+    } finally {
+      setLoading(false);
     }
-    fetchVflixVideos();
-  }, [page, activeTab]);
+  };
 
   const prevVideo = () =>
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
