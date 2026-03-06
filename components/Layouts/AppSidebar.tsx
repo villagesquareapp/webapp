@@ -123,7 +123,7 @@ export function AppSidebar() {
                 const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.title} className={isCollapsed ? 'pl-2 pr-0' : 'px-2'}>
+                  <SidebarMenuItem key={item.title} className={isCollapsed ? 'pl-2.5 pr-0' : 'px-2'}>
                     <SidebarMenuButton
                       asChild
                       className={`rounded-lg transition-colors h-12 ${isCollapsed ? '!w-12 !p-0 my-1.5 flex items-center justify-center' : 'w-full'} ${isActive
@@ -148,9 +148,9 @@ export function AppSidebar() {
         {isCollapsed ? (
           <Button
             onClick={openAddPost}
-            className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
+            className="size-9 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
           >
-            <Plus className="size-6 text-white shrink-0" strokeWidth={3} />
+            <Plus className="size-4 text-white shrink-0" />
           </Button>
         ) : (
           <Button
