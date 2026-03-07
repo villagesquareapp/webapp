@@ -16,7 +16,7 @@ const HotOnVflix = ({ videos }: HotOnVflixProps) => {
   if (hotVideos.length === 0) return null;
 
   return (
-    <div className="w-full">
+    <div className="w-[160px]">
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <span className="text-lg">🔥</span>
