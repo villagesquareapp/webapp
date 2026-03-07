@@ -15,7 +15,7 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
       {/* Main content area */}
       <div className="flex-1 flex flex-col h-full overflow-y-auto no-scrollbar">
         {/* Tabs */}
-        <div className="flex items-center shrink-0 pl-[268px]">
+        {/* <div className="flex items-center shrink-0 pl-[268px]">
           <button
             onClick={() => setActiveTab("for-you")}
             className={`flex-1 md:flex-none px-4 py-3 text-sm font-medium transition-colors ${activeTab === "for-you"
@@ -37,7 +37,7 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
           >
             Connections
           </button>
-        </div>
+        </div> */}
 
         {/* Feed */}
         <div className="flex py-6 pl-[268px]">
@@ -50,7 +50,7 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
       </div>
 
       {/* Right Sidebar — Hot on VFlix */}
-      <div className="hidden lg:block w-[200px] shrink-0 h-full overflow-y-auto no-scrollbar pt-3 mr-4 lg:mr-16">
+      <div className="hidden lg:block w-[180px] shrink-0 h-full overflow-y-auto no-scrollbar pt-3 mr-4 lg:mr-16">
         <HotOnVflix videos={videos} />
       </div>
     </div>
