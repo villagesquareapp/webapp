@@ -116,22 +116,22 @@ export function AppSidebar() {
 
       <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupContent className={`pt-4 ${isCollapsed ? 'pl-3 pr-0' : 'px-3'}`}>
+          <SidebarGroupContent className="pt-4 px-3">
             <SidebarMenu className="flex flex-col gap-y-2">
               {items.map((item) => {
                 const isActive = pathname.includes(item.url) && item.url !== "#";
                 const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.title} className={isCollapsed ? 'pl-2.5 pr-0' : 'px-2'}>
+                  <SidebarMenuItem key={item.title} className={isCollapsed ? "px-[10px] pr-0" : "px-[10px]"}>
                     <SidebarMenuButton
                       asChild
-                      className={`rounded-lg transition-colors h-12 ${isCollapsed ? '!w-12 !p-0 my-1.5 flex items-center justify-center' : 'w-full'} ${isActive
+                      className={`rounded-lg transition-colors h-12 cursor-pointer ${isCollapsed ? '!w-12 !p-0 my-1.5 flex items-center justify-center' : 'w-full'} ${isActive
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                         }`}
                     >
-                      <Link href={item.url} prefetch={true} className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full' : 'p-3 gap-x-4'}`}>
+                      <Link href={item.url} prefetch={true} className={`flex items-center ${isCollapsed ? 'justify-center p-7 gap-x-4' : 'p-3 gap-x-4'}`}>
                         <span className="shrink-0 flex items-center justify-center">{Icon}</span>
                         {!isCollapsed && <span className="font-semibold text-base">{item.title}</span>}
                       </Link>
@@ -144,7 +144,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className={`bg-background pb-8 ${isCollapsed ? 'pl-6 pr-0' : 'px-6'}`}>
+      <SidebarFooter className="bg-background pb-8 pl-[22px] pr-6">
         {isCollapsed ? (
           <Button
             onClick={openAddPost}

@@ -25,6 +25,8 @@ interface Props {
   setVideos: React.Dispatch<React.SetStateAction<IVflix[]>>;
   likeUnlikeVflix: (postId: string) => void;
   onCommentClick: () => void;
+  isMuted: boolean;
+  setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function VflixCard({
@@ -33,10 +35,11 @@ export default function VflixCard({
   setVideos,
   likeUnlikeVflix,
   onCommentClick,
+  isMuted,
+  setIsMuted,
 }: Props) {
   const playerRef = useRef<ReactPlayer>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [muted, setMuted] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [isBuffering, setIsBuffering] = useState<boolean>(false);
@@ -49,7 +52,7 @@ export default function VflixCard({
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setMuted(!muted);
+    setIsMuted(!isMuted);
   };
 
   const handleSave = (e: React.MouseEvent) => {
@@ -165,7 +168,7 @@ export default function VflixCard({
         ref={playerRef}
         url={videoUrl}
         playing={isPlaying}
-        muted={muted}
+        muted={isMuted}
         loop
         width="100%"
         height="100%"
@@ -281,6 +284,14 @@ export default function VflixCard({
           )}
         </div>
 
+        {/* Caption */}
+        <div
+          onClick={(e) => handlePostClickWithVideoPause(e)}
+          className="cursor-pointer pointer-events-auto mt-1"
+        >
+          {post?.caption && <VflixText text={post.caption} />}
+        </div>
+
         {/* Date */}
         {post?.created_at && (
           <p className="text-[10px] py-1 text-gray-300 mt-1">
@@ -288,16 +299,8 @@ export default function VflixCard({
           </p>
         )}
 
-        {/* Caption */}
-        <div
-          onClick={(e) => handlePostClickWithVideoPause(e)}
-          className="cursor-pointer pointer-events-auto"
-        >
-          {post?.caption && <VflixText text={post.caption} />}
-        </div>
-
         {/* Actions row */}
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto pb-3">
           <VflixActionButtons
             setVideos={setVideos}
             likeUnlikeVflix={likeUnlikeVflix}
@@ -305,28 +308,30 @@ export default function VflixCard({
             onCommentClick={onCommentClick}
           />
         </div>
+      </div>
 
-        {/* Progress + volume + timer */}
-        <div className="flex items-center gap-2 text-xs text-gray-300 pointer-events-auto">
-          <div className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
+      {/* Progress + volume + timer */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 pb-1 pt-6 z-20 pointer-events-auto bg-gradient-to-t from-black/60 to-transparent">
+        <div className="flex items-center gap-4 text-xs text-gray-300 pointer-events-auto">
+          <div className="flex-1 h-1 bg-gray-600/80 rounded-full overflow-hidden cursor-pointer">
             <div
-              className="h-full bg-white"
+              className="h-full bg-white transition-all duration-100"
               style={{
                 width: duration ? `${(currentTime / duration) * 100}%` : "0%",
               }}
             />
           </div>
-          <div className="flex flex-col items-center gap-1">
-            <button onClick={toggleMute} className="hover:scale-110 transition-transform pointer-events-auto">
-              {muted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </button>
-            <span className="mb-4">
+          <div className="flex items-center gap-3">
+            <span className="font-medium text-white/90">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
+            <button onClick={toggleMute} className="hover:scale-110 transition-transform pointer-events-auto text-white">
+              {isMuted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
+            </button>
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import VflixCard from "./VFlixCard";
 // import { likeOrUnlikeVflix } from "api/vflix";
 import { toast } from "sonner";
@@ -19,11 +20,13 @@ interface Props {
 
 export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
   const { getCachedData, setCachedData, isCacheValid } = useDataCache();
-  
+
   const [videos, setVideos] = useState<IVflix[]>([]);
   const [page, setPage] = useState<number>(1);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [direction, setDirection] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isCommentsOpen, setIsCommentsOpen] = useState<boolean>(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
 
@@ -31,7 +34,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
   useEffect(() => {
     const cacheKey = `vflix-videos-${activeTab}`;
     const cachedVideos = getCachedData<IVflix[]>(cacheKey);
-    
+
     if (cachedVideos && isCacheValid(cacheKey, 5)) {
       // Use cached data if it's less than 5 minutes old
       setVideos(cachedVideos);
@@ -126,10 +129,13 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
     }
   };
 
-  const prevVideo = () =>
+  const prevVideo = () => {
+    setDirection(-1);
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
+  };
 
   const nextVideo = () => {
+    setDirection(1);
     if (currentIndex < videos.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
@@ -147,40 +153,77 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
 
   const currentPost = videos[currentIndex];
 
+  const variants = {
+    enter: (direction: number) => ({
+      y: direction > 0 ? 1000 : -1000,
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      y: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      y: direction < 0 ? 1000 : -1000,
+      opacity: 0,
+    }),
+  };
+
   return (
     <div className="flex items-center gap-0 md:gap-6 w-full max-w-full px-2 md:px-0 relative">
-      {/* Left Arrow */}
-      {currentIndex > 0 && (
-        <button
-          onClick={prevVideo}
-          className="absolute left-4 md:-ml-12 p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
-        >
-          <ChevronLeft className="w-6 h-6 text-white" />
-        </button>
-      )}
-
-      <div className="relative w-full md:w-[565px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0">
-        {videos[currentIndex] && (
-          <VflixCard
-            post={videos[currentIndex]}
-            user={user}
-            setVideos={setVideos}
-            likeUnlikeVflix={likeUnlikeVflix}
-            onCommentClick={() => toggleComments(currentPost.uuid)}
-          />
-        )}
+      <div className="relative w-full md:w-[565px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0 bg-black">
+        <AnimatePresence initial={false} custom={direction}>
+          {videos[currentIndex] && (
+            <motion.div
+              key={currentIndex}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                y: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 },
+              }}
+              className="absolute inset-0 w-full h-full"
+            >
+              <VflixCard
+                post={videos[currentIndex]}
+                user={user}
+                setVideos={setVideos}
+                likeUnlikeVflix={likeUnlikeVflix}
+                onCommentClick={() => toggleComments(currentPost.uuid)}
+                isMuted={isMuted}
+                setIsMuted={setIsMuted}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
         {loading && videos.length === 0 && <VFlixSkeleton />}
         {loading && videos.length > 0 && <LoadingSpinner />}
       </div>
 
-      {/* Right Arrow */}
-      <button
-        onClick={nextVideo}
-        className="absolute right-4 md:-mr-12 p-2 rounded-full bg-black/50 hover:bg-black/70 z-50 md:z-20"
-        disabled={loading}
-      >
-        {loading ? null : <ChevronRight className="w-6 h-6 text-white" />}
-      </button>
+      {/* Vertical Navigation Arrows */}
+      <div className="hidden md:flex flex-col gap-4">
+        <button
+          onClick={prevVideo}
+          disabled={currentIndex === 0}
+          className={`p-3 rounded-full flex items-center justify-center transition-colors ${currentIndex > 0 ? "bg-[#131B2B] hover:bg-[#1A2438] text-white" : "bg-[#131B2B]/50 text-gray-600 cursor-not-allowed"
+            }`}
+        >
+          <ChevronUp className="w-6 h-6" />
+        </button>
+        <button
+          onClick={nextVideo}
+          disabled={loading}
+          className={`p-3 rounded-full flex items-center justify-center transition-colors ${!loading ? "bg-[#131B2B] hover:bg-[#1A2438] text-white" : "bg-[#131B2B]/50 text-gray-600 cursor-not-allowed"
+            }`}
+        >
+          {loading ? null : <ChevronDown className="w-6 h-6" />}
+        </button>
+      </div>
+
       <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} user={user} />
     </div>
   );
