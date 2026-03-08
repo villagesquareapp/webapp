@@ -123,15 +123,15 @@ export function AppSidebar() {
                 const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.title} className={isCollapsed ? "px-0 flex justify-center w-full" : "px-[10px]"}>
+                  <SidebarMenuItem key={item.title} className="px-[10px]">
                     <SidebarMenuButton
                       asChild
-                      className={`rounded-lg transition-all duration-300 cursor-pointer ${isCollapsed ? 'size-[52px] h-12 !p-0 mx-auto' : 'w-full h-12'} ${isActive
+                      className={`rounded-lg transition-all duration-300 cursor-pointer w-full h-12 ${isActive
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                         }`}
                     >
-                      <Link href={item.url} prefetch={true} className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full mt-3' : 'p-3 gap-x-4'}`}>
+                      <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4">
                         <span className="shrink-0 flex items-center justify-center">{Icon}</span>
                         {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
                       </Link>
@@ -150,14 +150,13 @@ export function AppSidebar() {
             onClick={openAddPost}
             className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
           >
-            <Plus className="size-4 text-white shrink-0" />
+            <Plus className="size-5 text-white shrink-0" />
           </Button>
         ) : (
           <Button
             onClick={openAddPost}
-            className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center gap-2"
+            className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
           >
-            {/* <Plus className="size-5" /> */}
             New Post
           </Button>
         )}

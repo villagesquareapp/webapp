@@ -143,6 +143,20 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        prevVideo();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        nextVideo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex, videos.length, loading]);
+
   if (videos.length === 0 && !loading) {
     return (
       <NotFoundResult
@@ -172,7 +186,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
 
   return (
     <div className="flex items-center gap-0 md:gap-6 w-full max-w-full px-2 md:px-0 relative">
-      <div className="relative w-full md:w-[565px] h-[calc(100vh-140px)] md:h-[85vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0 bg-black">
+      <div className="relative w-full md:w-[565px] h-[calc(100vh-140px)] md:h-[90vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0 bg-black">
         <AnimatePresence initial={false} custom={direction}>
           {videos[currentIndex] && (
             <motion.div

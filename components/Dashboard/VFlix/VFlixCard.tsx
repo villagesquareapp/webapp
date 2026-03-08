@@ -183,6 +183,7 @@ export default function VflixCard({
             attributes: {
               poster: post.media?.media_thumbnail,
               playsInline: true,
+              style: { objectFit: 'cover', width: '100%', height: '100%' },
             },
             hlsOptions: {
               forceHLS: true,
