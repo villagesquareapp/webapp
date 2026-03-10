@@ -30,7 +30,7 @@ const SocialPostActionButtons = ({
 
   return (
     <>
-      <div className="flex flex-row justify-between items-center px-4">
+      <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-x-6 items-center">
           <div className="flex flex-row gap-x-1 items-center">
             <PiHeartFill

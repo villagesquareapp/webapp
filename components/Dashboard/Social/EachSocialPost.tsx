@@ -58,7 +58,7 @@ const EachSocialPost = ({
   const isSingleMedia = post?.media?.length === 1;
 
   return (
-    <div className="flex flex-col gap-y-2 -mt-2 px-4 md:px-0 py-3 md:py-0 border-b md:border-b-0 border-gray-800">
+    <div className="flex flex-col gap-y-2 -mt-2 px-0 py-3 md:py-0 border-b md:border-b-0 border-gray-800">
       <PostHeader post={post} />
 
       <div
@@ -74,9 +74,8 @@ const EachSocialPost = ({
         </div>
         {!!post?.media?.length && (
           <div
-            className={`md:p-4 ${
-              isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"
-            }`}
+            className={`md:p-4 ${isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"
+              }`}
           >
             {post?.media?.map((media, index, array) => {
               // For multiple media posts, check if this is a single item in the last row
@@ -87,20 +86,18 @@ const EachSocialPost = ({
               return (
                 <div
                   key={`${media?.uuid} - ${index}`}
-                  className={`${shouldSpanFull ? "col-span-2" : ""} ${
-                    isSingleMedia ? "w-full" : ""
-                  }`}
+                  className={`${shouldSpanFull ? "col-span-2" : ""} ${isSingleMedia ? "w-full" : ""
+                    }`}
                 >
                   {media?.media_type === "image" && (
                     <div
                       onClick={(e) => handlePostClickWithVideoPause(e, index)}
-                      className={`w-full relative rounded-xl md:rounded-2xl overflow-hidden ${
-                        isSingleMedia
-                          ? "aspect-[4/5] max-h-[500px]"
-                          : shouldSpanFull
+                      className={`w-full relative rounded-xl md:rounded-2xl overflow-hidden ${isSingleMedia
+                        ? "aspect-[4/5] max-h-[500px]"
+                        : shouldSpanFull
                           ? "aspect-[16/9] max-h-[250px]"
                           : "aspect-[4/5]"
-                      }`}
+                        }`}
                     >
                       <Image
                         className="object-cover"
@@ -127,8 +124,8 @@ const EachSocialPost = ({
                           isSingleMedia
                             ? "aspect-[4/5] max-h-[500px]"
                             : shouldSpanFull
-                            ? "aspect-[16/9] max-h-[250px]"
-                            : "aspect-[4/5]"
+                              ? "aspect-[16/9] max-h-[250px]"
+                              : "aspect-[4/5]"
                         }
                         isGloballyMuted={isGloballyMuted}
                         setGlobalMuteState={setIsGloballyMuted}
@@ -140,7 +137,7 @@ const EachSocialPost = ({
             })}
           </div>
         )}
-        <span className="flex flex-row items-center gap-x-1 md:px-4 mt-2">
+        <span className="flex flex-row items-center gap-x-1 mt-2">
           {post?.address && (
             <>
               <span className="text-xs text-muted-foreground">
@@ -159,7 +156,8 @@ const EachSocialPost = ({
         user={user}
         onOpenReplyModal={onOpenReplyModal}
       />
-      <Separator className="my-2 md:my-0 hidden md:block opacity-40" />
+
+      <Separator className="mt-2 mb-2 md:my-0 hidden md:block opacity-40 -mx-4 lg:-mx-6 w-[calc(100%+2rem)] lg:w-[calc(100%+3rem)] max-w-none" />
     </div>
   );
 };

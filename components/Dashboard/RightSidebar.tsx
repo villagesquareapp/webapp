@@ -123,7 +123,7 @@ const RightSidebar = () => {
               const userName = post.user?.name || "Unknown";
               const userHandle = post.user?.username || "unknown";
               const content = post.caption || "";
-              const formattedTime = post.formatted_time || "";
+              // const formattedTime = post.formatted_time || "";
               const likes = post.likes_count || 0;
               const comments = post.replies_count || 0;
               const postImage = post.media?.[0]?.media_thumbnail || post.media?.[0]?.media_url || "";
@@ -140,9 +140,9 @@ const RightSidebar = () => {
                       <div className="flex flex-col leading-tight">
                         <p className="font-semibold text-sm flex items-center gap-1">
                           {userName}{" "}
-                          <span className="text-muted-foreground font-normal text-xs">
+                          {/* <span className="text-muted-foreground font-normal text-xs">
                             • {formattedTime}
-                          </span>
+                          </span> */}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           @{userHandle}

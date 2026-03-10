@@ -431,7 +431,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
             </div>
 
             {isPostLoading && (
-              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+              <div className="flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <PostSkeleton key={index} />
                 ))}
@@ -439,7 +439,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
             )}
 
             {!isPostLoading && posts?.length > 0 && (
-              <div className="border-0 md:border border-white/5 md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+              <div className="flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
                 {posts.map((post) => (
                   <EachSocialPost
                     key={post.uuid}

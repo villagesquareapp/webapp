@@ -44,7 +44,7 @@ const PostHeader = ({
   return (
     <div
       key={`${post.uuid}-${uuidv4()}`}
-      className="flex justify-between items-center h-12 px-4"
+      className="flex justify-between items-center h-12"
     >
       {/* Post Header */}
       <div className="flex flex-row gap-x-3 items-center">
@@ -69,8 +69,8 @@ const PostHeader = ({
             </p>
           </span>
           <span className="text-xs text-gray-400">
-              @{post?.user?.username}
-            </span>
+            @{post?.user?.username}
+          </span>
           {/* <span className="flex flex-row items-center gap-x-1">
             {post?.address && (
               <>
