@@ -19,7 +19,7 @@ export const PostText = ({ text }: { text: string }) => {
   };
 
   return (
-    <div className="px-4">
+    <div>
       <div className="whitespace-pre-wrap font-normal text-[15px] text-white/90">
         {parseRichText(displayText)}
         {needsTruncation && (
