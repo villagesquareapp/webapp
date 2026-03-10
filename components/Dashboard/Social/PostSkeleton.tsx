@@ -17,24 +17,24 @@ const PostSkeleton = () => {
             {/* Post Content */}
             <div className="flex flex-col gap-y-2 mt-2">
                 <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-[90%]" />
+                    <Skeleton className="h-4 w-full bg-white/5" />
+                    <Skeleton className="h-4 w-[90%] bg-white/5" />
                 </div>
 
                 {/* Media Placeholder */}
                 <div className="mt-2 w-full aspect-[4/5] rounded-xl overflow-hidden">
-                    <Skeleton className="w-full h-full" />
+                    <Skeleton className="w-full h-full bg-white/5" />
                 </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-4">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-full bg-white/5" />
+                    <Skeleton className="h-8 w-8 rounded-full bg-white/5" />
+                    <Skeleton className="h-8 w-8 rounded-full bg-white/5" />
                 </div>
-                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded-full bg-white/5" />
             </div>
 
             <Separator className="my-2 md:my-0 hidden md:block" />
