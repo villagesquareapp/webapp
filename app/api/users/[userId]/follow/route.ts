@@ -6,10 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     const token = await getToken();
-    const { userId } = params;
+    const { userId } = await params;
 
     try {
         const response = await apiPost<any>(`/users/${userId}/follow`, {}, token);
