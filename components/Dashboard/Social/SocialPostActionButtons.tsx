@@ -63,8 +63,8 @@ const SocialPostActionButtons = ({
           </div>
         </div>
         <div className="flex items-center gap-x-1">
-          <p className="text-sm text-gray-400">{post?.views_count}</p>
           <BiBarChart className="size-6 text-gray-500" />
+          <p className="text-sm text-gray-400">{post?.views_count}</p>
         </div>
       </div>
       <ShareModal

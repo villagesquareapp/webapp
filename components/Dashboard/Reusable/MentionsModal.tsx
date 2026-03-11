@@ -21,14 +21,17 @@ interface MentionsModalProps {
 }
 
 const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
-    const [searchValue, setSearchValue] = useState("");
+    const [searchValue, setSearchValue] = useState("@");
     const debouncedSearch = useDebounce(searchValue, 300);
     const [results, setResults] = useState<MentionUser[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        // Remove the `@` prefix for the actual search term
+        const searchTerm = debouncedSearch.startsWith("@") ? debouncedSearch.slice(1) : debouncedSearch;
+
         // Requirements: For mention (@), no user should show until typing to search.
-        if (!debouncedSearch.trim()) {
+        if (!searchTerm.trim()) {
             setResults([]);
             return;
         }
@@ -38,7 +41,7 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
             try {
                 const res = await fetch(
                     `/api/mentions?q=${encodeURIComponent(
-                        debouncedSearch,
+                        searchTerm,
                     )}`,
                 );
                 const data = await res.json();
@@ -63,13 +66,13 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
             onSelectUser(username);
         }
         onClose();
-        setSearchValue(""); // Reset search on close
+        setSearchValue("@"); // Reset search on close
     };
 
     // Reset search when modal opens/closes
     useEffect(() => {
         if (!open) {
-            setSearchValue("");
+            setSearchValue("@");
             setResults([]);
         }
     }, [open]);
@@ -97,9 +100,15 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                         <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-white/50 pointer-events-none" />
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder="username"
                             value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
+                            onChange={(e) => {
+                                let val = e.target.value;
+                                if (!val.startsWith("@")) {
+                                    val = "@" + val.replace(/@/g, ""); // Ensure single @ prefix
+                                }
+                                setSearchValue(val);
+                            }}
                             className="w-full bg-[#131313] h-[42px] pl-[42px] pr-4 text-[14px] text-white placeholder:text-white/50 rounded-full outline-none border border-white/5 focus:border-white/10 transition-colors"
                         />
                     </div>
@@ -113,13 +122,13 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                         </div>
                     )}
 
-                    {!loading && results.length === 0 && searchValue.trim() && (
+                    {!loading && results.length === 0 && searchValue.trim() !== "@" && (
                         <div className="py-6 text-center text-sm text-white/50">
                             No users found.
                         </div>
                     )}
 
-                    {!loading && !searchValue.trim() && (
+                    {!loading && searchValue.trim() === "@" && (
                         <div className="py-6 text-center text-[13px] text-white/40">
                             Type a name or username to search...
                         </div>

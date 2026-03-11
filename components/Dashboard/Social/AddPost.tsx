@@ -452,7 +452,22 @@ const AddPost = ({
                         onChange={(e) => {
                           e.target.style.height = "auto";
                           e.target.style.height = `${e.target.scrollHeight}px`;
-                          updateItem(idx, { caption: e.target.value });
+
+                          const val = e.target.value;
+                          const lastChar = val.slice(-1);
+
+                          // Auto trigger modals
+                          if (lastChar === "@") {
+                            setActiveMentionItemIndex(idx);
+                            updateItem(idx, { caption: val.slice(0, -1) });
+                            return;
+                          } else if (lastChar === "#") {
+                            setActiveHashtagItemIndex(idx);
+                            updateItem(idx, { caption: val.slice(0, -1) });
+                            return;
+                          }
+
+                          updateItem(idx, { caption: val });
                         }}
                         onFocus={(e) => {
                           e.target.style.height = "auto";

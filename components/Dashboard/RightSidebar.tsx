@@ -28,7 +28,7 @@ const RightSidebar = () => {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const res = await fetch("/api/posts/trending?window=24h&page=1&limit=5");
+        const res = await fetch("/api/posts/trending?window=24h&page=1&limit=4");
         const data = await res.json();
         if (data?.status && data?.data?.data) {
           setTrendingPosts(data.data.data);
@@ -128,8 +128,19 @@ const RightSidebar = () => {
               const comments = post.replies_count || 0;
               const postImage = post.media?.[0]?.media_thumbnail || post.media?.[0]?.media_url || "";
 
+              const handleTrendClick = () => {
+                const event = new CustomEvent("openSocialPostDetails", {
+                  detail: post,
+                });
+                window.dispatchEvent(event);
+              };
+
               return (
-                <div key={post.uuid || idx} className="px-3 flex flex-col border-b border-white/5 pb-3">
+                <div
+                  key={post.uuid || idx}
+                  className="px-3 flex flex-col border-b border-white/5 pb-3 cursor-pointer hover:bg-white/5 transition-colors"
+                  onClick={handleTrendClick}
+                >
                   <div className="flex justify-between items-start my-2">
                     <div className="flex items-center gap-x-2">
                       <CustomAvatar
@@ -155,7 +166,7 @@ const RightSidebar = () => {
                     <div className="flex-1">
                       <p className="text-sm font-medium mb-3 leading-relaxed line-clamp-3">
                         {content.split(" ").map((word: string, i: number) =>
-                          word.startsWith("#") ? (
+                          word.startsWith("#") || word.startsWith("@") ? (
                             <span key={i} className="text-blue-500">
                               {word}{" "}
                             </span>

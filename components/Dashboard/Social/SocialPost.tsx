@@ -2,6 +2,7 @@
 
 import { getPostComments } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Separator } from "components/ui/separator";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
@@ -19,7 +20,7 @@ type TabType = "explore" | "connections";
 
 const SocialPost = ({ user }: { user: IUser }) => {
   const { getCachedData, setCachedData, isCacheValid } = useDataCache();
-  
+
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isPostLoading, setIsPostLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
@@ -37,6 +38,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
     null,
   );
   const [replyToReply, setReplyToReply] = useState<IPostComment | null>(null);
+  const [newReply, setNewReply] = useState<IPostComment | null>(null);
 
   const [replies, setReplies] = useState<IPostComment[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
@@ -47,7 +49,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
   useEffect(() => {
     const cacheKey = `social-posts-${activeTab}`;
     const cachedPosts = getCachedData<IPost[]>(cacheKey);
-    
+
     if (cachedPosts && isCacheValid(cacheKey, 5)) {
       // Use cached data if it's less than 5 minutes old
       setPosts(cachedPosts);
@@ -63,12 +65,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((post) =>
         post.uuid === postId
           ? {
-              ...post,
-              likes_count: post?.is_liked
-                ? (Number(post.likes_count) - 1).toString()
-                : (Number(post.likes_count) + 1).toString(),
-              is_liked: !post.is_liked,
-            }
+            ...post,
+            likes_count: post?.is_liked
+              ? (Number(post.likes_count) - 1).toString()
+              : (Number(post.likes_count) + 1).toString(),
+            is_liked: !post.is_liked,
+          }
           : post,
       ),
     );
@@ -82,12 +84,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
           prev.map((post) =>
             post.uuid === postId
               ? {
-                  ...post,
-                  likes_count: post.is_liked
-                    ? (Number(post.likes_count) + 1).toString()
-                    : (Number(post.likes_count) - 1).toString(),
-                  is_liked: !post.is_liked,
-                }
+                ...post,
+                likes_count: post.is_liked
+                  ? (Number(post.likes_count) + 1).toString()
+                  : (Number(post.likes_count) - 1).toString(),
+                is_liked: !post.is_liked,
+              }
               : post,
           ),
         );
@@ -98,12 +100,12 @@ const SocialPost = ({ user }: { user: IUser }) => {
         prev.map((post) =>
           post.uuid === postId
             ? {
-                ...post,
-                likes_count: post.is_liked
-                  ? (Number(post.likes_count) + 1).toString()
-                  : (Number(post.likes_count) - 1).toString(),
-                is_liked: !post.is_liked,
-              }
+              ...post,
+              likes_count: post.is_liked
+                ? (Number(post.likes_count) + 1).toString()
+                : (Number(post.likes_count) - 1).toString(),
+              is_liked: !post.is_liked,
+            }
             : post,
         ),
       );
@@ -311,18 +313,48 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const handleOpenPost = (post: IPost) => {
     setIsPlayingVideo(false);
     setCurrentVideoPlaying("");
-    scrollRef.current = window.scrollY;
+
+    // Read from the newly assigned container ID
+    const scrollContainer = document.getElementById("social-main-scroll");
+    if (scrollContainer) {
+      scrollRef.current = scrollContainer.scrollTop;
+    } else {
+      scrollRef.current = window.scrollY;
+    }
+
     setSelectedPost(post);
     setPostForReplyModal(null);
     setIsReplyModalOpen(false);
     setReplyToReply(null);
   };
 
+  useEffect(() => {
+    const handleOpenPostEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        // Change the active tab to explore if coming from somewhere else to ensure context
+        setActiveTab("explore");
+        handleOpenPost(customEvent.detail);
+      }
+    };
+
+    window.addEventListener("openSocialPostDetails", handleOpenPostEvent);
+    return () => {
+      window.removeEventListener("openSocialPostDetails", handleOpenPostEvent);
+    };
+  }, []);
+
   const handleBack = () => {
     setSelectedPost(null);
     setReplyToReply(null);
+    setNewReply(null); // Clear optimistic reply when going back
     setTimeout(() => {
-      window.scrollTo(0, scrollRef.current);
+      const scrollContainer = document.getElementById("social-main-scroll");
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: scrollRef.current, behavior: "instant" });
+      } else {
+        window.scrollTo(0, scrollRef.current);
+      }
     }, 0);
   };
 
@@ -346,10 +378,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
       prev.map((p) =>
         p.uuid === postForReplyModal?.uuid
           ? {
-              ...p,
-              replies_count: (Number(p.replies_count) + 1).toString(),
-              replies: p.caption ? [...p.caption, newReply] : [newReply],
-            }
+            ...p,
+            replies_count: (Number(p.replies_count) + 1).toString(),
+            replies: p.caption ? [...p.caption, newReply] : [newReply],
+          }
           : p,
       ),
     );
@@ -357,12 +389,13 @@ const SocialPost = ({ user }: { user: IUser }) => {
       setSelectedPost((prev) =>
         prev
           ? {
-              ...prev,
-              replies_count: (Number(prev.replies_count) + 1).toString(),
-            }
+            ...prev,
+            replies_count: (Number(prev.replies_count) + 1).toString(),
+          }
           : null,
       );
     }
+    setNewReply(newReply); // Pass to PostDetails
     handleCloseReplyModal();
   };
 
@@ -390,15 +423,16 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setIsPlayingVideo={setIsPlayingVideo}
           onOpenReplyModal={handleOpenReplyModal}
           onReplySuccess={handleReplySuccess}
+          newReply={newReply}
         />
       ) : (
         <>
           <div className="hidden">
             <AddPost
-            user={user}
-            onRefreshPosts={() => fetchPosts(1, activeTab)}
-          />
-            </div>
+              user={user}
+              onRefreshPosts={() => fetchPosts(1, activeTab)}
+            />
+          </div>
 
           <div className="flex flex-col gap-y-2 w-full">
             {/* Header with tabs - Responsive */}
@@ -407,11 +441,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 {/* Explore Button */}
                 <button
                   onClick={() => handleTabChange("explore")}
-                  className={`px-8 text-sm font-normal rounded-xl border transition-all duration-300 ${
-                    activeTab === "explore"
-                      ? "border-[#0D52D2] bg-[#1C1C1E] text-white" 
-                      : "border-white/5 bg-transparent text-white/50 hover:text-white"
-                  }`}
+                  className={`px-8 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "explore"
+                    ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
+                    : "border-white/5 bg-transparent text-white/50 hover:text-white"
+                    }`}
                 >
                   Explore
                 </button>
@@ -419,16 +452,18 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 {/* Connections Button */}
                 <button
                   onClick={() => handleTabChange("connections")}
-                  className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${
-                    activeTab === "connections"
-                      ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
-                      : "border-white/5 bg-transparent text-white/50 hover:text-white"
-                  }`}
+                  className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "connections"
+                    ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
+                    : "border-white/5 bg-transparent text-white/50 hover:text-white"
+                    }`}
                 >
                   Connections
                 </button>
               </div>
             </div>
+
+            {/* Top divider line pulled fully to the edges over the main column padding */}
+            <Separator className="hidden md:block opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none mb-0" />
 
             {isPostLoading && (
               <div className="flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
