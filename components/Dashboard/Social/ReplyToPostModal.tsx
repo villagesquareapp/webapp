@@ -29,6 +29,10 @@ import { Label } from "@radix-ui/react-label";
 import { LiaGlobeAmericasSolid } from "react-icons/lia";
 import { IoIosArrowDown } from "react-icons/io";
 import { Dispatch, SetStateAction } from "react";
+import { VscMention } from "react-icons/vsc";
+import { FiHash } from "react-icons/fi";
+import MentionsModal from "../Reusable/MentionsModal";
+import HashtagsModal from "../Reusable/HashtagsModal";
 
 interface ReplyModalProps {
   post: IPost;
@@ -75,6 +79,22 @@ const ReplyModal = ({
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [isAudienceDialogOpen, setIsAudienceDialogOpen] =
     useState<boolean>(false);
+
+  // Auto-trigger Modal States
+  const [isMentionsOpen, setIsMentionsOpen] = useState(false);
+  const [isHashtagsOpen, setIsHashtagsOpen] = useState(false);
+
+  const handleSelectMention = (username: string) => {
+    const currentCaption = newComment;
+    const nextCaption = currentCaption ? `${currentCaption} @${username}` : `@${username}`;
+    setNewComment(nextCaption);
+  };
+
+  const handleSelectHashtag = (hashtag: string) => {
+    const currentCaption = newComment;
+    const nextCaption = currentCaption ? `${currentCaption} #${hashtag}` : `#${hashtag}`;
+    setNewComment(nextCaption);
+  };
 
   const [items, setItems] = useState<DraftItem[]>([
     {
@@ -127,25 +147,25 @@ const ReplyModal = ({
       is_thread_continuation: false,
       media: selectedFile
         ? [
-            {
-              // Temporary media object for optimistic UI
-              uuid: `temp-media-${Date.now()}`,
-              post_id: tempUuid,
-              media_type: selectedFile.type.startsWith("video")
-                ? "video"
-                : "image",
-              media_url: mediaPreviewUrl || "",
-              transcoded_media_url: mediaPreviewUrl || "",
-              media_thumbnail: "",
-              media_filename: selectedFile.name,
-              media_size: selectedFile.size.toString(),
-              media_duration: 0,
-              is_transcode_complete: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              deleted_at: null,
-            },
-          ]
+          {
+            // Temporary media object for optimistic UI
+            uuid: `temp-media-${Date.now()}`,
+            post_id: tempUuid,
+            media_type: selectedFile.type.startsWith("video")
+              ? "video"
+              : "image",
+            media_url: mediaPreviewUrl || "",
+            transcoded_media_url: mediaPreviewUrl || "",
+            media_thumbnail: "",
+            media_filename: selectedFile.name,
+            media_size: selectedFile.size.toString(),
+            media_duration: 0,
+            is_transcode_complete: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+        ]
         : [],
 
       user: {
@@ -165,19 +185,6 @@ const ReplyModal = ({
     if (onReplySuccess) {
       onReplySuccess(newReply);
     }
-
-    // Also update local list in parent if handled there (onReplySuccess usually handles it)
-    // But we also have setPosts passed in
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.uuid === post.uuid
-          ? {
-              ...p,
-              replies_count: (Number(p.replies_count) + 1).toString(),
-            }
-          : p,
-      ),
-    );
 
     // Reset Form
     setNewComment("");
@@ -359,7 +366,7 @@ const ReplyModal = ({
                 <div className="flex items-start justify-between gap-6 mt-4">
                   <p className="flex-1 text-[16px] text-white/90 leading-relaxed whitespace-pre-wrap">
                     {replyContext.content?.split(" ").map((word, i) =>
-                      word.startsWith("#") ? (
+                      word.startsWith("#") || word.startsWith("@") ? (
                         <span key={i} className="text-[#1D4ED8]">
                           {word}{" "}
                         </span>
@@ -423,13 +430,58 @@ const ReplyModal = ({
                 onChange={(e) => setNewComment(e.target.value)}
                 maxLength={500}
               /> */}
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Reply to post"
-                className="w-full resize-none bg-transparent text-[15px] font-normal text-white placeholder:text-[#48484A] min-h-[80px] outline-none border-none ring-0 focus:ring-0 px-0 mt-4"
-                maxLength={500}
-              />
+              <div className="relative w-full min-h-[80px] mt-4">
+                {/* Highlight Overlay */}
+                <div
+                  className="absolute inset-x-0 top-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-white"
+                  aria-hidden="true"
+                >
+                  {!newComment ? (
+                    <span className="text-[#48484A]">Reply to post</span>
+                  ) : (
+                    newComment.split(/(\s+)/).map((part, i) => {
+                      if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
+                        return <span key={i} className="text-[#0A84FF]">{part}</span>;
+                      }
+                      return <span key={i}>{part}</span>;
+                    })
+                  )}
+                  {/* trailing newline fix for accurate height matching */}
+                  {newComment.endsWith('\n') && <br />}
+                </div>
+
+                {/* Actual Input */}
+                <textarea
+                  value={newComment}
+                  onChange={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+
+                    const val = e.target.value;
+                    const lastChar = val.slice(-1);
+
+                    // Auto trigger modals
+                    if (lastChar === "@") {
+                      setIsMentionsOpen(true);
+                      setNewComment(val.slice(0, -1));
+                      return;
+                    } else if (lastChar === "#") {
+                      setIsHashtagsOpen(true);
+                      setNewComment(val.slice(0, -1));
+                      return;
+                    }
+
+                    setNewComment(val);
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-white outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
+                  maxLength={500}
+                  spellCheck={false}
+                />
+              </div>
             </div>
             {mediaPreviewUrl && selectedFile && (
               <div className="relative w-[125px] h-[125px] rounded-24 overflow-hidden bg-black/40 group border-2 mt-6">
@@ -457,17 +509,11 @@ const ReplyModal = ({
           </div>
 
           {/* Toolbar */}
-          <div className="flex items-center justify-between pt-1">
+          {/* <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-6">
               <button className="text-[#8E8E93] hover:text-white transition-colors">
                 <Smile size={24} strokeWidth={1.5} />
               </button>
-              {/* <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-[#8E8E93] hover:text-white transition-colors"
-                  >
-                    <TbPhoto size={24} strokeWidth={1.5} />
-                  </button> */}
               <label
                 className={`transition-colors ${selectedFile ? "cursor-not-allowed opacity-30 text-gray-600" : "cursor-pointer text-[#8E8E93] hover:text-white"}`}
               >
@@ -501,6 +547,39 @@ const ReplyModal = ({
             <span className="text-[15px] text-[#48484A] font-medium">
               {charCount}/500
             </span>
+          </div> */}
+          <div className="flex items-center gap-3 pt-1">
+            <label className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
+              <input type="file" accept="image/*,video/*" className="hidden" />
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              {/* <TbPhoto size={20} /> */}
+            </label>
+            {/* Location */}
+            {/* <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
+              <IoLocationSharp size={20} />
+            </div> */}
+            <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
+              <VscMention size={20} />
+            </div>
+            <div
+              className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+            // onClick={() => setActiveHashtagItemIndex(idx)}
+            >
+              <FiHash size={20} />
+            </div>
           </div>
         </div>
 
@@ -529,11 +608,10 @@ const ReplyModal = ({
           <button
             onClick={createReplyFunc}
             disabled={isReplyButtonDisabled || isLoading}
-            className={`px-12 h-[56px] rounded-full font-bold text-[17px] text-white transition-all shadow-xl shadow-blue-900/10 ${
-              isReplyButtonDisabled || isLoading
-                ? "bg-[#094DB5BF] cursor-not-allowed opacity-50"
-                : "bg-[#102A51] hover:bg-[#153a70]"
-            }`}
+            className={`px-12 h-[56px] rounded-full font-bold text-[17px] text-white transition-all shadow-xl shadow-blue-900/10 ${isReplyButtonDisabled || isLoading
+              ? "bg-[#094DB5BF] cursor-not-allowed opacity-50"
+              : "bg-[#102A51] hover:bg-[#153a70]"
+              }`}
           >
             {isLoading ? "Posting..." : "Reply"}
           </button>
@@ -639,6 +717,18 @@ const ReplyModal = ({
             </div>
           </div>
         )}
+
+        {/* Action Modals */}
+        <MentionsModal
+          open={isMentionsOpen}
+          onClose={() => setIsMentionsOpen(false)}
+          onSelectUser={handleSelectMention}
+        />
+        <HashtagsModal
+          open={isHashtagsOpen}
+          onClose={() => setIsHashtagsOpen(false)}
+          onSelectHashtag={handleSelectHashtag}
+        />
       </DialogContent>
     </Dialog>
   );

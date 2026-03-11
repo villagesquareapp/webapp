@@ -29,7 +29,8 @@ import PostHeader from "./PostHeader";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import ReplyToPostModal from "./ReplyToPostModal";
 import { BsDot } from "react-icons/bs";
-import PostText from "./PostText";
+import { PostText } from "./PostText";
+import { Separator } from "components/ui/separator";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -223,17 +224,19 @@ const PostDetails = ({
     <div className="flex flex-col w-full max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2 py-2">
-        <button
-          onClick={onBack}
-          className="p-2 rounded-full hover:bg-gray-800 transition"
-        >
+        <button onClick={onBack} className="">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h2 className="text-lg font-semibold text-center">Post Details</h2>
+        <h2 className="text-lg font-semibold text-center md:pl-3">
+          Post Details
+        </h2>
       </div>
 
+      {/* Top Border above Social Post Details */}
+      <Separator className="opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+
       {/* Main Post (Fixed) */}
-      <div className="border border-gray-800 rounded-md">
+      <div className="">
         <div className="pt-2">
           <SocialPostDetails
             post={localPost}
@@ -249,8 +252,10 @@ const PostDetails = ({
           />
         </div>
 
+        <Separator className="opacity-40 md:mt-4 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+
         {/* Reply box */}
-        <div className="flex items-center gap-3 px-4 pb-2 border-b border-gray-800">
+        <div className="flex items-center gap-3 py-3">
           <CustomAvatar
             src={user?.profile_picture || ""}
             name={post?.user?.name || ""}
@@ -265,15 +270,18 @@ const PostDetails = ({
             </button>
           </div>
         </div>
+        <Separator className="opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
         {/* Comments */}
         {isLoadingReplies ? (
           <LoadingSpinner />
         ) : replies.length > 0 ? (
-          <div className="flex flex-col divide-y divide-gray-800">
-            {replies.map((reply) => {
+          <div className="flex flex-col">
+            {/* <Separator className="opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" /> */}
+
+            {replies.map((reply, index) => {
               return (
                 <div className="">
-                  <div key={reply.uuid} className="flex gap-3 p-4">
+                  <div key={reply.uuid} className="flex gap-3 pt-3">
                     <CustomAvatar
                       src={reply.user?.profile_picture || ""}
                       name={reply.user?.name || ""}
@@ -368,7 +376,9 @@ const PostDetails = ({
                     </div>
                   </div>
                   {/* <p className="text-sm text-gray-200 -mt-2 px-4">{reply.caption}</p> */}
-                  <PostText text={reply?.caption} />
+                  <div className="my-3">
+                    <PostText text={reply?.caption} />
+                  </div>
                   <ReplyPostActionButtons
                     setPosts={setPosts}
                     likeUnlikePost={handleLikeReply}
@@ -376,9 +386,16 @@ const PostDetails = ({
                     reply={reply}
                     onOpenReplyModal={() => onOpenReplyModal(reply)}
                   />
+                  {/* Internal divider for all replies except the bottom one which is handled outside */}
+                  {index < replies.length - 1 && (
+                    <Separator className="mt-2 mb-2 opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+                  )}
                 </div>
               );
             })}
+
+            {/* Bottom Border under last reply */}
+            <Separator className="mt-2 opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
           </div>
         ) : (
           <div className="py-6">

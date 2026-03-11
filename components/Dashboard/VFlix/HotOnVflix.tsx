@@ -11,7 +11,7 @@ interface HotOnVflixProps {
 }
 
 const HotOnVflix = ({ videos }: HotOnVflixProps) => {
-  const hotVideos = videos.slice(0, 5);
+  const hotVideos = videos.slice(0, 4);
 
   if (hotVideos.length === 0) return null;
 

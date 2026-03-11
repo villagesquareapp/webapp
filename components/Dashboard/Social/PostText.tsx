@@ -13,8 +13,8 @@ export const PostText = ({ text }: { text: string }) => {
   const displayText = isExpanded || !needsTruncation ? text : text.slice(0, MAX_LENGTH) + "...";
 
   const toggleExpand = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event from bubbling up to parent onClick handlers
-    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation(); 
+    e.preventDefault(); 
     setIsExpanded(!isExpanded);
   };
 

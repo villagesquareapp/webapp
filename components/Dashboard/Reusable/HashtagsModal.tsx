@@ -78,14 +78,17 @@ const formatUsageCount = (countStr: string) => {
 };
 
 const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) => {
-    const [searchValue, setSearchValue] = useState("");
+    const [searchValue, setSearchValue] = useState("#");
     const debouncedSearch = useDebounce(searchValue, 300);
     const [results, setResults] = useState<HashtagData[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        // Remove the `#` prefix for the actual search term
+        const searchTerm = debouncedSearch.startsWith("#") ? debouncedSearch.slice(1) : debouncedSearch;
+
         // If empty search, show dummy trending
-        if (!debouncedSearch.trim()) {
+        if (!searchTerm.trim()) {
             setResults(DUMMY_TRENDING_HASHTAGS);
             return;
         }
@@ -95,7 +98,7 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
             try {
                 const res = await fetch(
                     `/api/hashtags?q=${encodeURIComponent(
-                        debouncedSearch,
+                        searchTerm,
                     )}`,
                 );
                 const data = await res.json();
@@ -120,13 +123,13 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
             onSelectHashtag(hashtag);
         }
         onClose();
-        setSearchValue(""); // Reset search on close
+        setSearchValue("#"); // Reset search on close
     };
 
     // Reset search when modal opens/closes
     useEffect(() => {
         if (!open) {
-            setSearchValue("");
+            setSearchValue("#");
             setResults(DUMMY_TRENDING_HASHTAGS);
         }
     }, [open]);
@@ -154,9 +157,15 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
                         <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-white/50 pointer-events-none" />
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder="hashtag"
                             value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
+                            onChange={(e) => {
+                                let val = e.target.value;
+                                if (!val.startsWith("#")) {
+                                    val = "#" + val.replace(/#/g, ""); // Ensure single # prefix
+                                }
+                                setSearchValue(val);
+                            }}
                             className="w-full bg-[#131313] h-[42px] pl-[42px] pr-4 text-[14px] text-white placeholder:text-white/50 rounded-full outline-none border border-white/5 focus:border-white/10 transition-colors"
                         />
                     </div>

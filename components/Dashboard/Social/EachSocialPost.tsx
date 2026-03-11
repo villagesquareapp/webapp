@@ -156,8 +156,7 @@ const EachSocialPost = ({
         user={user}
         onOpenReplyModal={onOpenReplyModal}
       />
-
-      <Separator className="mt-2 mb-2 md:my-0 hidden md:block opacity-40 -mx-4 lg:-mx-6 w-[calc(100%+2rem)] lg:w-[calc(100%+3rem)] max-w-none" />
+      <Separator className="mt-2 mb-2 md:my-0 hidden md:block opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
     </div>
   );
 };
