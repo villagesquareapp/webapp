@@ -11,18 +11,28 @@ import SplashScreen from "./SplashScreen";
 import GlobalUploadProgress from "./GlobalUploadProgress";
 import { AddPostProvider } from "context/AddPostContext";
 import { DataCacheProvider } from "context/DataCacheContext";
+import { getServerSession } from "next-auth";
+import { authOptions } from "api/auth/authOptions";
+import AddPost from "components/Dashboard/Social/AddPost";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
+  const session = await getServerSession(authOptions);
+
   return (
     <>
       <SplashScreen />
       <GlobalUploadProgress />
       <DataCacheProvider>
         <AddPostProvider>
+          {session?.user && (
+            <div className="hidden">
+              <AddPost user={session.user} />
+            </div>
+          )}
           <main className="max-w-[1440px] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
             <div className="w-full flex h-screen">
               <SidebarProvider style={{ "--sidebar-width": "350px", "--sidebar-width-icon": "140px" } as React.CSSProperties}>

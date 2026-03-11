@@ -55,7 +55,7 @@ const AddPost = ({
   onRefreshPosts,
 }: {
   user: IUser;
-  onRefreshPosts: () => void;
+  onRefreshPosts?: () => void;
 }) => {
   const { isAddPostOpen, closeAddPost } = useAddPost();
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] =
@@ -336,7 +336,11 @@ const AddPost = ({
 
         if (result) {
           toast.success("Post created successfully");
-          onRefreshPosts();
+          if (onRefreshPosts) {
+            onRefreshPosts();
+          }
+          // Notify other components (like SocialPost) to refresh
+          window.dispatchEvent(new CustomEvent("refreshSocialPosts"));
         } else {
           toast.error("Failed to create post");
         }

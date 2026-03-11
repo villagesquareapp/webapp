@@ -344,6 +344,17 @@ const SocialPost = ({ user }: { user: IUser }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchPosts(1, activeTab);
+    };
+
+    window.addEventListener("refreshSocialPosts", handleRefresh);
+    return () => {
+      window.removeEventListener("refreshSocialPosts", handleRefresh);
+    };
+  }, [activeTab]);
+
   const handleBack = () => {
     setSelectedPost(null);
     setReplyToReply(null);
@@ -427,13 +438,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
         />
       ) : (
         <>
-          <div className="hidden">
-            <AddPost
-              user={user}
-              onRefreshPosts={() => fetchPosts(1, activeTab)}
-            />
-          </div>
-
           <div className="flex flex-col gap-y-2 w-full">
             {/* Header with tabs - Responsive */}
             <div className="flex justify-between items-center z-40 sticky -top-4 py-3 bg-background">
