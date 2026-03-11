@@ -286,19 +286,11 @@ const Notification = () => {
   const groupedNotifications = useMemo(() => {
     const groups: Record<string, INotifications[]> = {};
 
-    notifications
-      .filter(
-        (n) =>
-          n.subject?.name ||
-          n.description ||
-          n.object?.title ||
-          n.notification_type
-      ) // Skip empty ones
-      .forEach((notif) => {
-        const dateKey = notif.date || "Unknown Date";
-        if (!groups[dateKey]) groups[dateKey] = [];
-        groups[dateKey].push(notif);
-      });
+    notifications.forEach((notif) => {
+      const dateKey = notif.date || "Unknown Date";
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(notif);
+    });
 
     return groups;
   }, [notifications]);
@@ -306,14 +298,18 @@ const Notification = () => {
   const notificationsCount = notifications.length;
 
   const formatDateLabel = (date: string) => {
-    if (!date) return "";
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    const notifDate = new Date(date).toDateString();
+    if (!date || date === "Unknown Date") return "Earlier";
+    try {
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      const notifDate = new Date(date).toDateString();
 
-    if (notifDate === today) return "Today";
-    if (notifDate === yesterday) return "Yesterday";
-    return date;
+      if (notifDate === today) return "Today";
+      if (notifDate === yesterday) return "Yesterday";
+      return date;
+    } catch (e) {
+      return date;
+    }
   };
 
   return (
@@ -376,19 +372,25 @@ const Notification = () => {
 
                       <div className="flex-1">
                         <div className="text-sm leading-tight">
-                          {notification.subject?.name && (
+                          {notification.subject?.name ? (
                             <span className="font-medium">
                               {notification.subject.name}{" "}
                             </span>
+                          ) : (
+                            <span className="font-medium">Someone </span>
                           )}
-                          {notification.notification_type === 'post_reply' ? <span className="text-muted-foreground">
-                            {notification.description || "There's a reply on your post."}
-                          </span> : <span className="text-muted-foreground">
-                            {notification.description}
-                          </span>}
+                          {notification.notification_type === 'post_reply' ? (
+                            <span className="text-muted-foreground">
+                              {notification.description || "replied to your post."}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {notification.description || "interacted with your post."}
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          {notification.time_ago} ago
+                          {notification.time_ago || "Just now"} ago
                         </span>
                       </div>
 

@@ -99,7 +99,6 @@ const DashboardNavbar = () => {
 
           <div className="relative">
             <Notification />
-            <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border border-background"></div>
           </div>
 
           {/* Wallet Icon */}
