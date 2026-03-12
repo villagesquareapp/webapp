@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:20260311142111
+          image: 606802968668.dkr.ecr.af-south-1.amazonaws.com/dev-webapps:20260312083232
           ports:
             - containerPort: 3000
           env:
