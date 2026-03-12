@@ -146,12 +146,13 @@ export function AppSidebar() {
 
       <SidebarFooter className="bg-background pb-8 pl-[22px] pr-6">
         {isCollapsed ? (
-          <Button
-            onClick={openAddPost}
-            className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
-          >
-            <Plus className="size-5 text-white shrink-0" />
-          </Button>
+          <></>
+          // <Button
+          //   onClick={openAddPost}
+          //   className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
+          // >
+          //   <Plus className="size-5 text-white shrink-0" />
+          // </Button>
         ) : (
           <Button
             onClick={openAddPost}
