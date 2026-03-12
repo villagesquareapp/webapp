@@ -93,29 +93,36 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
             return;
         }
 
+        // Race condition guard
+        let isCurrent = true;
+
         const fetchHashtags = async () => {
             setLoading(true);
             try {
                 const res = await fetch(
-                    `/api/hashtags?q=${encodeURIComponent(
-                        searchTerm,
-                    )}`,
+                    `/api/hashtags?q=${encodeURIComponent(searchTerm)}`,
                 );
                 const data = await res.json();
+                if (!isCurrent) return;
                 if (data?.status && data?.data) {
                     setResults(data.data);
                 } else {
                     setResults([]);
                 }
             } catch (error) {
+                if (!isCurrent) return;
                 console.error("Failed to fetch hashtags", error);
                 setResults([]);
             } finally {
-                setLoading(false);
+                if (isCurrent) setLoading(false);
             }
         };
 
         fetchHashtags();
+
+        return () => {
+            isCurrent = false;
+        };
     }, [debouncedSearch]);
 
     const handleSelect = (hashtag: string) => {
@@ -169,11 +176,18 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
                             className="w-full bg-[#131313] h-[42px] pl-[42px] pr-4 text-[14px] text-white placeholder:text-white/50 rounded-full outline-none border border-white/5 focus:border-white/10 transition-colors"
                         />
                     </div>
+                    {/* Subtle loading bar below the input */}
+                    <div className="h-[2px] mt-1.5 rounded-full overflow-hidden">
+                        {loading && (
+                            <div className="h-full bg-blue-500/60 animate-pulse rounded-full" />
+                        )}
+                    </div>
                 </div>
 
                 {/* Results List */}
                 <div className="px-3 pb-4 max-h-[380px] overflow-y-auto no-scrollbar">
-                    {loading && (
+                    {/* Only show full "Searching..." when list is empty */}
+                    {loading && results.length === 0 && (
                         <div className="py-6 text-center text-sm text-white/50">
                             Searching...
                         </div>
@@ -185,8 +199,8 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
                         </div>
                     )}
 
-                    {!loading &&
-                        results.length > 0 &&
+                    {/* Always render results if available, even while loading */}
+                    {results.length > 0 &&
                         results.map((tag) => (
                             <button
                                 key={tag.uuid}

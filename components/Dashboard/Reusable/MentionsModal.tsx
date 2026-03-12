@@ -36,29 +36,36 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
             return;
         }
 
+        // Use a request ID to prevent stale results from overwriting newer ones
+        let isCurrent = true;
+
         const fetchMentions = async () => {
             setLoading(true);
             try {
                 const res = await fetch(
-                    `/api/mentions?q=${encodeURIComponent(
-                        searchTerm,
-                    )}`,
+                    `/api/mentions?q=${encodeURIComponent(searchTerm)}`,
                 );
                 const data = await res.json();
+                if (!isCurrent) return; // Discard stale response
                 if (data?.status && data?.data) {
                     setResults(data.data);
                 } else {
                     setResults([]);
                 }
             } catch (error) {
+                if (!isCurrent) return;
                 console.error("Failed to fetch mentions", error);
                 setResults([]);
             } finally {
-                setLoading(false);
+                if (isCurrent) setLoading(false);
             }
         };
 
         fetchMentions();
+
+        return () => {
+            isCurrent = false; // Mark request as stale on cleanup
+        };
     }, [debouncedSearch]);
 
     const handleSelect = (username: string) => {
@@ -76,6 +83,8 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
             setResults([]);
         }
     }, [open]);
+
+    const searchTerm = searchValue.startsWith("@") ? searchValue.slice(1) : searchValue;
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
@@ -112,30 +121,37 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                             className="w-full bg-[#131313] h-[42px] pl-[42px] pr-4 text-[14px] text-white placeholder:text-white/50 rounded-full outline-none border border-white/5 focus:border-white/10 transition-colors"
                         />
                     </div>
+                    {/* Subtle loading bar below the input */}
+                    <div className="h-[2px] mt-1.5 rounded-full overflow-hidden">
+                        {loading && (
+                            <div className="h-full bg-blue-500/60 animate-pulse rounded-full" />
+                        )}
+                    </div>
                 </div>
 
                 {/* Results List */}
                 <div className="px-3 pb-4 max-h-[380px] overflow-y-auto no-scrollbar">
-                    {loading && (
+                    {/* Only show full "Searching..." when results list is empty */}
+                    {loading && results.length === 0 && (
                         <div className="py-6 text-center text-sm text-white/50">
                             Searching...
                         </div>
                     )}
 
-                    {!loading && results.length === 0 && searchValue.trim() !== "@" && (
+                    {!loading && results.length === 0 && searchTerm.trim() && (
                         <div className="py-6 text-center text-sm text-white/50">
                             No users found.
                         </div>
                     )}
 
-                    {!loading && searchValue.trim() === "@" && (
+                    {!loading && !searchTerm.trim() && (
                         <div className="py-6 text-center text-[13px] text-white/40">
                             Type a name or username to search...
                         </div>
                     )}
 
-                    {!loading &&
-                        results.length > 0 &&
+                    {/* Always render results if available, even while loading */}
+                    {results.length > 0 &&
                         results.map((user) => (
                             <button
                                 key={user.uuid}
