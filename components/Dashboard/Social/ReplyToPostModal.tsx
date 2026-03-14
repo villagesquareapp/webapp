@@ -157,6 +157,7 @@ const ReplyModal = ({
             media_url: mediaPreviewUrl || "",
             transcoded_media_url: mediaPreviewUrl || "",
             media_thumbnail: "",
+            thumbnail: "",
             media_filename: selectedFile.name,
             media_size: selectedFile.size.toString(),
             media_duration: 0,
