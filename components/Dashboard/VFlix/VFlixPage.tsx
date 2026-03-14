@@ -5,53 +5,50 @@ import VflixFeed from "./VflixFeed";
 import HotOnVflix from "./HotOnVflix";
 
 const VFlixPage = React.memo(({ user }: { user: IUser }) => {
-  const [activeTab, setActiveTab] = useState<"for-you" | "following">(
-    "for-you",
-  );
+  const [activeTab, setActiveTab] = useState<"explore" | "connections">("explore");
   const [videos, setVideos] = useState<IVflix[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>(undefined);
 
   return (
-    <div className="flex w-full h-full overflow-hidden">
+    <div className="flex w-full h-full overflow-hidden relative">
+      {/* Left Navigation Tabs */}
+      <div className="hidden lg:flex flex-col items-start gap-6 absolute left-12 top-1/2 -translate-y-1/2 z-10 w-48">
+        <button
+          onClick={() => setActiveTab("explore")}
+          className={`text-left text-lg transition-all ${activeTab === "explore"
+            ? "text-white font-bold border-b-[3px] border-[#0D52D2] pb-1"
+            : "text-[#828282] hover:text-white pb-1 border-b-[3px] border-transparent font-medium"
+            }`}
+        >
+          Explore
+        </button>
+        <button
+          onClick={() => setActiveTab("connections")}
+          className={`text-left text-lg transition-all ${activeTab === "connections"
+            ? "text-white font-bold border-b-[3px] border-[#0D52D2] pb-1"
+            : "text-[#828282] hover:text-white pb-1 border-b-[3px] border-transparent font-medium"
+            }`}
+        >
+          Connections
+        </button>
+      </div>
+
       {/* Main content area */}
       <div className="flex-1 flex flex-col h-full overflow-y-auto no-scrollbar">
-        {/* Tabs */}
-        {/* <div className="flex items-center shrink-0 pl-[268px]">
-          <button
-            onClick={() => setActiveTab("for-you")}
-            className={`flex-1 md:flex-none px-4 py-3 text-sm font-medium transition-colors ${activeTab === "for-you"
-              ? "text-foreground border-b-2 border-white"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Explore
-          </button>
-
-          <div className="h-4 w-px bg-white mx-2" />
-
-          <button
-            onClick={() => setActiveTab("following")}
-            className={`flex-1 md:flex-none px-4 py-3 text-sm font-medium transition-colors ${activeTab === "following"
-              ? "text-foreground border-b-2 border-white"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Connections
-          </button>
-        </div> */}
-
         {/* Feed */}
-        <div className="flex py-6 pl-[268px]">
+        <div className="flex py-6 lg:ml-[268px]">
           <VflixFeed
             activeTab={activeTab}
             user={user}
             onVideosLoaded={setVideos}
+            selectedIndex={selectedIndex}
           />
         </div>
       </div>
 
       {/* Right Sidebar — Hot on VFlix */}
       <div className="hidden lg:block shrink-0 h-full overflow-y-auto no-scrollbar pt-3 mr-4 lg:mr-16">
-        <HotOnVflix videos={videos} />
+        <HotOnVflix videos={videos} onVideoSelect={setSelectedIndex} />
       </div>
     </div>
   );

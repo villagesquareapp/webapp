@@ -258,7 +258,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     throw new Error("Chunked upload failed");
                 }
                 return {
-                    key: completeResponse.data.Key,
+                    key: completeResponse.data.Key || completeResponse.data.key || completeResponse.data.url || completeResponse.data.Location,
                     mime_type: file.type,
                 };
             }

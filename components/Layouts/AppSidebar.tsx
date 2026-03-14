@@ -33,6 +33,7 @@ import VsCustomLogo from "components/ui/custom/vs-custom-logo";
 import { Button } from "components/ui/button";
 import { Plus } from "lucide-react";
 import { useAddPost } from "context/AddPostContext";
+import { useVFlixUpload } from "context/VFlixUploadContext";
 import { useSidebar } from "components/ui/sidebar";
 import React from "react";
 
@@ -96,6 +97,7 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { openAddPost } = useAddPost();
+  const { openVFlixUpload } = useVFlixUpload();
   const { setOpen, state } = useSidebar();
 
   React.useEffect(() => {
@@ -107,6 +109,14 @@ export function AppSidebar() {
   }, [pathname, setOpen]);
 
   const isCollapsed = state === "collapsed";
+
+  const handleCreatePost = () => {
+    if (pathname.includes("/dashboard/vflix")) {
+      openVFlixUpload();
+    } else {
+      openAddPost();
+    }
+  };
 
   return (
     <Sidebar className="border-r border-white/5 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
@@ -146,16 +156,15 @@ export function AppSidebar() {
 
       <SidebarFooter className="bg-background pb-8 pl-[22px] pr-6">
         {isCollapsed ? (
-          <></>
-          // <Button
-          //   onClick={openAddPost}
-          //   className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
-          // >
-          //   <Plus className="size-5 text-white shrink-0" />
-          // </Button>
+          <Button
+            onClick={handleCreatePost}
+            className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
+          >
+            <Plus className="size-5 text-white shrink-0" />
+          </Button>
         ) : (
           <Button
-            onClick={openAddPost}
+            onClick={handleCreatePost}
             className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
           >
             New Post

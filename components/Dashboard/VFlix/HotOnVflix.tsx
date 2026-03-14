@@ -8,9 +8,10 @@ import { PiHeartFill } from "react-icons/pi";
 
 interface HotOnVflixProps {
   videos: IVflix[];
+  onVideoSelect: (index: number) => void;
 }
 
-const HotOnVflix = ({ videos }: HotOnVflixProps) => {
+const HotOnVflix = ({ videos, onVideoSelect }: HotOnVflixProps) => {
   const hotVideos = videos.slice(0, 4);
 
   if (hotVideos.length === 0) return null;
@@ -26,8 +27,9 @@ const HotOnVflix = ({ videos }: HotOnVflixProps) => {
       {/* Video Cards */}
       <div className="flex flex-col gap-4">
         {hotVideos.map((video) => {
+          const mediaItem = Array.isArray(video.media) ? video.media[0] : video.media;
           const thumbnail =
-            video.media?.media_thumbnail || video.media?.media_url || "";
+            mediaItem?.thumbnail || mediaItem?.media_thumbnail || mediaItem?.media_url || "";
           const userName = video.user?.name || "Unknown";
           const userAvatar = video.user?.profile_picture || "";
           const caption = video.caption || "";
@@ -38,6 +40,7 @@ const HotOnVflix = ({ videos }: HotOnVflixProps) => {
           return (
             <div
               key={video.uuid}
+              onClick={() => onVideoSelect(videos.indexOf(video))}
               className="relative w-full rounded-2xl overflow-hidden bg-black/20 cursor-pointer group"
             >
               {/* Thumbnail */}
