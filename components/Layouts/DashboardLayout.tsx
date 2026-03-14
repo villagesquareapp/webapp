@@ -14,6 +14,8 @@ import { DataCacheProvider } from "context/DataCacheContext";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
 import AddPost from "components/Dashboard/Social/AddPost";
+import { VFlixUploadProvider } from "context/VFlixUploadContext";
+import VFlixUploadModal from "components/Dashboard/VFlix/VFlixUploadModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -28,25 +30,28 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
       <GlobalUploadProgress />
       <DataCacheProvider>
         <AddPostProvider>
-          {session?.user && (
-            <div className="hidden">
-              <AddPost user={session.user} />
-            </div>
-          )}
-          <main className="max-w-[1440px] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
-            <div className="w-full flex h-screen">
-              <SidebarProvider style={{ "--sidebar-width": "350px", "--sidebar-width-icon": "140px" } as React.CSSProperties}>
-                <AppSidebar />
-                <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
-                  <DashboardNavbar />
-                  <div className="flex-1 overflow-hidden h-full">
-                    {children}
-                  </div>
-                </SidebarInset>
-              </SidebarProvider>
-            </div>
-            <CustomToaster />
-          </main>
+          <VFlixUploadProvider>
+            {session?.user && (
+              <div className="hidden">
+                <AddPost user={session.user} />
+                <VFlixUploadModal user={session.user} />
+              </div>
+            )}
+            <main className="max-w-[1440px] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
+              <div className="w-full flex h-screen">
+                <SidebarProvider style={{ "--sidebar-width": "350px", "--sidebar-width-icon": "140px" } as React.CSSProperties}>
+                  <AppSidebar />
+                  <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
+                    <DashboardNavbar />
+                    <div className="flex-1 overflow-hidden h-full">
+                      {children}
+                    </div>
+                  </SidebarInset>
+                </SidebarProvider>
+              </div>
+              <CustomToaster />
+            </main>
+          </VFlixUploadProvider>
         </AddPostProvider>
       </DataCacheProvider>
     </>

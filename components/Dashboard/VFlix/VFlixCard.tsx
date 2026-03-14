@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover";
 import { Button } from "components/ui/button";
 import { Separator } from "components/ui/separator";
 import { FaEllipsisH } from "react-icons/fa";
+import ShareModal from "../Reusable/ShareModal";
 
 interface Props {
   post: IVflix;
@@ -139,6 +140,7 @@ export default function VflixCard({
   }, [isPlaying]);
 
   const [clickedMediaIndex, setClickedMediaIndex] = useState<number>(0);
+  const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
 
   const handlePostClickWithVideoPause = (
     e: React.MouseEvent,
@@ -156,187 +158,198 @@ export default function VflixCard({
     }
   };
 
-  const videoUrl = post.media?.transcoded_media_url || post.media?.media_url;
+  const mediaItem = Array.isArray(post?.media) ? post?.media[0] : post?.media;
+  const videoUrl = mediaItem?.is_transcode_complete && mediaItem?.transcoded_media_url
+    ? mediaItem.transcoded_media_url
+    : mediaItem?.media_url;
 
   return (
-    <div
-      className="relative w-full h-full bg-black rounded-xl overflow-hidden"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <ReactPlayer
-        ref={playerRef}
-        url={videoUrl}
-        playing={isPlaying}
-        muted={isMuted}
-        loop
-        width="100%"
-        height="100%"
-        onProgress={handleProgress}
-        onDuration={handleDuration}
-        onReady={handleReady}
-        onBuffer={handleBuffer}
-        onBufferEnd={handleBufferEnd}
-        style={{ position: 'absolute', top: 0, left: 0 }}
-        config={{
-          file: {
-            attributes: {
-              poster: post.media?.media_thumbnail,
-              playsInline: true,
-              style: { objectFit: 'cover', width: '100%', height: '100%' },
-            },
-            hlsOptions: {
-              forceHLS: true,
-              debug: false,
-              // xhrSetup: function(xhr: XMLHttpRequest, url: string) {
-              //   // You can add custom headers here if needed
-              // }
+    <>
+      <div
+        className="relative w-full h-full bg-black rounded-xl overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >      <ReactPlayer
+          ref={playerRef}
+          url={videoUrl}
+          playing={isPlaying}
+          muted={isMuted}
+          loop
+          width="100%"
+          height="100%"
+          onProgress={handleProgress}
+          onDuration={handleDuration}
+          onReady={handleReady}
+          onBuffer={handleBuffer}
+          onBufferEnd={handleBufferEnd}
+          style={{ position: 'absolute', top: 0, left: 0 }}
+          config={{
+            file: {
+              forceHLS: videoUrl?.includes('.m3u8'),
+              attributes: {
+                poster: mediaItem?.thumbnail || mediaItem?.media_thumbnail,
+                playsInline: true,
+                style: { objectFit: 'cover', width: '100%', height: '100%' },
+              },
+              hlsOptions: {
+                debug: false,
+                // xhrSetup: function(xhr: XMLHttpRequest, url: string) {
+                //   // You can add custom headers here if needed
+                // }
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
 
-      {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute top-4 right-4 z-30">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-10 w-10 p-0"
-              onClick={(e) => e.stopPropagation()}
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-4 right-4 z-30">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-10 w-10 p-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaEllipsisH className="size-5 text-white" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-0 w-[200px]"
+              side="bottom"
+              align="end"
+              sideOffset={8}
             >
-              <FaEllipsisH className="size-5 text-white" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="p-0 w-[200px]"
-            side="bottom"
-            align="end"
-            sideOffset={8}
-          >
-            <div
-              className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
-              onClick={handleSave}
-            >
-              Save
-            </div>
-            <Separator className="bg-gray-700" />
-            <div
-              className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
-              onClick={handleReport}
-            >
-              Report
-            </div>
-            <Separator className="bg-gray-700" />
-            <div
-              className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
-              onClick={handleBlock}
-            >
-              Block
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {isBuffering && (
-        <div className="absolute inset-0 flex items-center justify-center z-30">
-          <LoadingSpinner />
+              <div
+                className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
+                onClick={handleSave}
+              >
+                Save
+              </div>
+              <Separator className="bg-gray-700" />
+              <div
+                className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
+                onClick={handleReport}
+              >
+                Report
+              </div>
+              <Separator className="bg-gray-700" />
+              <div
+                className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
+                onClick={handleBlock}
+              >
+                Block
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-      )}
 
-      {/* Clickable area for play/pause - excludes bottom controls */}
-      <button
-        onClick={togglePlay}
-        className="absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-200"
-      >
-        {(showControls || !isPlaying) && !isBuffering && (
-          <>
-            {isPlaying ? (
-              <CirclePause className="w-8 h-8 text-white/80 drop-shadow-lg" />
-            ) : (
-              <CirclePlay className="w-8 h-8 text-white/80 drop-shadow-lg" />
-            )}
-          </>
+        {isBuffering && (
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <LoadingSpinner />
+          </div>
         )}
-      </button>
 
-      {/* Bottom info */}
-      <div className="absolute bottom-4 left-4 right-4 text-white z-20 pointer-events-auto">
-        {/* User row */}
-        <div className="flex items-center gap-2 pointer-events-auto">
-          <CustomAvatar
-            src={post?.user?.profile_picture || ""}
-            name={post?.user?.name || ""}
-            className="size-10 border-foreground border-[1.5px]"
-          />
-          <span className="flex flex-row gap-x-2 items-center max-w-60">
-            <span className="font-semibold text-sm truncate">
-              {post?.user.username}
-            </span>
-            {!!post?.user?.verified_status && (
-              <HiMiniCheckBadge className="size-5 text-green-600" />
-            )}
-          </span>
-          {post?.user.uuid !== user?.uuid && (
-            <button className="ml-2 px-3 py-1 rounded bg-[#0D1E34] text-xs font-medium hover:bg-[#0D1E34]/80">
-              Follow
-            </button>
-          )}
-        </div>
-
-        {/* Caption */}
-        <div
-          onClick={(e) => handlePostClickWithVideoPause(e)}
-          className="cursor-pointer pointer-events-auto mt-1"
+        {/* Clickable area for play/pause - only covers the video, not the bottom controls */}
+        <button
+          onClick={togglePlay}
+          className="absolute inset-0 bottom-[120px] flex items-center justify-center z-10 transition-opacity duration-200"
         >
-          {post?.caption && <VflixText text={post.caption} />}
-        </div>
+          {(showControls || !isPlaying) && !isBuffering && (
+            <>
+              {isPlaying ? (
+                <CirclePause className="w-8 h-8 text-white/80 drop-shadow-lg" />
+              ) : (
+                <CirclePlay className="w-8 h-8 text-white/80 drop-shadow-lg" />
+              )}
+            </>
+          )}
+        </button>
 
-        {/* Date */}
-        {post?.created_at && (
-          <p className="text-[10px] py-1 text-gray-300 mt-1">
-            {post.formatted_date}
-          </p>
-        )}
+        {/* Bottom info */}
+        <div className="absolute bottom-4 left-4 right-4 text-white z-30 pointer-events-auto">
+          {/* User row */}
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <CustomAvatar
+              src={post?.user?.profile_picture || ""}
+              name={post?.user?.name || ""}
+              className="size-10 border-foreground border-[1.5px]"
+            />
+            <span className="flex flex-row gap-x-2 items-center max-w-60">
+              <span className="font-semibold text-sm truncate">
+                {post?.user.username}
+              </span>
+              {!!post?.user?.verified_status && (
+                <HiMiniCheckBadge className="size-5 text-green-600" />
+              )}
+            </span>
+            {post?.user.uuid !== user?.uuid && (
+              <button className="ml-2 px-3 py-1 rounded bg-[#0D1E34] text-xs font-medium hover:bg-[#0D1E34]/80">
+                Follow
+              </button>
+            )}
+          </div>
 
-        {/* Actions row */}
-        <div className="pointer-events-auto pb-3">
-          <VflixActionButtons
-            setVideos={setVideos}
-            likeUnlikeVflix={likeUnlikeVflix}
-            post={post}
-            onCommentClick={onCommentClick}
-          />
-        </div>
-      </div>
+          {/* Caption */}
+          <div
+            onClick={(e) => handlePostClickWithVideoPause(e)}
+            className="cursor-pointer pointer-events-auto mt-1"
+          >
+            {post?.caption && <VflixText text={post.caption} />}
+          </div>
 
-      {/* Progress + volume + timer */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 pb-1 pt-6 z-20 pointer-events-auto bg-gradient-to-t from-black/60 to-transparent">
-        <div className="flex items-center gap-4 text-xs text-gray-300 pointer-events-auto">
-          <div className="flex-1 h-1 bg-gray-600/80 rounded-full overflow-hidden cursor-pointer">
-            <div
-              className="h-full bg-white transition-all duration-100"
-              style={{
-                width: duration ? `${(currentTime / duration) * 100}%` : "0%",
-              }}
+          {/* Date */}
+          {post?.created_at && (
+            <p className="text-[10px] py-1 text-gray-300 mt-1">
+              {post.formatted_date}
+            </p>
+          )}
+
+          {/* Actions row */}
+          <div className="pointer-events-auto pb-3">
+            <VflixActionButtons
+              setVideos={setVideos}
+              likeUnlikeVflix={likeUnlikeVflix}
+              post={post}
+              onCommentClick={onCommentClick}
+              onShareClick={() => setIsShareOpen(true)}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <span className="font-medium text-white/90">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
-            <button onClick={toggleMute} className="hover:scale-110 transition-transform pointer-events-auto text-white">
-              {isMuted ? (
-                <VolumeX className="w-5 h-5" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
-            </button>
+        </div>
+
+        {/* Progress + volume + timer */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-1 pt-6 z-20 pointer-events-auto bg-gradient-to-t from-black/60 to-transparent">
+          <div className="flex items-center gap-4 text-xs text-gray-300 pointer-events-auto">
+            <div className="flex-1 h-1 bg-gray-600/80 rounded-full overflow-hidden cursor-pointer">
+              <div
+                className="h-full bg-white transition-all duration-100"
+                style={{
+                  width: duration ? `${(currentTime / duration) * 100}%` : "0%",
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-medium text-white/90">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+              <button onClick={toggleMute} className="hover:scale-110 transition-transform pointer-events-auto text-white">
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <ShareModal
+        open={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        postId={post.uuid}
+      />
+    </>
   );
 }
 

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
         }
 
         const response = await apiPost<ILikeOrUnlikeVflixResponse>(
-            `/posts/vflix/${id}/like`,
+            `/vflix/${id}/like`,
             {
                 body: formData,
                 isFormData: true

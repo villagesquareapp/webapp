@@ -13,12 +13,13 @@ import VFlixSkeleton from "./VFlixSkeleton";
 import { useDataCache } from "context/DataCacheContext";
 
 interface Props {
-  activeTab: "for-you" | "following";
+  activeTab: "explore" | "connections";
   user: IUser;
   onVideosLoaded?: (videos: IVflix[]) => void;
+  selectedIndex?: number;
 }
 
-export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
+export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedIndex }: Props) {
   const { getCachedData, setCachedData, isCacheValid } = useDataCache();
 
   const [videos, setVideos] = useState<IVflix[]>([]);
@@ -29,6 +30,14 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isCommentsOpen, setIsCommentsOpen] = useState<boolean>(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
+
+  // Jump to selected index when triggered from HotOnVflix
+  useEffect(() => {
+    if (selectedIndex !== undefined && selectedIndex !== currentIndex) {
+      setDirection(selectedIndex > currentIndex ? 1 : -1);
+      setCurrentIndex(selectedIndex);
+    }
+  }, [selectedIndex]);
 
   // Check cache on mount
   useEffect(() => {
@@ -66,7 +75,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
   const likeUnlikeVflix = async (postId: string) => {
 
     try {
-      const res = await fetch(`/api/posts/vflix/${postId}/like`, { method: "POST" });
+      const res = await fetch(`/api/vflix/${postId}/like`, { method: "POST" });
       const result = await res.json();
 
       if (result?.status) {
@@ -97,8 +106,9 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded }: Props) {
       setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
+        mode: activeTab,
       });
-      const res = await fetch(`/api/posts/vflix?${params.toString()}`);
+      const res = await fetch(`/api/vflix?${params.toString()}`);
       const response = await res.json();
 
       if (response?.status) {
