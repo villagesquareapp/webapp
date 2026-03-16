@@ -61,7 +61,6 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     const [privacySetting, setPrivacySetting] = useState<"Everyone" | "Friends / Followers" | "Only me">("Everyone");
     const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
     const [allowComments, setAllowComments] = useState(true);
-    const [isPublishing, setIsPublishing] = useState(false);
 
     // Hashtags & Mentions State
     const [activeHashtagSearch, setActiveHashtagSearch] = useState<string | null>(null);
@@ -77,7 +76,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const captionInputRef = useRef<HTMLTextAreaElement>(null);
-    const { uploadFileAndGetInfo } = usePostUploadContext();
+    const { uploadFileAndGetInfo, startBackgroundUpload } = usePostUploadContext();
 
     // Reset state when modal closes
     useEffect(() => {
@@ -90,7 +89,6 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                 setPrivacySetting("Everyone");
                 setIsPrivacyOpen(false);
                 setAllowComments(true);
-                setIsPublishing(false);
                 setActiveHashtagSearch(null);
                 setHashtagResults([]);
                 setActiveMentionSearch(null);
@@ -239,35 +237,36 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
             return;
         }
 
-        setIsPublishing(true);
-        const toastId = toast.loading("Uploading VFlix...");
+        // Close modal immediately
+        closeVFlixUpload();
 
-        try {
-            // 1. Upload the media file (handles chunking if > 6MB)
-            const fileExtension = videoFile.name.split('.').pop() || 'mp4';
+        // Capture values before state resets
+        const file = videoFile;
+        const currentCaption = caption.trim();
+        const currentPrivacy = privacySetting;
+        const currentAllowComments = allowComments;
+
+        startBackgroundUpload(async () => {
+            const fileExtension = file.name.split('.').pop() || 'mp4';
             const cleanFileName = `video_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExtension}`;
-            const renamedVideoFile = new File([videoFile], cleanFileName, { type: videoFile.type });
+            const renamedVideoFile = new File([file], cleanFileName, { type: file.type });
 
             const fileId = `vflix-${Date.now()}`;
             const uploadedMedia = await uploadFileAndGetInfo(renamedVideoFile, fileId);
 
             if (!uploadedMedia || !uploadedMedia.key) {
-                console.error("Missing 'key' in uploaded media response:", uploadedMedia);
-                toast.error("Upload failed: Could not retrieve the video file key.", { id: toastId });
-                return;
+                throw new Error("Upload failed: Could not retrieve the video file key.");
             }
 
-            // 2. Map privacy setting
             let mappedPrivacy = "everyone";
-            if (privacySetting === "Friends / Followers") mappedPrivacy = "followers";
-            if (privacySetting === "Only me") mappedPrivacy = "only_me";
+            if (currentPrivacy === "Friends / Followers") mappedPrivacy = "followers";
+            if (currentPrivacy === "Only me") mappedPrivacy = "only_me";
 
-            // 3. Construct Payload
             const payload = {
                 media: [{ key: uploadedMedia.key, mime_type: uploadedMedia.mime_type }],
-                caption: caption.trim(),
+                caption: currentCaption,
                 privacy: mappedPrivacy,
-                allow_comments: allowComments,
+                allow_comments: currentAllowComments,
                 address: null,
                 latitude: null,
                 longitude: null,
@@ -278,24 +277,14 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                 episode_number: null
             };
 
-            console.log("VFlix Payload being sent:", payload);
-
-            // 4. Create Post
             const response = await createVflixPost(payload);
 
-            if (response?.status) {
-                toast.success("VFlix published successfully!", { id: toastId });
-                closeVFlixUpload();
-            } else {
+            if (!response?.status) {
                 throw new Error(response?.message || "Failed to publish VFlix");
             }
 
-        } catch (error: any) {
-            console.error("VFlix upload error:", error);
-            toast.error(error.message || "An error occurred while publishing.", { id: toastId });
-        } finally {
-            setIsPublishing(false);
-        }
+            toast.success("VFlix published successfully!");
+        });
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -595,9 +584,9 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                                     <Button
                                         className="bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white px-8 h-10 rounded-full font-medium"
                                         onClick={handlePost}
-                                        disabled={isPublishing || !videoFile}
+                                        disabled={!videoFile}
                                     >
-                                        {isPublishing ? "Posting..." : "Post"}
+                                        Post
                                     </Button>
                                 </div>
                             </div>
