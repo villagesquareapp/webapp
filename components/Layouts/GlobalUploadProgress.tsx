@@ -6,13 +6,13 @@ import ProgressBar from "components/Dashboard/Social/ProgressBar";
 const GlobalUploadProgress = () => {
   const { status, overallProgress, cancelUpload, retryPost } = usePostUploadContext();
 
-  if (status !== "uploading" && status !== "error") return null;
+  if (status === "idle") return null;
 
   return (
     <ProgressBar
-      progress={overallProgress}
+      progress={status === "success" ? 100 : overallProgress}
       onCancel={cancelUpload}
-      status={status}
+      status={status === "success" ? "uploading" : status}
       onRetry={retryPost}
     />
   );
