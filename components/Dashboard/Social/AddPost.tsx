@@ -33,6 +33,7 @@ import { useAddPost } from "context/AddPostContext";
 import { FaAngleRight } from "react-icons/fa";
 import MentionsModal from "../Reusable/MentionsModal";
 import HashtagsModal from "../Reusable/HashtagsModal";
+import LocationPicker from "./LocationPicker";
 
 const ReactCrop = dynamic(() => import("react-image-crop"), { ssr: false });
 
@@ -109,6 +110,7 @@ const AddPost = ({
 
   const [activeMentionItemIndex, setActiveMentionItemIndex] = useState<number | null>(null);
   const [activeHashtagItemIndex, setActiveHashtagItemIndex] = useState<number | null>(null);
+  const [activeLocationItemIndex, setActiveLocationItemIndex] = useState<number | null>(null);
 
   const handleSelectMention = (username: string) => {
     if (activeMentionItemIndex !== null) {
@@ -562,8 +564,11 @@ const AddPost = ({
                         </label>
 
                         {/* Location */}
-                        <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
-                          <IoLocationSharp size={20} />
+                        <div
+                          className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+                          onClick={() => setActiveLocationItemIndex(idx)}
+                        >
+                          <IoLocationSharp size={20} className={it.address ? "text-[#4A9EFF]" : ""} />
                         </div>
                         <div
                           className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
@@ -586,8 +591,15 @@ const AddPost = ({
 
                     {/* Location Display */}
                     {it.address && (
-                      <div className="mt-2 text-[13px] text-[#8E8E93] font-medium">
-                        {it.address}
+                      <div className="mt-2 flex items-center gap-1.5 text-[13px] text-[#4A9EFF] font-medium">
+                        <IoLocationSharp size={14} className="shrink-0" />
+                        <span className="truncate">{it.address}</span>
+                        <button
+                          onClick={() => updateItem(idx, { address: "", latitude: "", longitude: "" })}
+                          className="ml-1 shrink-0 text-[#8E8E93] hover:text-white transition-colors"
+                        >
+                          <IoClose size={14} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -755,6 +767,19 @@ const AddPost = ({
                 </RadioGroup>
               </div>
             </div>
+          )}
+
+          {/* Location Picker Overlay */}
+          {activeLocationItemIndex !== null && (
+            <LocationPicker
+              open={activeLocationItemIndex !== null}
+              onClose={() => setActiveLocationItemIndex(null)}
+              currentAddress={items[activeLocationItemIndex]?.address}
+              onSelect={({ address, latitude, longitude }) => {
+                updateItem(activeLocationItemIndex, { address, latitude, longitude });
+                setActiveLocationItemIndex(null);
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
