@@ -47,7 +47,7 @@ export const getVflixPosts = async (page: number) => {
 
 export async function likeOrUnlikeVflix(postId: string, formData: FormData) {
   const token = await getToken();
-  return await apiPost<ILikeOrUnlikeVflixResponse>(`/posts/vflix/${postId}/like`, {
+  return await apiPost<ILikeOrUnlikeVflixResponse>(`vflix/${postId}/like`, {
     body: formData,
     isFormData: true
   }, token)

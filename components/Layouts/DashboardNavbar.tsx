@@ -81,7 +81,7 @@ const DashboardNavbar = () => {
           </div>
         </div>
         {/* Right hand side Navbar */}
-        <div className="w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6">
+        <div className={pathname.includes("/vflix") ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16" : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"}>
           {/* Theme Toggle (Placeholder) */}
           <button className="text-muted-foreground hover:text-foreground hidden sm:block">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

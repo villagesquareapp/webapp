@@ -12,7 +12,7 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
   return (
     <div className="flex w-full h-full overflow-hidden relative">
       {/* Left Navigation Tabs */}
-      <div className="hidden lg:flex flex-col items-start gap-6 absolute left-5 top-1/2 -translate-y-1/2 z-10 w-48">
+      <div className="hidden lg:flex flex-col items-start gap-3 absolute left-5 top-1/2 -translate-y-1/2 z-10 w-48">
         <button
           onClick={() => setActiveTab("explore")}
           className={`text-left text-base transition-all ${activeTab === "explore"
