@@ -11,12 +11,14 @@ import { Loader2 } from "lucide-react";
 import { VSSend } from "components/icons/village-square";
 import { PiHeartFill } from "react-icons/pi";
 import { toast } from "sonner";
+import { BsDot } from "react-icons/bs";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   postId: string | null;
   user: IUser;
+  source?: string;
 }
 
 export default function VflixComments({
@@ -24,6 +26,7 @@ export default function VflixComments({
   onClose,
   postId,
   user,
+  source,
 }: Props) {
   const [comments, setComments] = useState<IGetVflixComments[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -41,7 +44,7 @@ export default function VflixComments({
     async function fetchComments() {
       try {
         setLoading(true);
-        const response = await getVflixComments(postId ? postId : "", 1);
+        const response = await getVflixComments(postId ? postId : "", 1, source);
         setComments(response.data?.data || []);
       } catch (error) {
         console.error("Failed to fetch comments:", error);
@@ -64,7 +67,7 @@ export default function VflixComments({
       const response = await createVflixComment(postId, {
         comment: commentContent,
         parent_id: replyingTo ? replyingTo.id : undefined,
-      });
+      }, source);
 
       if (response?.status && response.data) {
         toast.success(replyingTo ? "Reply added successfully!" : "Comment added successfully!");
@@ -133,7 +136,7 @@ export default function VflixComments({
 
     try {
       const formData = new FormData();
-      const result = await likeOrUnlikeVflixComment(postId, commentId, formData);
+      const result = await likeOrUnlikeVflixComment(postId, commentId, formData, source);
 
       if (!result?.status) {
         setComments((prev) =>
@@ -186,7 +189,7 @@ export default function VflixComments({
     if (!repliesCache[commentId]) {
       setLoadingReplies((prev) => ({ ...prev, [commentId]: true }));
       try {
-        const res = await getVflixReplies(postId, commentId, 1);
+        const res = await getVflixReplies(postId, commentId, 1, source);
         if (res.status && res.data) {
           setRepliesCache((prev) => ({
             ...prev,
@@ -248,13 +251,14 @@ export default function VflixComments({
                     className="size-8"
                   />
                   <div className="flex flex-col w-full">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center">
                       <span className="font-semibold text-base">
                         {comment?.user?.name}
                       </span>
                       {!!comment?.user?.verified_status && (
-                        <HiMiniCheckBadge className="size-4 text-green-600" />
+                        <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
                       )}
+                      <BsDot />
                       {comment.formatted_time && (
                         <span className="text-gray-400 text-sm">
                           {comment.formatted_time}
@@ -265,12 +269,12 @@ export default function VflixComments({
                       <p className="text-sm text-gray-300 py-1">
                         {comment.comment}
                       </p>
-                      <button
+                      {/* <button
                         className="text-gray-400 text-sm shrink-0 cursor-pointer hover:text-white font-medium ml-2"
                         onClick={() => handleReplyClick(comment.uuid, comment?.user?.name)}
                       >
                         Reply
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
@@ -283,7 +287,7 @@ export default function VflixComments({
                     />
                     <p className="text-sm">{comment?.likes_count}</p>
                   </div>
-                  <div
+                  {/* <div
                     className="flex flex-row gap-x-1 items-center"
                     onClick={() => comment.reply_count > 0 && toggleReplies(comment.uuid)}
                   >
@@ -291,18 +295,18 @@ export default function VflixComments({
                       className={`size-4 ${comment.reply_count > 0 ? "cursor-pointer text-gray-400 hover:text-blue-500" : "text-gray-600"} transition-colors`}
                     />
                     <p className="text-sm">{comment.reply_count}</p>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* --- Nested Replies Section --- */}
                 {comment.reply_count > 0 && (
                   <div className="pl-10 mt-1">
-                    <button
+                    {/* <button
                       className="text-xs font-semibold text-gray-400 hover:text-white transition-colors"
                       onClick={() => toggleReplies(comment.uuid)}
                     >
                       {expandedReplies[comment.uuid] ? "Hide replies" : `View ${comment.reply_count} replies`}
-                    </button>
+                    </button> */}
 
                     {expandedReplies[comment.uuid] && (
                       <div className="mt-3 flex flex-col gap-4">
@@ -336,12 +340,12 @@ export default function VflixComments({
                                   <p className="text-sm text-gray-300 mt-1">
                                     {reply.comment}
                                   </p>
-                                  {/* <button
+                                  <button
                                     className="text-gray-400 text-xs shrink-0 cursor-pointer hover:text-white font-medium ml-2"
                                     onClick={() => handleReplyClick(comment.uuid, reply?.user?.name)}
                                   >
                                     Reply
-                                  </button> */}
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -364,7 +368,7 @@ export default function VflixComments({
         </div>
         <div className="absolute bottom-0 w-full bg-background border-t px-6 h-fit gap-y-4 py-4 flex flex-col">
           <div className="flex h-fit flex-row justify-between items-center">
-            {["👍", "❤️", "👏", "😊", "😐", "🤩", "😢"].map((emoji, index) => (
+            {/* {["👍", "❤️", "👏", "😊", "😐", "🤩", "😢"].map((emoji, index) => (
               <span
                 key={index}
                 className="text-3xl cursor-pointer hover:scale-110 transition-transform"
@@ -372,7 +376,7 @@ export default function VflixComments({
               >
                 {emoji}{" "}
               </span>
-            ))}
+            ))} */}
           </div>
           <div className="flex flex-col h-fit gap-y-2">
             {replyingTo && (

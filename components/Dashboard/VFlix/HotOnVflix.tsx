@@ -21,7 +21,7 @@ const HotOnVflix = ({ videos, onVideoSelect }: HotOnVflixProps) => {
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <span className="text-lg">🔥</span>
-        <h3 className="text-[15px] font-bold text-white">Hot on VFlix</h3>
+        <h3 className="text-[15px] font-bold text-foreground">Hot on VFlix</h3>
       </div>
 
       {/* Video Cards */}

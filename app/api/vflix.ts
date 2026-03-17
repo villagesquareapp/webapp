@@ -45,58 +45,57 @@ export const getVflixPosts = async (page: number) => {
   return response;
 };
 
-export async function likeOrUnlikeVflix(postId: string, formData: FormData) {
+export async function likeOrUnlikeVflix(postId: string) {
   const token = await getToken();
-  return await apiPost<ILikeOrUnlikeVflixResponse>(`/posts/vflix/${postId}/like`, {
-    body: formData,
-    isFormData: true
+  return await apiPost<ILikeOrUnlikeVflixResponse>(`posts/vflix/${postId}/like`, {
   }, token)
 };
 
-export const getVflixComments = async (postId: string, page: number = 1) => {
+export const getVflixComments = async (postId: string, page: number = 1, source?: string) => {
   const token = await getToken();
-  const response = await apiGet<IGetVflixCommentResponse>(
-    `posts/vflix/${postId}/comments?page=${page}`,
-    token
-  );
+  const endpoint = source === "legacy"
+    ? `posts/vflix/${postId}/comments?page=${page}`
+    : `vflix/${postId}/comments?page=${page}`;
+  const response = await apiGet<IGetVflixCommentResponse>(endpoint, token);
   return response;
 };
 
 export const createVflixComment = async (
   postId: string,
-  newCommentData: INewVflixComment
+  newCommentData: INewVflixComment,
+  source?: string
 ) => {
   const token = await getToken();
-  const response = await apiPost<INewVflixCommentResponse>(
-    `posts/vflix/${postId}/comments/add`,
-    newCommentData,
-    token
-  );
+  const endpoint = source === "legacy"
+    ? `posts/vflix/${postId}/comments/add`
+    : `vflix/${postId}/comments`;
+  const response = await apiPost<INewVflixCommentResponse>(endpoint, newCommentData, token);
   return response;
 };
 
 export const likeOrUnlikeVflixComment = async (
   postId: string,
   uuid: string,
-  formData: FormData
+  formData: FormData,
+  source?: string
 ) => {
   const token = await getToken();
+  const endpoint = source === "legacy"
+    ? `posts/vflix/${postId}/comments/${uuid}/like`
+    : `vflix/comments/${uuid}/like`;
   const response = await apiPost<ILikeOrUnlikeVflixCommentResponse>(
-    `posts/vflix/${postId}/comments/${uuid}/like`,
-    {
-      body: formData,
-      isFormData: true,
-    },
+    endpoint,
+    { body: formData, isFormData: true },
     token
   );
   return response;
 };
 
-export const getVflixReplies = async (postId: string, commentId: string, page: number = 1) => {
+export const getVflixReplies = async (postId: string, commentId: string, page: number = 1, source?: string) => {
   const token = await getToken();
-  const response = await apiGet<IGetVflixCommentResponse>(
-    `posts/vflix/${postId}/comments/${commentId}?page=${page}`,
-    token
-  );
+  const endpoint = source === "legacy"
+    ? `posts/vflix/${postId}/comments/${commentId}/replies?page=${page}`
+    : `vflix/${postId}/comments/${commentId}/replies?page=${page}`;
+  const response = await apiGet<IGetVflixCommentResponse>(endpoint, token);
   return response;
 };

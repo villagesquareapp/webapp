@@ -14,8 +14,12 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
         } catch (e) {
         }
 
+        const url = new URL(request.url);
+        const source = url.searchParams.get("source");
+        const endpoint = source === "legacy" ? `posts/vflix/${id}/like` : `vflix/${id}/like`;
+
         const response = await apiPost<ILikeOrUnlikeVflixResponse>(
-            `/vflix/${id}/like`,
+            endpoint,
             {
                 body: formData,
                 isFormData: true

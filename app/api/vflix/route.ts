@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
 
     const queryParams = new URLSearchParams();
     queryParams.append("page", page);
-    queryParams.append("from_search_id", "d0796b85-b598-4541-a49a-17bf49f69e99");
-    queryParams.append("language", "en");
-    queryParams.append("culture_tag", "lifestyle");
+    // queryParams.append("from_search_id", "d0796b85-b598-4541-a49a-17bf49f69e99");
+    // queryParams.append("language", "en");
+    // queryParams.append("culture_tag", "lifestyle");
 
     const endpoint = `/vflix/feed/${mode}?${queryParams.toString()}`;
 

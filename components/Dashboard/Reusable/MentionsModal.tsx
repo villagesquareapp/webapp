@@ -88,25 +88,25 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="!max-w-[420px] w-full p-0 rounded-[20px] overflow-hidden border border-white/10 bg-[#1C1C1E] shadow-2xl [&>button:last-child]:hidden">
+            <DialogContent className="!max-w-[420px] w-full p-0 rounded-[20px] overflow-hidden border border-border bg-card shadow-2xl [&>button:last-child]:hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
-                    <h2 className="text-[15px] text-white">
+                    <h2 className="text-[15px] text-foreground">
                         <span className="font-bold">Mentions</span>{" "}
-                        <span className="text-white/60 font-normal">(Add people to post)</span>
+                        <span className="text-muted-foreground font-normal">(Add people to post)</span>
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                        className="p-1 hover:bg-accent rounded-full transition-colors"
                     >
-                        <IoClose className="text-white/70 size-4" />
+                        <IoClose className="text-muted-foreground size-4" />
                     </button>
                 </div>
 
                 {/* Search Input */}
                 <div className="px-5 pb-3">
                     <div className="relative">
-                        <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-white/50 pointer-events-none" />
+                        <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-muted-foreground pointer-events-none" />
                         <input
                             type="text"
                             placeholder="username"
@@ -118,7 +118,7 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                                 }
                                 setSearchValue(val);
                             }}
-                            className="w-full bg-[#131313] h-[42px] pl-[42px] pr-4 text-[14px] text-white placeholder:text-white/50 rounded-full outline-none border border-white/5 focus:border-white/10 transition-colors"
+                            className="w-full bg-accent h-[42px] pl-[42px] pr-4 text-[14px] text-foreground placeholder:text-muted-foreground rounded-full outline-none border border-border focus:border-border transition-colors"
                         />
                     </div>
                     {/* Subtle loading bar below the input */}
@@ -133,19 +133,19 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                 <div className="px-3 pb-4 max-h-[380px] overflow-y-auto no-scrollbar">
                     {/* Only show full "Searching..." when results list is empty */}
                     {loading && results.length === 0 && (
-                        <div className="py-6 text-center text-sm text-white/50">
+                        <div className="py-6 text-center text-sm text-muted-foreground">
                             Searching...
                         </div>
                     )}
 
                     {!loading && results.length === 0 && searchTerm.trim() && (
-                        <div className="py-6 text-center text-sm text-white/50">
+                        <div className="py-6 text-center text-sm text-muted-foreground">
                             No users found.
                         </div>
                     )}
 
                     {!loading && !searchTerm.trim() && (
-                        <div className="py-6 text-center text-[13px] text-white/40">
+                        <div className="py-6 text-center text-[13px] text-muted-foreground">
                             Type a name or username to search...
                         </div>
                     )}
@@ -156,7 +156,7 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                             <button
                                 key={user.uuid}
                                 onClick={() => handleSelect(user.username)}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors text-left"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-accent transition-colors text-left"
                             >
                                 <CustomAvatar
                                     src={user.profile_picture}
@@ -164,10 +164,10 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                                     className="size-11 flex-shrink-0"
                                 />
                                 <div className="flex flex-col">
-                                    <span className="text-[14px] font-bold text-white line-clamp-1 leading-snug">
+                                    <span className="text-[14px] font-bold text-foreground line-clamp-1 leading-snug">
                                         {user.name}
                                     </span>
-                                    <span className="text-[13px] text-white/50 line-clamp-1">
+                                    <span className="text-[13px] text-muted-foreground line-clamp-1">
                                         {user.username}
                                     </span>
                                 </div>

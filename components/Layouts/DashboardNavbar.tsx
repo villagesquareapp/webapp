@@ -12,6 +12,8 @@ import { signOut, useSession } from "next-auth/react";
 import { Button } from "components/ui/button";
 import { SidebarTrigger } from "components/ui/sidebar";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
 
 const DashboardNavbar = () => {
   const { data: session } = useSession();
@@ -19,6 +21,7 @@ const DashboardNavbar = () => {
   const user = session?.user;
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   function getInitials(name: string) {
     return name
@@ -50,7 +53,7 @@ const DashboardNavbar = () => {
                   setIsSearchFocused(false);
                 }
               }}
-              className="bg-[#1C1C1E] h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm"
+              className="bg-accent h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm text-foreground"
             />
             {searchValue.length > 0 && isSearchFocused && (
               <div className="search-results absolute left-0 top-[52px] w-full bg-background rounded-lg border shadow-lg z-50">
@@ -81,20 +84,17 @@ const DashboardNavbar = () => {
           </div>
         </div>
         {/* Right hand side Navbar */}
-        <div className="w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6">
-          {/* Theme Toggle (Placeholder) */}
-          <button className="text-muted-foreground hover:text-foreground hidden sm:block">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
+        <div className={pathname.includes("/vflix") ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16" : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"}>
+          {/* Theme Toggle */}
+          <button
+            className="text-muted-foreground hover:text-foreground hidden sm:block transition-colors"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "light" ? (
+              <Moon className="size-5" />
+            ) : (
+              <Sun className="size-[22px]" />
+            )}
           </button>
 
           <div className="relative">
