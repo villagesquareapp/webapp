@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VflixCard from "./VFlixCard";
-// import { likeOrUnlikeVflix } from "api/vflix";
+import { likeOrUnlikeVflix } from "api/vflix";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
@@ -30,6 +30,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedInd
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isCommentsOpen, setIsCommentsOpen] = useState<boolean>(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
+  const [activePostSource, setActivePostSource] = useState<string | undefined>(undefined);
 
   // Jump to selected index when triggered from HotOnVflix
   useEffect(() => {
@@ -62,42 +63,85 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedInd
     }
   }, [page]);
 
-  const toggleComments = (postId: string | null = null) => {
+  const toggleComments = (postId: string | null = null, source?: string) => {
     if (isCommentsOpen) {
       setIsCommentsOpen(false);
       setActivePostId(null);
+      setActivePostSource(undefined);
     } else {
       setIsCommentsOpen(true);
       setActivePostId(postId);
+      setActivePostSource(source);
     }
   };
 
-  const likeUnlikeVflix = async (postId: string) => {
+  const likeUnlikeVflix = async (postId: string, source?: string) => {
+    // 1. Optimistic Update
+    setVideos((prev) =>
+      prev.map((post) => {
+        if (post.uuid === postId) {
+          const newIsLiked = !post.is_liked;
+          const currentCount = Number(post.likes_count) || 0;
+          const newCount = newIsLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+          return {
+            ...post,
+            is_liked: newIsLiked,
+            likes_count: newCount.toString(),
+          };
+        }
+        return post;
+      })
+    );
 
     try {
-      const res = await fetch(`/api/vflix/${postId}/like`, { method: "POST" });
-      const result = await res.json();
+      let result;
 
-      if (result?.status) {
-        setVideos((prev) =>
-          prev.map((post) =>
-            post.uuid === postId
-              ? {
-                ...post,
-                likes_count: result?.data?.is_liked
-                  ? (Number(post.likes_count) + 1).toString()
-                  : (Number(post.likes_count) - 1).toString(),
-                is_liked: !post.is_liked,
-              }
-              : post
-          )
-        );
+      if (source === "legacy") {
+        result = await likeOrUnlikeVflix(postId);
       } else {
-        toast.error(result?.message);
+        const url = `/api/vflix/${postId}/like`;
+        const res = await fetch(url, { method: "POST" });
+        result = await res.json();
+      }
+
+      if (!result?.status) {
+        toast.error("Failed to like video");
+        // Revert optimistic update on failure
+        setVideos((prev) =>
+          prev.map((post) => {
+            if (post.uuid === postId) {
+              const revertedIsLiked = !post.is_liked;
+              const currentCount = Number(post.likes_count) || 0;
+              const newCount = revertedIsLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+              return {
+                ...post,
+                is_liked: revertedIsLiked,
+                likes_count: newCount.toString(),
+              };
+            }
+            return post;
+          })
+        );
       }
     } catch (e) {
       console.error("Vflix like error", e);
-      toast.error("Failed to like video");
+      toast.error("An error occurred while liking the video");
+      // Revert optimistic update on error
+      setVideos((prev) =>
+        prev.map((post) => {
+          if (post.uuid === postId) {
+            const revertedIsLiked = !post.is_liked;
+            const currentCount = Number(post.likes_count) || 0;
+            const newCount = revertedIsLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+            return {
+              ...post,
+              is_liked: revertedIsLiked,
+              likes_count: newCount.toString(),
+            };
+          }
+          return post;
+        })
+      );
     }
   };
 
@@ -217,7 +261,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedInd
                 user={user}
                 setVideos={setVideos}
                 likeUnlikeVflix={likeUnlikeVflix}
-                onCommentClick={() => toggleComments(currentPost.uuid)}
+                onCommentClick={() => toggleComments(currentPost.uuid, currentPost._source)}
                 isMuted={isMuted}
                 setIsMuted={setIsMuted}
               />
@@ -248,7 +292,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedInd
         </button>
       </div>
 
-      <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} user={user} />
+      <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} source={activePostSource} user={user} />
     </div>
   );
 }

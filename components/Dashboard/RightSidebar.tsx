@@ -95,9 +95,9 @@ const RightSidebar = () => {
   return (
     <div className="flex flex-col gap-6 sticky top-24 pb-12 h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden no-scrollbar">
       {/* Hot Trends Section */}
-      <div className="w-full border border-white/5 rounded-[20px] flex flex-col">
-        <div className="px-3 py-2 border-b border-white/5">
-          <h3 className="font-bold flex items-center gap-2 text-base">
+      <div className="w-full border border-border rounded-[20px] flex flex-col">
+        <div className="px-3 py-2 border-b border-border">
+          <h3 className="font-bold flex items-center gap-2 text-base text-foreground">
             <span className="text-xl">🔥</span> Hot Trends
           </h3>
         </div>
@@ -105,16 +105,16 @@ const RightSidebar = () => {
         <div className="pb-2 flex flex-col">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="px-3 flex flex-col border-b border-white/5 pb-3 py-3">
+              <div key={i} className="px-3 flex flex-col border-b border-border pb-3 py-3">
                 <div className="flex items-center gap-x-2 mb-2">
-                  <Skeleton className="size-10 rounded-full bg-white/5" />
+                  <Skeleton className="size-10 rounded-full bg-accent" />
                   <div className="space-y-1">
-                    <Skeleton className="h-3 w-24 bg-white/5" />
-                    <Skeleton className="h-2 w-16 bg-white/5" />
+                    <Skeleton className="h-3 w-24 bg-accent" />
+                    <Skeleton className="h-2 w-16 bg-accent" />
                   </div>
                 </div>
-                <Skeleton className="h-4 w-full bg-white/5 mb-1" />
-                <Skeleton className="h-4 w-2/3 bg-white/5 mb-3" />
+                <Skeleton className="h-4 w-full bg-accent mb-1" />
+                <Skeleton className="h-4 w-2/3 bg-accent mb-3" />
               </div>
             ))
           ) : trendingPosts.length > 0 ? (
@@ -138,7 +138,7 @@ const RightSidebar = () => {
               return (
                 <div
                   key={post.uuid || idx}
-                  className="px-3 flex flex-col border-b border-white/5 pb-3 cursor-pointer hover:bg-white/5 transition-colors"
+                  className="px-3 flex flex-col border-b border-border pb-3 cursor-pointer hover:bg-accent transition-colors"
                   onClick={handleTrendClick}
                 >
                   <div className="flex justify-between items-start my-2">
@@ -199,7 +199,7 @@ const RightSidebar = () => {
               );
             })
           ) : (
-            <div className="px-3 py-6 text-center text-sm text-white/50">
+            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
               No trending posts available.
             </div>
           )}
@@ -216,8 +216,8 @@ const RightSidebar = () => {
       </div>
 
       {/* Who to Connect With Section */}
-      <div className="w-full border border-white/5 rounded-[20px] flex flex-col p-5">
-        <h3 className="font-bold mb-5 text-base text-white/90">
+      <div className="w-full border border-border rounded-[20px] flex flex-col p-5">
+        <h3 className="font-bold mb-5 text-base text-foreground">
           Who to Connect With
         </h3>
 
@@ -226,13 +226,13 @@ const RightSidebar = () => {
             Array.from({ length: 4 }).map((_, idx) => (
               <div key={idx} className="flex items-center justify-between">
                 <div className="flex items-center gap-x-3">
-                  <Skeleton className="size-10 rounded-full bg-white/5" />
+                  <Skeleton className="size-10 rounded-full bg-accent" />
                   <div className="flex flex-col gap-2">
-                    <Skeleton className="h-3 w-24 bg-white/5" />
-                    <Skeleton className="h-2 w-16 bg-white/5" />
+                    <Skeleton className="h-3 w-24 bg-accent" />
+                    <Skeleton className="h-2 w-16 bg-accent" />
                   </div>
                 </div>
-                <Skeleton className="h-8 w-[72px] rounded-full bg-white/5" />
+                <Skeleton className="h-8 w-[72px] rounded-full bg-accent" />
               </div>
             ))
           ) : suggestedUsers.length > 0 ? (
@@ -251,7 +251,7 @@ const RightSidebar = () => {
                   size="sm"
                   onClick={() => handleFollow(person.uuid)}
                   className={`h-8 rounded-full px-5 text-xs font-semibold ${person.is_followed
-                    ? "bg-transparent border border-white/20 text-white hover:bg-white/5"
+                    ? "bg-transparent border border-border text-foreground hover:bg-accent"
                     : "bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white"
                     }`}
                 >
@@ -264,7 +264,7 @@ const RightSidebar = () => {
               </div>
             ))
           ) : (
-            <div className="text-center text-sm text-white/50 py-4">No suggestions available.</div>
+            <div className="text-center text-sm text-muted-foreground py-4">No suggestions available.</div>
           )}
         </div>
       </div>

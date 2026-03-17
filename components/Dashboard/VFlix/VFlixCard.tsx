@@ -24,7 +24,7 @@ interface Props {
   post: IVflix;
   user: IUser;
   setVideos: React.Dispatch<React.SetStateAction<IVflix[]>>;
-  likeUnlikeVflix: (postId: string) => void;
+  likeUnlikeVflix: (postId: string, source?: string) => void;
   onCommentClick: () => void;
   isMuted: boolean;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
@@ -309,7 +309,7 @@ export default function VflixCard({
           <div className="pointer-events-auto pb-3">
             <VflixActionButtons
               setVideos={setVideos}
-              likeUnlikeVflix={likeUnlikeVflix}
+              likeUnlikeVflix={(postId) => likeUnlikeVflix(postId, post._source)}
               post={post}
               onCommentClick={onCommentClick}
               onShareClick={() => setIsShareOpen(true)}

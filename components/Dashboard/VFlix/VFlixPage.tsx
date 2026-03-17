@@ -16,8 +16,8 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
         <button
           onClick={() => setActiveTab("explore")}
           className={`text-left text-base transition-all ${activeTab === "explore"
-            ? "text-white font-bold border-b-[3px] border-[#0D52D2] pb-1"
-            : "text-[#828282] hover:text-white pb-1 border-b-[3px] border-transparent font-medium"
+            ? "text-foreground font-bold border-b-[3px] border-[#0D52D2] pb-1"
+            : "text-muted-foreground hover:text-foreground pb-1 border-b-[3px] border-transparent font-medium"
             }`}
         >
           Explore
@@ -25,8 +25,8 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
         <button
           onClick={() => setActiveTab("connections")}
           className={`text-left text-base transition-all ${activeTab === "connections"
-            ? "text-white font-bold border-b-[3px] border-[#0D52D2] pb-1"
-            : "text-[#828282] hover:text-white pb-1 border-b-[3px] border-transparent font-medium"
+            ? "text-foreground font-bold border-b-[3px] border-[#0D52D2] pb-1"
+            : "text-muted-foreground hover:text-foreground pb-1 border-b-[3px] border-transparent font-medium"
             }`}
         >
           Connections

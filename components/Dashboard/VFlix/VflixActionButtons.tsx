@@ -11,7 +11,7 @@ const VflixActionButtons = ({
   onShareClick,
 }: {
   disableCommentButton?: boolean;
-  likeUnlikeVflix: (postId: string) => void;
+  likeUnlikeVflix: (postId: string, source?: string) => void;
   post: IVflix;
   setVideos: React.Dispatch<React.SetStateAction<IVflix[]>>;
   onCommentClick: () => void;
@@ -24,7 +24,7 @@ const VflixActionButtons = ({
           <PiHeartFill
             onClick={(e) => {
               e.stopPropagation();
-              likeUnlikeVflix(post.uuid);
+              likeUnlikeVflix(post.uuid, post._source);
             }}
             className={`w-5 h-5 cursor-pointer transition-colors ${post.is_liked ? "text-red-600" : "text-white"}`}
           />
