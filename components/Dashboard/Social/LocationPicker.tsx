@@ -48,12 +48,9 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
     setIsSearching(true);
     setError("");
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`,
-        { headers: { "Accept-Language": "en" } }
-      );
+      const res = await fetch(`/api/location?q=${encodeURIComponent(q)}`);
       const data: NominatimResult[] = await res.json();
-      setResults(data);
+      setResults(Array.isArray(data) ? data : []);
     } catch {
       setError("Search failed. Please try again.");
     } finally {
@@ -80,8 +77,7 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
         const { latitude, longitude } = pos.coords;
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-            { headers: { "Accept-Language": "en" } }
+            `/api/location?lat=${latitude}&lon=${longitude}`
           );
           const data = await res.json();
           const address = data.display_name || `${latitude}, ${longitude}`;
@@ -112,7 +108,10 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
   if (!open) return null;
 
   return (
-    <div className="absolute inset-0 bg-background z-[70] flex flex-col rounded-[32px] animate-in fade-in slide-in-from-bottom-4 duration-200">
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute top-0 left-0 w-full bg-[#1A1A1C] border border-white/5 shadow-2xl z-[100] flex flex-col rounded-xl max-h-[320px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
         <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-full transition-colors">
@@ -134,23 +133,33 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
             placeholder="Search for a place..."
             className="flex-1 bg-transparent text-white text-[14px] placeholder:text-[#48484A] outline-none border-none ring-0"
           />
-          {isSearching && <LoadingSpinner />}
+          {isSearching && (
+            <div className="scale-50 origin-right">
+              <LoadingSpinner />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Use current location */}
-      <button
+      {/* <button
         onClick={handleUseCurrentLocation}
         disabled={isLocating}
         className="flex items-center gap-3 mx-4 mt-2 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"
       >
         <div className="size-9 rounded-full bg-[#1C3A6B] flex items-center justify-center shrink-0">
-          {isLocating ? <LoadingSpinner /> : <MdMyLocation className="text-[#4A9EFF] size-5" />}
+          {isLocating ? (
+            <div className="scale-50">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <MdMyLocation className="text-[#4A9EFF] size-5" />
+          )}
         </div>
         <span className="text-[14px] font-semibold text-[#4A9EFF]">
           {isLocating ? "Getting your location..." : "Use current location"}
         </span>
-      </button>
+      </button> */}
 
       {error && (
         <p className="text-red-400 text-[13px] px-5 mt-2">{error}</p>
