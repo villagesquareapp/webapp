@@ -95,8 +95,8 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState<string>("");
   const [privacySetting, setPrivacySetting] = useState<
-    "Everyone" | "Friends / Followers" | "Only me" | null
-  >(null);
+    "Everyone" | "Friends / Followers" | "Only me"
+  >("Everyone");
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [allowComments, setAllowComments] = useState(true);
 
@@ -135,7 +135,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
         setVideoFile(null);
         setVideoPreviewUrl(null);
         setCaption("");
-        setPrivacySetting(null);
+        setPrivacySetting("Everyone");
         setIsPrivacyOpen(false);
         setAllowComments(true);
         setIsLocationPickerOpen(false);
@@ -344,7 +344,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
       let mappedPrivacy = "everyone";
       if (currentPrivacy === "Friends / Followers") mappedPrivacy = "followers";
       if (currentPrivacy === "Only me") mappedPrivacy = "only_me";
-      if (currentPrivacy === null) mappedPrivacy = "everyone"; // Default to everyone if not explicitly touched but keep the label hint flow
+
 
       const payload = {
         media: [{ key: uploadedMedia.key, mime_type: uploadedMedia.mime_type }],
@@ -495,7 +495,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                     aria-hidden="true"
                   >
                     {!caption ? (
-                      <span className="text-gray-400">
+                      <span className="text-gray-400 text-sm">
                         Say something about this post...
                       </span>
                     ) : (
@@ -643,7 +643,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                       </svg>
                       <span className="text-[15px] font-normal">
-                        {privacySetting || "Choose who can view"}
+                        {privacySetting}
                       </span>
                     </div>
                     <TfiAngleRight
