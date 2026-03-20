@@ -19,6 +19,77 @@ import { Button } from "components/ui/button";
 import { Separator } from "components/ui/separator";
 import { FaEllipsisH } from "react-icons/fa";
 import ShareModal from "../Reusable/ShareModal";
+import { toast } from "sonner";
+
+function FollowButton({
+  userId,
+  isFollowed,
+  postId,
+  setVideos,
+}: {
+  userId: string;
+  isFollowed: boolean;
+  postId: string;
+  setVideos: React.Dispatch<React.SetStateAction<IVflix[]>>;
+}) {
+  const [following, setFollowing] = useState(isFollowed);
+  const [loading, setLoading] = useState(false);
+
+  // Sync with prop changes (e.g. when navigating between videos)
+  useEffect(() => {
+    setFollowing(isFollowed);
+  }, [isFollowed]);
+
+  const handleFollowToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (loading) return;
+
+    const newFollowing = !following;
+    // Optimistic update
+    setFollowing(newFollowing);
+    setLoading(true);
+
+    try {
+      const endpoint = newFollowing
+        ? `/api/users/${userId}/follow`
+        : `/api/users/${userId}/unfollow`;
+      const res = await fetch(endpoint, { method: "POST" });
+      const result = await res.json();
+
+      if (!result?.status) {
+        // Revert on failure
+        setFollowing(!newFollowing);
+        toast.error(result?.message || "Action failed");
+      } else {
+        // Update the parent videos state so follow status persists
+        setVideos((prev) =>
+          prev.map((v) =>
+            v.user.uuid === userId ? { ...v, is_followed: newFollowing } : v
+          )
+        );
+      }
+    } catch (error) {
+      // Revert on error
+      setFollowing(!newFollowing);
+      toast.error("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleFollowToggle}
+      disabled={loading}
+      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
+          ? "bg-white/10 text-white/80 hover:bg-white/20"
+          : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
+        } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      {following ? "Following" : "Follow"}
+    </button>
+  );
+}
 
 interface Props {
   post: IVflix;
@@ -284,9 +355,12 @@ export default function VflixCard({
               )}
             </span>
             {post?.user.uuid !== user?.uuid && (
-              <button className="ml-2 px-3 py-1 rounded bg-[#0D1E34] text-xs font-medium hover:bg-[#0D1E34]/80">
-                Follow
-              </button>
+              <FollowButton
+                userId={post.user.uuid}
+                isFollowed={post.is_followed}
+                postId={post.uuid}
+                setVideos={setVideos}
+              />
             )}
           </div>
 
