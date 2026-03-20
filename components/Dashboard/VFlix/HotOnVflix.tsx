@@ -77,13 +77,13 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
   return (
     <div className="w-[160px]">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-2 mb-1">
         <span className="text-lg">🔥</span>
         <h3 className="text-[15px] font-bold text-foreground">Hot on VFlix</h3>
       </div>
 
       {/* Video Cards */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
         {hotVideos.map((video) => {
           const mediaItem = Array.isArray(video.media) ? video.media[0] : video.media;
           const thumbnail =
@@ -93,13 +93,13 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
           const caption = video.caption || "";
           const likes = video.likes_count || "0";
           const views = video.views_count || "0";
-          const date = video.formatted_date || "";
+          // const date = video.formatted_date || "";
 
           return (
             <div
               key={video.uuid}
               onClick={() => onVideoSelect(video)}
-              className="relative w-full rounded-2xl overflow-hidden bg-black/20 cursor-pointer group"
+              className="relative w-full rounded-xl overflow-hidden bg-black/20 cursor-pointer group"
             >
               {/* Thumbnail */}
               <div className="relative w-full h-[200px]">
@@ -116,7 +116,7 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                 {/* Bottom overlay content */}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
+                <div className="absolute bottom-0 left-0 right-0 p-1">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <CustomAvatar
@@ -128,13 +128,13 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
                         {userName}
                       </span>
                     </div>
-                    <p className="text-[11px] text-white/80 line-clamp-1 mb-1">
+                    <p className="text-[11px] text-white/80 line-clamp-1 mb-0">
                       {caption}
                     </p>
-                    <p className="text-[10px] text-white/50">{date}</p>
+                    {/* <p className="text-[10px] text-white/50">{date}</p> */}
                   </div>
                   {/* Stats row */}
-                  <div className="flex items-center justify-between gap-4 px-3 py-">
+                  <div className="flex items-center justify-between gap-4 p-0">
                     <div className="flex items-center gap-1.5">
                       <PiHeartFill size={13} className="" />
                       <span className="text-[12px] text-white font-medium">
