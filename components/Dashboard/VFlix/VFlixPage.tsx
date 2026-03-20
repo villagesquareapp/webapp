@@ -7,7 +7,11 @@ import HotOnVflix from "./HotOnVflix";
 const VFlixPage = React.memo(({ user }: { user: IUser }) => {
   const [activeTab, setActiveTab] = useState<"explore" | "connections">("explore");
   const [videos, setVideos] = useState<IVflix[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>(undefined);
+  const [selectedVideo, setSelectedVideo] = useState<IVflix | undefined>(undefined);
+
+  const handleHotVideoSelect = (video: IVflix) => {
+    setSelectedVideo(video);
+  };
 
   return (
     <div className="flex w-full h-full overflow-hidden relative">
@@ -41,14 +45,14 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
             activeTab={activeTab}
             user={user}
             onVideosLoaded={setVideos}
-            selectedIndex={selectedIndex}
+            selectedVideo={selectedVideo}
           />
         </div>
       </div>
 
       {/* Right Sidebar — Hot on VFlix */}
       <div className="hidden lg:block shrink-0 h-full overflow-y-auto no-scrollbar pt-3 mr-4 lg:mr-16">
-        <HotOnVflix videos={videos} onVideoSelect={setSelectedIndex} />
+        <HotOnVflix onVideoSelect={handleHotVideoSelect} />
       </div>
     </div>
   );

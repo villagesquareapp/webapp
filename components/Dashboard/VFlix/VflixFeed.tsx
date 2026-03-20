@@ -16,10 +16,10 @@ interface Props {
   activeTab: "explore" | "connections";
   user: IUser;
   onVideosLoaded?: (videos: IVflix[]) => void;
-  selectedIndex?: number;
+  selectedVideo?: IVflix;
 }
 
-export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedIndex }: Props) {
+export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVideo }: Props) {
   const { getCachedData, setCachedData, isCacheValid } = useDataCache();
 
   const [videos, setVideos] = useState<IVflix[]>([]);
@@ -32,13 +32,26 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedInd
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activePostSource, setActivePostSource] = useState<string | undefined>(undefined);
 
-  // Jump to selected index when triggered from HotOnVflix
+  // Jump to selected video when triggered from HotOnVflix
   useEffect(() => {
-    if (selectedIndex !== undefined && selectedIndex !== currentIndex) {
-      setDirection(selectedIndex > currentIndex ? 1 : -1);
-      setCurrentIndex(selectedIndex);
+    if (selectedVideo) {
+      const existingIndex = videos.findIndex(v => v.uuid === selectedVideo.uuid);
+      if (existingIndex !== -1) {
+        // Video already in feed, jump to it
+        if (existingIndex !== currentIndex) {
+          setDirection(existingIndex > currentIndex ? 1 : -1);
+          setCurrentIndex(existingIndex);
+        }
+      } else {
+        // Video not in feed, prepend it and jump to index 0
+        const updated = [selectedVideo, ...videos];
+        setVideos(updated);
+        onVideosLoaded?.(updated);
+        setDirection(-1);
+        setCurrentIndex(0);
+      }
     }
-  }, [selectedIndex]);
+  }, [selectedVideo]);
 
   // Check cache on mount
   useEffect(() => {

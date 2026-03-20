@@ -98,7 +98,7 @@ const RightSidebar = () => {
       <div className="w-full border border-border rounded-[20px] flex flex-col">
         <div className="px-3 py-2 border-b border-border">
           <h3 className="font-bold flex items-center gap-2 text-base text-foreground">
-            <span className="text-xl">🔥</span> Hot Trends
+            <span className="text-xl text-foreground">🔥</span> Hot Trends
           </h3>
         </div>
 

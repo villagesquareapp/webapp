@@ -7,12 +7,70 @@ import { IoStatsChart } from "react-icons/io5";
 import { PiHeartFill } from "react-icons/pi";
 
 interface HotOnVflixProps {
-  videos: IVflix[];
-  onVideoSelect: (index: number) => void;
+  onVideoSelect: (video: IVflix) => void;
 }
 
-const HotOnVflix = ({ videos, onVideoSelect }: HotOnVflixProps) => {
-  const hotVideos = videos.slice(0, 4);
+const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
+  const [hotVideos, setHotVideos] = useState<IVflix[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHotVideos = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/vflix?mode=hot");
+        const response = await res.json();
+        if (response?.status) {
+          // The endpoint might return the array directly or in a paginated structure
+          const data = Array.isArray(response.data) ? response.data : response.data?.data || [];
+          const slicedVideos = data.slice(0, 5);
+          setHotVideos(slicedVideos);
+
+          // Track impressions for the displayed hot videos
+          if (slicedVideos.length > 0) {
+            const videoIds = slicedVideos.map((v: IVflix) => v.uuid);
+            fetch("/api/vflix/hot/impression", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ videoIds }),
+            }).catch((err) => console.error("Failed to track hot vflix impression:", err));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch hot videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotVideos();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-[160px]">
+        <div className="flex items-center gap-2 mb-5">
+          <span className="text-lg">🔥</span>
+          <h3 className="text-[15px] font-bold text-foreground">Hot on VFlix</h3>
+        </div>
+        <div className="flex flex-col gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-black/20">
+              <div className="w-full h-full animate-pulse bg-white/5" />
+              <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="size-6 rounded-full bg-white/10 animate-pulse" />
+                  <div className="h-3 w-16 bg-white/10 animate-pulse rounded" />
+                </div>
+                <div className="h-2 w-full bg-white/10 animate-pulse rounded" />
+                <div className="h-2 w-1/2 bg-white/10 animate-pulse rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (hotVideos.length === 0) return null;
 
@@ -40,7 +98,7 @@ const HotOnVflix = ({ videos, onVideoSelect }: HotOnVflixProps) => {
           return (
             <div
               key={video.uuid}
-              onClick={() => onVideoSelect(videos.indexOf(video))}
+              onClick={() => onVideoSelect(video)}
               className="relative w-full rounded-2xl overflow-hidden bg-black/20 cursor-pointer group"
             >
               {/* Thumbnail */}
@@ -56,15 +114,6 @@ const HotOnVflix = ({ videos, onVideoSelect }: HotOnVflixProps) => {
                 )}
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                {/* User avatar overlay top-right */}
-                {/* <div className="absolute top-2 right-2">
-                                    <CustomAvatar
-                                        src={userAvatar}
-                                        name={userName}
-                                        className="size-8 border-2 border-background"
-                                    />
-                                </div> */}
 
                 {/* Bottom overlay content */}
                 <div className="absolute bottom-0 left-0 right-0 p-3">
