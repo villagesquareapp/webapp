@@ -23,7 +23,7 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
         if (response?.status) {
           // The endpoint might return the array directly or in a paginated structure
           const data = Array.isArray(response.data) ? response.data : response.data?.data || [];
-          const slicedVideos = data.slice(0, 6);
+          const slicedVideos = data.slice(0, 5);
           setHotVideos(slicedVideos);
 
           // Track impressions for the displayed hot videos
