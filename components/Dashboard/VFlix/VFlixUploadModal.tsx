@@ -846,7 +846,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
 
                   <div className="flex items-center justify-between text-white p-3 rounded-xl">
-                    <div className="flex items-center gap-x-3">
+                    <div className="flex items-center gap-x-2">
                       <svg
                         width="20"
                         height="20"
