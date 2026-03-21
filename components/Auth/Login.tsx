@@ -55,6 +55,7 @@ export function Login({ className, ...props }: LoginProps) {
         password: values.password,
         timezone: getTimeZone(),
         login_type: "password",
+        provider: "default",
         // provider: "default",
         // provider_token: null,
         // device_id: null,
