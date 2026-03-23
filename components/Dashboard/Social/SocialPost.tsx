@@ -446,8 +446,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <button
                   onClick={() => handleTabChange("explore")}
                   className={`px-8 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "explore"
-                    ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
-                    : "border-white/5 bg-transparent text-white/50 hover:text-white"
+                    ? "border-[#0D52D2] bg-foreground text-background"
+                    : "border-border bg-transparent text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Explore
@@ -457,8 +457,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <button
                   onClick={() => handleTabChange("connections")}
                   className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "connections"
-                    ? "border-[#0D52D2] bg-[#1C1C1E] text-white"
-                    : "border-white/5 bg-transparent text-white/50 hover:text-white"
+                    ? "border-[#0D52D2] bg-foreground text-background"
+                    : "border-border bg-transparent text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Connections

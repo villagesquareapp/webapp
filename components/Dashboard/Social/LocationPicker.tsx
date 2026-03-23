@@ -110,10 +110,10 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-0 left-0 w-full bg-[#1A1A1C] border border-white/5 shadow-2xl z-[100] flex flex-col rounded-xl max-h-[320px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+      className="absolute top-0 left-0 w-full bg-popover border border-border shadow-2xl z-[100] flex flex-col rounded-xl max-h-[320px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-full transition-colors">
           <IoClose className="text-white size-5" />
         </button>

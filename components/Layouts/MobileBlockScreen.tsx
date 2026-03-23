@@ -99,7 +99,7 @@ const MobileBlockScreen = ({ children }: { children: React.ReactNode }) => {
             </p>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/5 mt-8">
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 border border-border mt-8">
             <div className="flex items-start gap-3 text-left">
               <Monitor className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
               <div className="space-y-2">

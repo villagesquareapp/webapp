@@ -417,7 +417,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
         className={`
     fixed top-[10%] left-1/2 -translate-x-1/2 translate-y-0
     flex flex-col p-0 rounded-2xl overflow-hidden
-    border border-white/5 bg-[#1C1C1E] shadow-2xl
+    border border-border bg-background shadow-2xl
     [&>button:last-child]:hidden transition-all duration-300
     ${step === 1 ? "max-w-[550px]" : "max-w-[800px]"} w-full
   `}
@@ -464,7 +464,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
         {step === 2 && (
           <div className="flex flex-col bg-[#161618] h-[700px] relative">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h3 className="text-white font-semibold text-lg">Create Post</h3>
               <button
                 onClick={handleClose}
@@ -543,7 +543,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
                   {/* Inline Hashtags Dropdown */}
                   {activeHashtagSearch !== null && (
-                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-[#1A1A1C] border border-white/5 shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
+                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-popover border border-border shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
                       {loadingHashtags && hashtagResults.length === 0 && (
                         <div className="py-4 text-center text-[13px] text-white/50">
                           Searching...
@@ -575,7 +575,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
                   {/* Inline Mentions Dropdown */}
                   {activeMentionSearch !== null && (
-                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-[#1A1A1C] border border-white/5 shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
+                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-popover border border-border shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
                       {loadingMentions && mentionResults.length === 0 && (
                         <div className="py-4 text-center text-[13px] text-white/50">
                           Searching...
@@ -652,7 +652,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                   </button>
 
                   {isPrivacyOpen && (
-                    <div className="absolute top-[48px] left-0 w-full z-20 bg-[#1A1A1C] border border-white/5 shadow-2xl rounded-b-xl flex flex-col pt-1 pb-2">
+                    <div className="absolute top-[48px] left-0 w-full z-20 bg-popover border border-border shadow-2xl rounded-b-xl flex flex-col pt-1 pb-2">
                       <button
                         onClick={() => {
                           setPrivacySetting("Everyone");
@@ -846,7 +846,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
 
                   <div className="flex items-center justify-between text-white p-3 rounded-xl">
-                    <div className="flex items-center gap-x-3">
+                    <div className="flex items-center gap-x-2">
                       <svg
                         width="20"
                         height="20"

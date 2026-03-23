@@ -313,7 +313,7 @@ const ReplyModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="flex flex-col !max-w-[600px] w-full p-0 rounded-[32px] overflow-hidden border border-white/5 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden max-h-[85vh]">
+      <DialogContent className="flex flex-col !max-w-[600px] w-full p-0 rounded-[32px] overflow-hidden border border-border bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden max-h-[85vh]">
         <div className="flex flex-col h-full p-4 pb-2">
           {/* Header: Replying to */}
           <p className="text-[15px] italic text-[#8E8E93] pb-4">
@@ -323,7 +323,7 @@ const ReplyModal = ({
             </span>
           </p>
           {post && (
-            <div className="border border-white/5 rounded-[24px] p-5 mb-5 bg-transparent flex justify-between items-start gap-1">
+            <div className="border border-border rounded-[24px] p-5 mb-5 bg-transparent flex justify-between items-start gap-1">
               <div>
                 <div className="flex gap-4">
                   <CustomAvatar
@@ -333,7 +333,7 @@ const ReplyModal = ({
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-[15px] text-white">
+                      <span className="font-bold text-[15px] text-foreground">
                         {replyContext.user?.name}
                       </span>
                       {!!replyContext.user?.verified_status && (
@@ -365,7 +365,7 @@ const ReplyModal = ({
                   </div>
                 </div>
                 <div className="flex items-start justify-between gap-6 mt-4">
-                  <p className="flex-1 text-[16px] text-white/90 leading-relaxed whitespace-pre-wrap">
+                  <p className="flex-1 text-[16px] text-foreground leading-relaxed whitespace-pre-wrap">
                     {replyContext.content?.split(" ").map((word, i) =>
                       word.startsWith("#") || word.startsWith("@") ? (
                         <span key={i} className="text-[#1D4ED8]">
@@ -380,7 +380,7 @@ const ReplyModal = ({
               </div>
 
               {replyContext.media?.[0] && (
-                <div className="shrink-0 w-[125px] h-[125px] rounded-24 relative border border-white/5">
+                <div className="shrink-0 w-[125px] h-[125px] rounded-24 relative border border-border">
                   {replyContext.media[0].media_type === "image" ? (
                     <img
                       src={replyContext.media[0].media_url}
@@ -414,7 +414,7 @@ const ReplyModal = ({
                 />
                 <div className="flex-1 flex flex-col">
                   <div className="flex flex-col leading-tight pt-1 gap-1">
-                    <span className="font-bold text-[13px] text-white">
+                    <span className="font-bold text-[13px] text-foreground">
                       {user?.name}
                     </span>
                     <span className="text-[12px] text-[#8E8E93]">
@@ -434,7 +434,7 @@ const ReplyModal = ({
               <div className="relative w-full min-h-[80px] mt-4">
                 {/* Highlight Overlay */}
                 <div
-                  className="absolute inset-x-0 top-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-white"
+                  className="absolute inset-x-0 top-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-foreground"
                   aria-hidden="true"
                 >
                   {!newComment ? (
@@ -442,9 +442,9 @@ const ReplyModal = ({
                   ) : (
                     newComment.split(/(\s+)/).map((part, i) => {
                       if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
-                        return <span key={i} className="text-[#0A84FF]">{part}</span>;
+                        return <span key={i} className="text-blue-500 font-medium">{part}</span>;
                       }
-                      return <span key={i}>{part}</span>;
+                      return <span key={i} className="text-foreground">{part}</span>;
                     })
                   )}
                   {/* trailing newline fix for accurate height matching */}
@@ -478,7 +478,7 @@ const ReplyModal = ({
                     e.target.style.height = "auto";
                     e.target.style.height = `${e.target.scrollHeight}px`;
                   }}
-                  className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-white outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
+                  className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-foreground outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
                   maxLength={500}
                   spellCheck={false}
                 />
@@ -585,7 +585,7 @@ const ReplyModal = ({
         </div>
 
         {/* Footer actions */}
-        <div className="p-6 pb-8 flex items-center justify-between border-t border-white/5">
+        <div className="p-6 pb-8 flex items-center justify-between border-t border-border">
           <button
             onClick={() => setIsAudienceDialogOpen(true)}
             className="flex items-center gap-3 text-white/90 font-bold px-0 py-2 rounded-2xl transition-all"
@@ -621,7 +621,7 @@ const ReplyModal = ({
         {/* New Audience Selection Overlay */}
         {isAudienceDialogOpen && (
           <div className="absolute inset-0 bg-background z-[60] flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
-            <div className="flex items-center justify-between px-8 py-4 border-b border-white/5">
+            <div className="flex items-center justify-between px-8 py-4 border-b border-border">
               <div className="w-8" /> {/* Spacer */}
               <h3 className="text-[18px] font-bold text-white">Audience</h3>
               <button

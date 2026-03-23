@@ -84,7 +84,7 @@ const ShareModal = ({ open, onClose, postId, shareUrl }: ShareModalProps) => {
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="!max-w-[550px] w-full p-0 rounded-[20px] overflow-hidden border border-white/10 bg-[#1C1C1E] shadow-2xl [&>button:last-child]:hidden">
+            <DialogContent className="!max-w-[550px] w-full p-0 rounded-[20px] overflow-hidden border border-border bg-background shadow-2xl [&>button:last-child]:hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-3">
                     <h2 className="text-[16px] font-bold text-white">Share</h2>
@@ -123,8 +123,8 @@ const ShareModal = ({ open, onClose, postId, shareUrl }: ShareModalProps) => {
                                 >
                                     <div
                                         className={`relative rounded-full transition-all ${isSelected
-                                                ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[#1C1C1E]"
-                                                : ""
+                                            ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[#1C1C1E]"
+                                            : ""
                                             }`}
                                     >
                                         <CustomAvatar

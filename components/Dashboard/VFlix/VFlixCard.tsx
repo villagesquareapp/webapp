@@ -82,8 +82,8 @@ function FollowButton({
       onClick={handleFollowToggle}
       disabled={loading}
       className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
-          ? "bg-white/10 text-white/80 hover:bg-white/20"
-          : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
+        ? "bg-white/10 text-white/80 hover:bg-white/20"
+        : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
         } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {following ? "Following" : "Follow"}

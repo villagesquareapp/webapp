@@ -1,6 +1,7 @@
 "use client";
 
 import CustomAvatar from "components/ui/custom/custom-avatar";
+import Link from "next/link";
 import VsCustomLogo from "components/ui/custom/vs-custom-logo";
 import { useState } from "react";
 import { IoClose, IoSearch } from "react-icons/io5";
@@ -27,19 +28,25 @@ const DashboardNavbar = () => {
     return name
       .split(" ")
       .filter(Boolean)
-      .map(word => word[0]?.toUpperCase())
+      .map((word) => word[0]?.toUpperCase())
       .slice(0, 2)
-      .join("")
+      .join("");
   }
 
   return (
-    <div className="relative flex h-16 z-50 bg-background items-center justify-center top-0 shrink-0 after:fixed after:top-16 after:left-0 after:right-0 after:border-b after:border-white/5 pointer-events-none after:pointer-events-none">
+    <div className="relative flex h-16 z-50 bg-background items-center justify-center top-0 shrink-0 after:fixed after:top-16 after:left-0 after:right-0 after:border-b after:border-border pointer-events-none after:pointer-events-none">
       <div className="flex w-full items-center h-full pointer-events-auto">
         <div className="md:hidden mr-4 shrink-0 pl-4">
           <SidebarTrigger />
         </div>
 
-        <div className={pathname.includes("/vflix") ? "w-[565px] ml-[268px] mr-[63px]" : "w-[650px] px-4 lg:px-6"}>
+        <div
+          className={
+            pathname.includes("/vflix")
+              ? "w-[565px] ml-[268px] mr-[63px]"
+              : "w-[650px] px-4 lg:px-6"
+          }
+        >
           <div className="relative w-full">
             <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
             <input
@@ -84,7 +91,13 @@ const DashboardNavbar = () => {
           </div>
         </div>
         {/* Right hand side Navbar */}
-        <div className={pathname.includes("/vflix") ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16" : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"}>
+        <div
+          className={
+            pathname.includes("/vflix")
+              ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16"
+              : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"
+          }
+        >
           {/* Theme Toggle */}
           <button
             className="text-muted-foreground hover:text-foreground hidden sm:block transition-colors"
@@ -110,6 +123,7 @@ const DashboardNavbar = () => {
             </svg>
           </button> */}
 
+          {/* Profile */}
           <Popover>
             <PopoverTrigger asChild>
               <div className="flex items-center gap-x-2 cursor-pointer">
@@ -119,15 +133,30 @@ const DashboardNavbar = () => {
                   className="size-9 md:size-10"
                 />
                 <div className="hidden lg:flex flex-col items-start leading-tight">
-                  <span className="text-sm font-bold uppercase">{user?.name.split(" ")[0]}</span>
-                  <span className="text-xs text-muted-foreground">@{user?.username || ""}</span>
+                  <span className="text-sm font-bold uppercase">
+                    {user?.name.split(" ")[0]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    @{user?.username || ""}
+                  </span>
                 </div>
               </div>
             </PopoverTrigger>
-            <PopoverContent className="w-40" align="end">
-              <Button variant="outline" className="w-full" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
-                Logout
-              </Button>
+            <PopoverContent className="w-40 p-2" align="end">
+              <div className="flex flex-col gap-1 w-full">
+                <Link href={`/user/${user?.username || ""}`}>
+                  <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                    View Profile
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full h-9"
+                  onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                >
+                  Logout
+                </Button>
+              </div>
             </PopoverContent>
           </Popover>
         </div>

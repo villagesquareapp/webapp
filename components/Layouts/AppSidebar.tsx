@@ -42,13 +42,13 @@ const items = [
     title: "Social",
     url: "/dashboard/social",
     icon: <GoHome className="!size-6 -ml-0.5" />,
-    activeIcon: <GoHomeFill className="fill-black !size-6 -mt-0.5" />,
+    activeIcon: <GoHomeFill className="fill-background text-background !size-6 -mt-0.5" />,
   },
   {
     title: "Vflix",
     url: "/dashboard/vflix",
     icon: <VFlixOutline className="!size-6" />,
-    activeIcon: <VFlixFill className="fill-black !size-6 " />,
+    activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
   // {
   //   title: "Messages",
@@ -119,7 +119,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r border-white/5 shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
+    <Sidebar className="border-r border-border shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
       <SidebarHeader className="pt-6 pb-4 border-none bg-background">
         <VsCustomLogo />
       </SidebarHeader>
@@ -163,9 +163,16 @@ export function AppSidebar() {
             <Plus className="size-5 text-white shrink-0" />
           </Button>
         ) : (
+          // <Button
+          //   onClick={handleCreatePost}
+          //   className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
+          // >
+          //   New Post
+          // </Button>
+
           <Button
             onClick={handleCreatePost}
-            className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
+            className="w-full h-12 rounded-full bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
           >
             New Post
           </Button>
