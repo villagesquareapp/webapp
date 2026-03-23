@@ -64,8 +64,8 @@ function FollowButton({
         // Update the parent videos state so follow status persists
         setVideos((prev) =>
           prev.map((v) =>
-            v.user.uuid === userId ? { ...v, is_followed: newFollowing } : v
-          )
+            v.user.uuid === userId ? { ...v, is_followed: newFollowing } : v,
+          ),
         );
       }
     } catch (error) {
@@ -81,10 +81,11 @@ function FollowButton({
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
-        ? "bg-white/10 text-white/80 hover:bg-white/20"
-        : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
-        } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${
+        following
+          ? "bg-white/10 text-white/80 hover:bg-white/20"
+          : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
+      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {following ? "Following" : "Follow"}
     </button>
@@ -210,12 +211,63 @@ export default function VflixCard({
     }
   }, [isPlaying]);
 
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
   const [clickedMediaIndex, setClickedMediaIndex] = useState<number>(0);
+
+  const seekToFraction = (fraction: number) => {
+    const clamped = Math.max(0, Math.min(1, fraction));
+    if (playerRef.current && duration) {
+      playerRef.current.seekTo(clamped * duration, "seconds");
+      setCurrentTime(clamped * duration);
+    }
+  };
+
+  const getFractionFromEvent = (e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
+    if (!progressBarRef.current) return 0;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+    return (clientX - rect.left) / rect.width;
+  };
+
+  const handleProgressMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    isDraggingRef.current = true;
+    seekToFraction(getFractionFromEvent(e));
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (isDraggingRef.current) seekToFraction(getFractionFromEvent(ev));
+    };
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  const handleProgressTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    isDraggingRef.current = true;
+    seekToFraction(getFractionFromEvent(e));
+
+    const onTouchMove = (ev: TouchEvent) => {
+      if (isDraggingRef.current) seekToFraction(getFractionFromEvent(ev));
+    };
+    const onTouchEnd = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+    window.addEventListener("touchmove", onTouchMove);
+    window.addEventListener("touchend", onTouchEnd);
+  };
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
 
   const handlePostClickWithVideoPause = (
     e: React.MouseEvent,
-    mediaIndex?: number
+    mediaIndex?: number,
   ) => {
     e.stopPropagation();
 
@@ -230,9 +282,10 @@ export default function VflixCard({
   };
 
   const mediaItem = Array.isArray(post?.media) ? post?.media[0] : post?.media;
-  const videoUrl = mediaItem?.is_transcode_complete && mediaItem?.transcoded_media_url
-    ? mediaItem.transcoded_media_url
-    : mediaItem?.media_url;
+  const videoUrl =
+    mediaItem?.is_transcode_complete && mediaItem?.transcoded_media_url
+      ? mediaItem.transcoded_media_url
+      : mediaItem?.media_url;
 
   return (
     <>
@@ -240,7 +293,9 @@ export default function VflixCard({
         className="relative w-full h-full bg-black rounded-xl overflow-hidden"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-      >      <ReactPlayer
+      >
+        {" "}
+        <ReactPlayer
           ref={playerRef}
           url={videoUrl}
           playing={isPlaying}
@@ -253,25 +308,24 @@ export default function VflixCard({
           onReady={handleReady}
           onBuffer={handleBuffer}
           onBufferEnd={handleBufferEnd}
-          style={{ position: 'absolute', top: 0, left: 0 }}
+          style={{ position: "absolute", top: 0, left: 0 }}
           config={{
             file: {
-              forceHLS: videoUrl?.includes('.m3u8'),
+              forceHLS: videoUrl?.includes(".m3u8"),
               attributes: {
                 poster: mediaItem?.thumbnail || mediaItem?.media_thumbnail,
                 playsInline: true,
-                style: { objectFit: 'cover', width: '100%', height: '100%' },
+                style: { objectFit: "cover", width: "100%", height: "100%" },
               },
               hlsOptions: {
                 debug: false,
                 // xhrSetup: function(xhr: XMLHttpRequest, url: string) {
                 //   // You can add custom headers here if needed
                 // }
-              }
-            }
+              },
+            },
           }}
         />
-
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
         <div className="absolute top-4 right-4 z-30">
@@ -314,13 +368,11 @@ export default function VflixCard({
             </PopoverContent>
           </Popover>
         </div>
-
         {isBuffering && (
           <div className="absolute inset-0 flex items-center justify-center z-30">
             <LoadingSpinner />
           </div>
         )}
-
         {/* Clickable area for play/pause - only covers the video, not the bottom controls */}
         <button
           onClick={togglePlay}
@@ -336,9 +388,8 @@ export default function VflixCard({
             </>
           )}
         </button>
-
         {/* Bottom info */}
-        <div className="absolute bottom-4 left-4 right-4 text-white z-30 pointer-events-auto">
+        <div className="absolute bottom-10 left-4 right-4 text-white z-30 pointer-events-auto">
           {/* User row */}
           <div className="flex items-center gap-2 pointer-events-auto">
             <CustomAvatar
@@ -383,30 +434,49 @@ export default function VflixCard({
           <div className="pointer-events-auto pb-3">
             <VflixActionButtons
               setVideos={setVideos}
-              likeUnlikeVflix={(postId) => likeUnlikeVflix(postId, post._source)}
+              likeUnlikeVflix={(postId) =>
+                likeUnlikeVflix(postId, post._source)
+              }
               post={post}
               onCommentClick={onCommentClick}
               onShareClick={() => setIsShareOpen(true)}
             />
           </div>
         </div>
-
         {/* Progress + volume + timer */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-1 pt-6 z-20 pointer-events-auto bg-gradient-to-t from-black/60 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-2 pt-6 z-40 pointer-events-auto bg-gradient-to-t from-black/60 to-transparent">
           <div className="flex items-center gap-4 text-xs text-gray-300 pointer-events-auto">
-            <div className="flex-1 h-1 bg-gray-600/80 rounded-full overflow-hidden cursor-pointer">
-              <div
-                className="h-full bg-white transition-all duration-100"
-                style={{
-                  width: duration ? `${(currentTime / duration) * 100}%` : "0%",
-                }}
-              />
+            {/* Scrubber */}
+            <div
+              ref={progressBarRef}
+              className="flex-1 h-4 flex items-center cursor-pointer group relative"
+              onMouseDown={handleProgressMouseDown}
+              onTouchStart={handleProgressTouchStart}
+            >
+              {/* Track background */}
+              <div className="absolute inset-y-0 left-0 right-0 flex items-center">
+                <div className="w-full h-1 bg-gray-600/80 rounded-full relative">
+                  {/* Filled track */}
+                  <div
+                    className="h-full bg-white rounded-full"
+                    style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
+                  />
+                  {/* Thumb dot */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-md transition-transform group-hover:scale-125"
+                    style={{ left: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <span className="font-medium text-white/90">
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
-              <button onClick={toggleMute} className="hover:scale-110 transition-transform pointer-events-auto text-white">
+              <button
+                onClick={toggleMute}
+                className="hover:scale-110 transition-transform pointer-events-auto text-white"
+              >
                 {isMuted ? (
                   <VolumeX className="w-5 h-5" />
                 ) : (
