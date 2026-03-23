@@ -136,7 +136,7 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
                   {/* Stats row */}
                   <div className="flex items-center justify-between gap-4 p-0">
                     <div className="flex items-center gap-1.5">
-                      <PiHeartFill size={13} className="" />
+                      <PiHeartFill size={13} className="text-white" />
                       <span className="text-[12px] text-white font-medium">
                         {formatCount(likes)}
                       </span>

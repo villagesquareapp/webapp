@@ -291,17 +291,35 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
   };
 
   const handleTagPeopleClick = () => {
-    setCaption((prev) => prev + (prev && !prev.endsWith(" ") ? " @" : "@"));
+    setCaption((prev) => {
+      const newCaption = prev + (prev && !prev.endsWith(" ") ? " @" : "@");
+      setTimeout(() => {
+        if (captionInputRef.current) {
+          captionInputRef.current.focus();
+          const len = newCaption.length;
+          captionInputRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return newCaption;
+    });
     setActiveMentionSearch("");
     setActiveHashtagSearch(null);
-    setTimeout(() => captionInputRef.current?.focus(), 0);
   };
 
   const handleHashtagsClick = () => {
-    setCaption((prev) => prev + (prev && !prev.endsWith(" ") ? " #" : "#"));
+    setCaption((prev) => {
+      const newCaption = prev + (prev && !prev.endsWith(" ") ? " #" : "#");
+      setTimeout(() => {
+        if (captionInputRef.current) {
+          captionInputRef.current.focus();
+          const len = newCaption.length;
+          captionInputRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return newCaption;
+    });
     setActiveHashtagSearch("");
     setActiveMentionSearch(null);
-    setTimeout(() => captionInputRef.current?.focus(), 0);
   };
 
   const handlePost = async () => {
@@ -424,7 +442,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
       >
         {step === 1 && (
           <div
-            className="flex flex-col items-center justify-center p-12 min-h-[400px] bg-[#171719]"
+            className="flex flex-col items-center justify-center p-12 min-h-[400px] bg-background"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
@@ -439,15 +457,15 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
               />
             </div>
 
-            <h2 className="text-white text-lg font-semibold tracking-wide mb-2">
+            <h2 className="text-foreground text-lg font-semibold tracking-wide mb-2">
               Select Media to Upload
             </h2>
-            <p className="text-gray-400 text-sm mb-8">
+            <p className="text-gray-500 text-sm mb-8">
               Or drag photos and video here
             </p>
 
             <Button
-              className="bg-[#094DB5BF] hover:bg-[#094DB5BF]/90 text-white px-10 w-[50%] h-12 rounded-full font-medium"
+              className="bg-[#0D52D2] hover:bg-[#094DB5BF]/90 text-white px-10 w-[50%] h-12 rounded-full font-medium"
               onClick={() => fileInputRef.current?.click()}
             >
               Select
@@ -463,14 +481,14 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
         )}
 
         {step === 2 && (
-          <div className="flex flex-col bg-[#161618] h-[700px] relative">
+          <div className="flex flex-col bg-background h-[700px] relative">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h3 className="text-white font-semibold text-lg">Create Post</h3>
+              <h3 className="text-foreground font-semibold text-lg">Create Post</h3>
               <button
                 onClick={handleClose}
                 className="p-1 hover:bg-white/5 rounded-full transition-colors"
               >
-                <IoClose className="text-white size-5 opacity-80" />
+                <IoClose className="text-foreground size-5 opacity-80" />
               </button>
             </div>
 
@@ -491,11 +509,11 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                 <div className="relative w-full min-h-[120px] mb-4">
                   {/* Highlight Overlay */}
                   <div
-                    className="absolute inset-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-white"
+                    className="absolute inset-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-foreground"
                     aria-hidden="true"
                   >
                     {!caption ? (
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-500 text-sm">
                         Say something about this post...
                       </span>
                     ) : (
@@ -505,12 +523,12 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                           /^#[\w\d_]*/.test(part)
                         ) {
                           return (
-                            <span key={i} className="text-[#0A84FF]">
+                            <span key={i} className="text-blue-500 font-medium">
                               {part}
                             </span>
                           );
                         }
-                        return <span key={i}>{part}</span>;
+                        return <span key={i} className="text-foreground">{part}</span>;
                       })
                     )}
                     {/* Trailing newline fix */}
@@ -521,7 +539,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                     ref={captionInputRef}
                     value={caption}
                     onChange={handleCaptionChange}
-                    className="relative w-full h-[120px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-white outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
+                    className="relative w-full h-[120px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-foreground outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
                     maxLength={500}
                     spellCheck={false}
                   />
@@ -530,27 +548,27 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                 <div className="flex flex-row gap-x-3 mb-6 mt-12 relative">
                   <button
                     onClick={handleTagPeopleClick}
-                    className="flex items-center gap-x-2 bg-white/5 hover:bg-white/10 text-white text-xs font-medium px-4 py-2 rounded-full transition-colors"
+                    className="flex items-center gap-x-2 bg-background hover:bg-background/10 text-foreground text-xs font-medium px-4 py-2 rounded-full transition-colors"
                   >
-                    <span className="text-gray-400">@</span> Tag people
+                    <span className="text-foreground">@</span> Tag people
                   </button>
                   <button
                     onClick={handleHashtagsClick}
-                    className="flex items-center gap-x-2 bg-white/5 hover:bg-white/10 text-white text-xs font-medium px-4 py-2 rounded-full transition-colors"
+                    className="flex items-center gap-x-2 bg-background hover:bg-background/10 text-foreground text-xs font-medium px-4 py-2 rounded-full transition-colors"
                   >
-                    <span className="text-gray-400">#</span> Hashtags
+                    <span className="text-foreground">#</span> Hashtags
                   </button>
 
                   {/* Inline Hashtags Dropdown */}
                   {activeHashtagSearch !== null && (
-                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-popover border border-border shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
+                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-background border border-border shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
                       {loadingHashtags && hashtagResults.length === 0 && (
-                        <div className="py-4 text-center text-[13px] text-white/50">
+                        <div className="py-4 text-center text-[13px] text-foreground">
                           Searching...
                         </div>
                       )}
                       {!loadingHashtags && hashtagResults.length === 0 && (
-                        <div className="py-4 text-center text-[13px] text-white/50">
+                        <div className="py-4 text-center text-[13px] text-foreground">
                           No hashtags found.
                         </div>
                       )}
@@ -562,10 +580,10 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                           }
                           className="w-full flex flex-col px-4 py-2.5 hover:bg-white/5 transition-colors text-left"
                         >
-                          <span className="text-[14px] font-bold text-white line-clamp-1 mb-0.5">
+                          <span className="text-[14px] font-bold text-foreground line-clamp-1 mb-0.5">
                             #{tag.display_form}
                           </span>
-                          <span className="text-[12px] text-white/50">
+                          <span className="text-[12px] text-foreground/50">
                             {formatUsageCount(tag.usage_count)}
                           </span>
                         </button>
@@ -575,21 +593,21 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
 
                   {/* Inline Mentions Dropdown */}
                   {activeMentionSearch !== null && (
-                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-popover border border-border shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
+                    <div className="absolute top-full mt-2 left-0 w-[240px] z-30 bg-background border border-border shadow-2xl rounded-xl max-h-[280px] overflow-y-auto no-scrollbar py-2">
                       {loadingMentions && mentionResults.length === 0 && (
-                        <div className="py-4 text-center text-[13px] text-white/50">
+                        <div className="py-4 text-center text-[13px] text-foreground">
                           Searching...
                         </div>
                       )}
                       {!loadingMentions &&
                         mentionResults.length === 0 &&
                         activeMentionSearch.trim() && (
-                          <div className="py-4 text-center text-[13px] text-white/50">
+                          <div className="py-4 text-center text-[13px] text-foreground">
                             No users found.
                           </div>
                         )}
                       {!loadingMentions && !activeMentionSearch.trim() && (
-                        <div className="py-4 text-center text-[12px] text-white/40">
+                        <div className="py-4 text-center text-[12px] text-foreground">
                           Type a username to search...
                         </div>
                       )}
@@ -607,10 +625,10 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                             className="size-9 flex-shrink-0"
                           />
                           <div className="flex flex-col">
-                            <span className="text-[13px] font-bold text-white line-clamp-1 leading-snug">
+                            <span className="text-[13px] font-bold text-foreground line-clamp-1 leading-snug">
                               {user.name}
                             </span>
-                            <span className="text-[12px] text-white/50 line-clamp-1">
+                            <span className="text-[12px] text-gray-500 line-clamp-1">
                               @{user.username}
                             </span>
                           </div>
@@ -623,7 +641,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                 <div className="flex flex-col gap-y-1 relative rounded-xl">
                   <button
                     onClick={() => setIsPrivacyOpen(!isPrivacyOpen)}
-                    className={`flex items-center justify-between text-white hover:bg-white/5 py-3 px-2 transition-all ${isPrivacyOpen ? "rounded-t-xl rounded-b-none bg-white/5" : "rounded-xl"}`}
+                    className={`flex items-center justify-between text-foreground hover:bg-white/5 py-3 px-2 transition-all ${isPrivacyOpen ? "rounded-t-xl rounded-b-none bg-white/5" : "rounded-xl"}`}
                   >
                     <div className="flex items-center gap-x-3">
                       <svg
@@ -679,7 +697,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                             </svg>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-white text-[13px] font-medium">
+                            <span className="text-foreground text-[13px] font-medium">
                               Everyone
                             </span>
                             <span className="text-gray-500 text-[11px]">
@@ -723,7 +741,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                             </svg>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-white text-[13px] font-medium">
+                            <span className="text-foreground text-[13px] font-medium">
                               Friends / Followers
                             </span>
                             <span className="text-gray-500 text-[11px]">
@@ -772,7 +790,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                             </svg>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-white text-[13px] font-medium">
+                            <span className="text-foreground text-[13px] font-medium">
                               Only me
                             </span>
                             <span className="text-gray-500 text-[11px]">
@@ -810,7 +828,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                       </svg>
-                      <span className={`text-[15px] font-normal truncate max-w-[160px] ${selectedAddress ? "text-blue-400" : ""}`}>
+                      <span className={`text-[15px]  font-normal truncate max-w-[160px] ${selectedAddress ? "text-blue-400" : "text-foreground"}`}>
                         {selectedAddress || "Add location"}
                       </span>
                     </div>
@@ -824,7 +842,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                         }}
                         className="p-1 hover:bg-white/10 rounded-full transition-colors"
                       >
-                        <IoClose className="text-gray-400 size-4" />
+                        <IoClose className="text-foreground size-4" />
                       </div>
                     ) : (
                       <TfiAngleRight className="text-gray-500" />
@@ -860,7 +878,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                       >
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                       </svg>
-                      <span className="text-[15px] font-normal">
+                      <span className="text-[15px] text-foreground font-normal">
                         Allow comments
                       </span>
                     </div>
@@ -878,7 +896,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
             {/* Footer: Post Button */}
             <div className="flex justify-end px-6 pb-6">
               <Button
-                className="bg-[#094DB5BF] hover:bg-[#094DB5BF]/90 text-white px-8 h-12 w-[150px] rounded-full font-medium"
+                className="bg-[#0D52D2] hover:bg-[#094DB5BF]/90 text-white px-8 h-12 w-[150px] rounded-full font-medium"
                 onClick={handlePost}
                 disabled={!videoFile}
               >

@@ -278,6 +278,38 @@ const ReplyModal = ({
     }
   };
 
+  const handleTagPeopleClick = () => {
+    setNewComment((prev) => {
+      const updated = prev + (prev && !prev.endsWith(" ") ? " @" : "@");
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const len = updated.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return updated;
+    });
+    // Trigger inline mention dropdown by simulating state
+    setIsMentionsOpen(true);
+  };
+
+  const handleHashtagsClick = () => {
+    setNewComment((prev) => {
+      const updated = prev + (prev && !prev.endsWith(" ") ? " #" : "#");
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const len = updated.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return updated;
+    });
+    // Trigger inline hashtag dropdown by simulating state
+    setIsHashtagsOpen(true);
+  };
+
   const getReplyContext = () => {
     if (replyToComment) {
       return {
@@ -453,6 +485,7 @@ const ReplyModal = ({
 
                 {/* Actual Input */}
                 <textarea
+                  ref={textareaRef}
                   value={newComment}
                   onChange={(e) => {
                     e.target.style.height = "auto";
@@ -550,8 +583,8 @@ const ReplyModal = ({
             </span>
           </div> */}
           <div className="flex items-center gap-3 pt-1">
-            <label className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
-              <input type="file" accept="image/*,video/*" className="hidden" />
+            <label className={`transition-colors ${selectedFile ? "cursor-not-allowed opacity-30 text-gray-500" : "cursor-pointer text-[#8E8E93] hover:text-foreground"}`}>
+              <input type="file" accept="image/*,video/*" className="hidden" ref={fileInputRef} onChange={handleFileChange} disabled={!!selectedFile} />
               <svg
                 width="20"
                 height="20"
@@ -572,12 +605,12 @@ const ReplyModal = ({
             {/* <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
               <IoLocationSharp size={20} />
             </div> */}
-            <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
+            <div className="cursor-pointer text-[#8E8E93] hover:text-foreground transition-colors" onClick={handleTagPeopleClick}>
               <VscMention size={20} />
             </div>
             <div
-              className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
-            // onClick={() => setActiveHashtagItemIndex(idx)}
+              className="cursor-pointer text-[#8E8E93] hover:text-foreground transition-colors"
+              onClick={handleHashtagsClick}
             >
               <FiHash size={20} />
             </div>

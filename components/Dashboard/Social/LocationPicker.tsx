@@ -110,14 +110,14 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-0 left-0 w-full bg-popover border border-border shadow-2xl z-[100] flex flex-col rounded-xl max-h-[320px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+      className="absolute top-0 left-0 w-full bg-background border border-border shadow-2xl z-[100] flex flex-col rounded-xl max-h-[320px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-full transition-colors">
-          <IoClose className="text-white size-5" />
+          <IoClose className="text-foreground size-5" />
         </button>
-        <h3 className="text-[16px] font-bold text-white">Add Location</h3>
+        <h3 className="text-[16px] font-bold text-foreground">Add Location</h3>
         <div className="w-7" />
       </div>
 
@@ -131,7 +131,7 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
             value={query}
             onChange={handleQueryChange}
             placeholder="Search for a place..."
-            className="flex-1 bg-transparent text-white text-[14px] placeholder:text-[#48484A] outline-none border-none ring-0"
+            className="flex-1 bg-transparent text-foreground text-[14px] placeholder:text-[#48484A] outline-none border-none ring-0"
           />
           {isSearching && (
             <div className="scale-50 origin-right">
@@ -174,7 +174,7 @@ export default function LocationPicker({ open, onClose, onSelect, currentAddress
             className="w-full flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"
           >
             <IoLocationSharp className="text-[#8E8E93] size-5 mt-0.5 shrink-0" />
-            <span className="text-[13px] text-white/80 leading-snug line-clamp-2">
+            <span className="text-[13px] text-foreground/80 leading-snug line-clamp-2">
               {r.display_name}
             </span>
           </button>

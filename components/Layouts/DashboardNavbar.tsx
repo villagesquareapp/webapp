@@ -62,7 +62,7 @@ const DashboardNavbar = () => {
               }}
               className="bg-accent h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm text-foreground"
             />
-            {searchValue.length > 0 && isSearchFocused && (
+            {/* {searchValue.length > 0 && isSearchFocused && (
               <div className="search-results absolute left-0 top-[52px] w-full bg-background rounded-lg border shadow-lg z-50">
                 <div className="w-full h-fit relative p-4" tabIndex={-1}>
                   <div className="flex justify-between">
@@ -87,7 +87,7 @@ const DashboardNavbar = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
         {/* Right hand side Navbar */}
@@ -104,7 +104,7 @@ const DashboardNavbar = () => {
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
             {theme === "light" ? (
-              <Moon className="size-5" />
+              <Moon className="size-6" />
             ) : (
               <Sun className="size-[22px]" />
             )}
@@ -130,9 +130,9 @@ const DashboardNavbar = () => {
                 <CustomAvatar
                   src={user?.profile_picture || ""}
                   name={getInitials(user?.name || "")}
-                  className="size-9 md:size-10"
+                  className="size-8 md:size-9"
                 />
-                <div className="hidden lg:flex flex-col items-start leading-tight">
+                <div className="hidden lg:flex flex-col items-start">
                   <span className="text-sm font-bold uppercase">
                     {user?.name.split(" ")[0]}
                   </span>
@@ -144,11 +144,11 @@ const DashboardNavbar = () => {
             </PopoverTrigger>
             <PopoverContent className="w-40 p-2" align="end">
               <div className="flex flex-col gap-1 w-full">
-                <Link href={`/user/${user?.username || ""}`}>
-                  <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                {/* <Link href={`/user/${user?.username || ""}`}>
+                  <Button variant="outline" className="w-full h-9">
                     View Profile
                   </Button>
-                </Link>
+                </Link> */}
                 <Button
                   variant="outline"
                   className="w-full h-9"
