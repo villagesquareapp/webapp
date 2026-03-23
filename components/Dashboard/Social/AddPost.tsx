@@ -391,7 +391,7 @@ const AddPost = ({
       />
 
       <Dialog open={isNewPostDialogOpen} onOpenChange={handleDialogChange}>
-        <DialogContent className="flex flex-col !max-w-[650px] w-full p-0 rounded-[32px] overflow-hidden border border-white/5 bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden min-h-[400px]">
+        <DialogContent className="flex flex-col !max-w-[650px] w-full p-0 rounded-[32px] overflow-hidden border border-border bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden min-h-[400px]">
           {!imagePreviewing && !imageEditing && (
             <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-4">
               {/* Threaded Post Boxes */}
@@ -399,7 +399,7 @@ const AddPost = ({
                 {items.map((it, idx) => (
                   <div
                     key={it.id}
-                    className="relative border border-white/5 rounded-2xl p-3 bg-transparent"
+                    className="relative border border-border rounded-2xl p-3 bg-transparent"
                   >
                     {/* Inner Header: User Profile and Close Button */}
                     <div className="flex items-start justify-between mb-6">
@@ -410,7 +410,7 @@ const AddPost = ({
                           className="size-10 border-0"
                         />
                         <div className="flex flex-col gap-1">
-                          <p className="text-[15px] text-white font-bold leading-tight tracking-wide">
+                          <p className="text-[15px] font-bold leading-tight tracking-wide">
                             {user?.name?.split(" ")[0].toUpperCase()}
                           </p>
                           <p className="text-[13px] text-[#8E8E93] font-medium leading-tight">
@@ -428,14 +428,14 @@ const AddPost = ({
                         }}
                         className="p-1 hover:bg-white/5 rounded-full transition-colors"
                       >
-                        <IoClose className="text-white size-5 opacity-80" />
+                        <IoClose className="text-foreground size-5 opacity-80" />
                       </button>
                     </div>
 
                     <div className="relative w-full min-h-[80px]">
                       {/* Highlight Overlay */}
                       <div
-                        className="absolute inset-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-white"
+                        className="absolute inset-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-foreground"
                         aria-hidden="true"
                       >
                         {!it.caption ? (
@@ -443,9 +443,9 @@ const AddPost = ({
                         ) : (
                           it.caption.split(/(\s+)/).map((part, i) => {
                             if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
-                              return <span key={i} className="text-[#0A84FF]">{part}</span>;
+                              return <span key={i} className="text-blue-500 font-medium">{part}</span>;
                             }
-                            return <span key={i}>{part}</span>;
+                            return <span key={i} className="text-foreground">{part}</span>;
                           })
                         )}
                         {/* trailing newline fix for accurate height matching */}
@@ -479,7 +479,7 @@ const AddPost = ({
                           e.target.style.height = "auto";
                           e.target.style.height = `${e.target.scrollHeight}px`;
                         }}
-                        className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-white outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
+                        className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-foreground outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
                         maxLength={500}
                         spellCheck={false}
                       />
@@ -671,7 +671,7 @@ const AddPost = ({
           {/* New Audience Selection Overlay */}
           {isAudienceDialogOpen && (
             <div className="absolute inset-0 bg-background z-[60] flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
-              <div className="flex items-center justify-between px-8 py-4 border-b border-white/5">
+              <div className="flex items-center justify-between px-8 py-4 border-b border-border">
                 <div className="w-8" /> {/* Spacer */}
                 <h3 className="text-[18px] font-bold text-white">Audience</h3>
                 <button

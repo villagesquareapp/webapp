@@ -8,11 +8,10 @@ const Message = ({ messageType }: { messageType: "me" | "other" }) => {
   return (
     <div className="flex flex-col gap-y-2 m-2">
       <p
-        className={`text-sm px-3 py-2 ${
-          messageType === "me"
+        className={`text-sm px-3 py-2 ${messageType === "me"
             ? "rounded-tr-none bg-primary ml-auto"
             : "rounded-tl-none bg-accent"
-        } rounded-2xl w-fit max-w-[75%]`}
+          } rounded-2xl w-fit max-w-[75%]`}
       >
         Hello how are you?how are you?how are you?how are you?how are you?how are you?
       </p>
@@ -89,8 +88,8 @@ const Chat = ({ removeSelectedChat }: { removeSelectedChat: () => void }) => {
       </div>
       <div className="sticky bottom-0 bg-background py-1.5">
         <div className="flex px-3">
-          <div className="bg-secondary border border-white/15 rounded-md min-h-[40px] h-fit max-h-[100px] flex flex-row items-center py-1 justify-center w-full px-2">
-            <div className="border-r h-[35px] pr-2 flex border-white/15 items-center">
+          <div className="bg-secondary border border-border rounded-md min-h-[40px] h-fit max-h-[100px] flex flex-row items-center py-1 justify-center w-full px-2">
+            <div className="border-r h-[35px] pr-2 flex border-border items-center">
               <div className="relative size-fit">
                 <input type="file" className="inset-0 absolute opacity-0 z-10" />
                 <MdAttachFile className="size-5" />

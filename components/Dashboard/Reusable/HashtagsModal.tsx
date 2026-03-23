@@ -143,7 +143,7 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="!max-w-[420px] w-full p-0 rounded-[20px] overflow-hidden border border-border bg-card shadow-2xl [&>button:last-child]:hidden">
+            <DialogContent className="!max-w-[420px] w-full p-0 rounded-[20px] overflow-hidden border border-border bg-background shadow-2xl [&>button:last-child]:hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                     <h2 className="text-[15px] text-foreground">
