@@ -221,19 +221,19 @@ export default function VflixComments({
           }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+        <div className="p-4 border-b flex items-center justify-between">
           <div></div>
-          <h2 className="text-lg font-semibold text-white text-center">
+          <h2 className="text-lg font-semibold text-foreground text-center">
             Comments ({comments.length})
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white p-1"
+            className="text-foreground hover:text-white p-1"
           >
             <IoClose className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex flex-col h-[calc(100%-120px)] p-4 text-white overflow-y-auto">
+        <div className="flex flex-col h-[calc(100%-120px)] p-4 text-foreground overflow-y-auto">
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
               <LoadingSpinner />
@@ -242,7 +242,7 @@ export default function VflixComments({
             comments.map((comment) => (
               <div
                 key={comment.uuid}
-                className="flex flex-col gap-2 border-b border-gray-800 pb-4 mb-4"
+                className="flex flex-col gap-2 border-b pb-4 mb-4"
               >
                 <div className="flex items-start gap-2">
                   <CustomAvatar
@@ -252,21 +252,21 @@ export default function VflixComments({
                   />
                   <div className="flex flex-col w-full">
                     <div className="flex items-center">
-                      <span className="font-semibold text-base">
+                      <span className="font-semibold text-base text-foreground">
                         {comment?.user?.name}
                       </span>
                       {!!comment?.user?.verified_status && (
                         <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
                       )}
-                      <BsDot />
+                      <BsDot className="text-foreground"/>
                       {comment.formatted_time && (
-                        <span className="text-gray-400 text-sm">
+                        <span className="text-foreground text-sm">
                           {comment.formatted_time}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-between w-full">
-                      <p className="text-sm text-gray-300 py-1">
+                      <p className="text-sm text-foreground py-1">
                         {comment.comment}
                       </p>
                       {/* <button

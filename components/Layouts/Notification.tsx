@@ -317,7 +317,7 @@ const Notification = () => {
       <PopoverTrigger>
         <div className="relative">
           {notificationsCount > 0 && (
-            <div className="bg-red-500 text-xs h-5 w-5 absolute -top-1 right-0 rounded-full flex items-center justify-center text-white">
+            <div className="bg-red-500 text-xs h-4 w-4 absolute -top-1 right-0 rounded-full flex items-center justify-center text-white">
               {notificationsCount}
             </div>
           )}
@@ -345,7 +345,7 @@ const Notification = () => {
           {Object.entries(groupedNotifications).map(([date, notifs]) => (
             <div key={date}>
               {/* Date heading */}
-              <div className="px-4 py-2 bg-muted/10">
+              <div className="px-4 py-2 bg-background">
                 <p className="text-sm font-medium text-muted-foreground">
                   {formatDateLabel(date)}
                 </p>
@@ -354,7 +354,7 @@ const Notification = () => {
               {/* Notification items */}
               {notifs.map((notification, index) => (
                 <div key={index}>
-                  <div className="px-4 py-2 hover:bg-muted/50 transition">
+                  <div className="px-4 py-2 bg-background hover:bg-background/50 transition">
                     <div className="flex flex-row items-center gap-x-3">
                       {notification.subject?.icon ? (
                         <CustomAvatar

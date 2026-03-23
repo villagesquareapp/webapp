@@ -137,8 +137,8 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       className={`rounded-lg transition-all duration-300 cursor-pointer w-full h-12 ${isActive
-                        ? "bg-foreground text-background"
-                        : "text-muted-foreground hover:text-foreground hover:bg-black/5"
+                        ? "bg-foreground text-background hover:bg-foreground hover:text-background"
+                        : "text-muted-foreground"
                         }`}
                     >
                       <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4">
@@ -158,7 +158,7 @@ export function AppSidebar() {
         {isCollapsed ? (
           <Button
             onClick={handleCreatePost}
-            className="size-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
+            className="size-12 rounded-full bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
           >
             <Plus className="size-5 text-white shrink-0" />
           </Button>
