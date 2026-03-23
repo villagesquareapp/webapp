@@ -660,7 +660,7 @@ const AddPost = ({
                 <Button
                   onClick={localCreatePostFunc}
                   disabled={!canAddMorePost || isPosting}
-                  className="bg-[#094DB5BF] hover:bg-[#094DB5] text-white px-12 h-[40px] rounded-full font-medium text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
+                  className="bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white px-12 h-[40px] rounded-full font-medium text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
                 >
                   {isPosting ? "Posting..." : "Post"}
                 </Button>
