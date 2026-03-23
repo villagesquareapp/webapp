@@ -548,13 +548,13 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                 <div className="flex flex-row gap-x-3 mb-6 mt-12 relative">
                   <button
                     onClick={handleTagPeopleClick}
-                    className="flex items-center gap-x-2 bg-background hover:bg-background/10 text-foreground text-xs font-medium px-4 py-2 rounded-full transition-colors"
+                    className="flex items-center gap-x-2 bg-[#dfdfdd] dark:bg-[#2e2e30] hover:bg-[#cfcfcd] dark:hover:bg-[#2e2e30]/50 text-foreground text-xs font-medium px-4 py-2 rounded-full transition-colors"
                   >
                     <span className="text-foreground">@</span> Tag people
                   </button>
                   <button
                     onClick={handleHashtagsClick}
-                    className="flex items-center gap-x-2 bg-background hover:bg-background/10 text-foreground text-xs font-medium px-4 py-2 rounded-full transition-colors"
+                    className="flex items-center gap-x-2 bg-[#dfdfdd] dark:bg-[#2e2e30] hover:bg-[#cfcfcd] dark:hover:bg-[#2e2e30]/50 text-foreground text-xs font-medium px-4 py-2 rounded-full transition-colors"
                   >
                     <span className="text-foreground">#</span> Hashtags
                   </button>

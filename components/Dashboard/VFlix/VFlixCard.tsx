@@ -81,11 +81,10 @@ function FollowButton({
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${
-        following
+      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
           ? "bg-white/10 text-white/80 hover:bg-white/20"
           : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
-      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+        } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {following ? "Following" : "Follow"}
     </button>
@@ -308,6 +307,7 @@ export default function VflixCard({
           onReady={handleReady}
           onBuffer={handleBuffer}
           onBufferEnd={handleBufferEnd}
+          progressInterval={50}
           style={{ position: "absolute", top: 0, left: 0 }}
           config={{
             file: {
@@ -463,7 +463,7 @@ export default function VflixCard({
                   />
                   {/* Thumb dot */}
                   <div
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-md transition-transform group-hover:scale-125"
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-150 ease-out group-hover:scale-125"
                     style={{ left: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
                   />
                 </div>

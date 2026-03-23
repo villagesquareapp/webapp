@@ -87,12 +87,12 @@ const ShareModal = ({ open, onClose, postId, shareUrl }: ShareModalProps) => {
             <DialogContent className="!max-w-[550px] w-full p-0 rounded-[20px] overflow-hidden border border-border bg-background shadow-2xl [&>button:last-child]:hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-3">
-                    <h2 className="text-[16px] font-bold text-white">Share</h2>
+                    <h2 className="text-[16px] font-bold text-foreground">Share</h2>
                     <button
                         onClick={onClose}
                         className="p-1 hover:bg-white/10 rounded-full transition-colors"
                     >
-                        <IoClose className="text-white/70 size-5" />
+                        <IoClose className="text-foreground/70 size-5" />
                     </button>
                 </div>
 
@@ -133,7 +133,7 @@ const ShareModal = ({ open, onClose, postId, shareUrl }: ShareModalProps) => {
                                             className="size-14 border-none"
                                         />
                                     </div>
-                                    <span className="text-[10px] text-white/70 text-center leading-tight line-clamp-1 max-w-[70px]">
+                                    <span className="text-[10px] text-foreground text-center leading-tight line-clamp-1 max-w-[70px]">
                                         {user.name}
                                     </span>
                                 </button>
