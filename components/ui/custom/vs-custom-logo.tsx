@@ -16,7 +16,7 @@ const VsCustomLogo = () => {
       <Image src="/images/vs_logo.png" alt="logo" width={32} height={32} className="shrink-0" />
       {/* <p className="!font-[Ogonek Unicase] text-2xl">VillageSquare</p> */}
       {!isCollapsed && (
-        <Image key={logoSrc} src={logoSrc} alt="VS-Logo" width={210} height={120} className="hidden md:block z-[1000] shrink-0" />
+        <img key={logoSrc} src={logoSrc} alt="VS-Logo" className="hidden md:block w-[210px] h-auto z-[1000] shrink-0 object-contain" />
       )}
     </div>
   );
