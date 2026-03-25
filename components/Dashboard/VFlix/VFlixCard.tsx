@@ -289,7 +289,7 @@ export default function VflixCard({
   return (
     <>
       <div
-        className="relative w-full h-full bg-black rounded-xl overflow-hidden border border-[#31373f]"
+        className="relative w-full h-full bg-black rounded-xl overflow-hidden border border-gray-300 dark:border-border bg-transparent"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
