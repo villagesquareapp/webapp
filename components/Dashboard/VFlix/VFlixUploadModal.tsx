@@ -33,51 +33,6 @@ interface MentionUser {
   verification_badge: boolean;
 }
 
-const DUMMY_TRENDING_HASHTAGS: HashtagData[] = [
-  {
-    uuid: "1",
-    canonical_form: "productdesigner",
-    display_form: "productdesigner",
-    usage_count: "72000",
-  },
-  {
-    uuid: "2",
-    canonical_form: "techindustry",
-    display_form: "techindustry",
-    usage_count: "6500000",
-  },
-  {
-    uuid: "3",
-    canonical_form: "artificialintelligence",
-    display_form: "artificialintelligence",
-    usage_count: "3200000",
-  },
-  {
-    uuid: "4",
-    canonical_form: "love",
-    display_form: "love",
-    usage_count: "10000",
-  },
-  {
-    uuid: "5",
-    canonical_form: "zaroncosmetics",
-    display_form: "zaroncosmetics",
-    usage_count: "5000000",
-  },
-  {
-    uuid: "6",
-    canonical_form: "piggyvestapp",
-    display_form: "piggyvestapp",
-    usage_count: "2700",
-  },
-  {
-    uuid: "7",
-    canonical_form: "apple",
-    display_form: "apple",
-    usage_count: "18000000",
-  },
-];
-
 const formatUsageCount = (countStr: string) => {
   const count = parseInt(countStr, 10);
   if (isNaN(count)) return "0 posts";
@@ -158,12 +113,8 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     }
 
     const searchTerm = debouncedHashtagSearch;
-    if (!searchTerm.trim()) {
-      setHashtagResults(DUMMY_TRENDING_HASHTAGS);
-      return;
-    }
-
     let isCurrent = true;
+
     const fetchHashtags = async () => {
       setLoadingHashtags(true);
       try {
@@ -186,9 +137,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     };
 
     fetchHashtags();
-    return () => {
-      isCurrent = false;
-    };
+    return () => { isCurrent = false; };
   }, [debouncedHashtagSearch, activeHashtagSearch]);
 
   // Mentions Fetch Effect
@@ -199,12 +148,8 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     }
 
     const searchTerm = debouncedMentionSearch;
-    if (!searchTerm.trim()) {
-      setMentionResults([]);
-      return;
-    }
-
     let isCurrent = true;
+
     const fetchMentions = async () => {
       setLoadingMentions(true);
       try {
@@ -227,9 +172,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     };
 
     fetchMentions();
-    return () => {
-      isCurrent = false;
-    };
+    return () => { isCurrent = false; };
   }, [debouncedMentionSearch, activeMentionSearch]);
 
   const handleCaptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -606,11 +549,11 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                             No users found.
                           </div>
                         )}
-                      {!loadingMentions && !activeMentionSearch.trim() && (
+                      {/* {loadingMentions && mentionResults.length === 0 && (
                         <div className="py-4 text-center text-[12px] text-foreground">
-                          Type a username to search...
+                          Searching...
                         </div>
-                      )}
+                      )} */}
                       {mentionResults.map((user) => (
                         <button
                           key={user.uuid}
@@ -670,7 +613,7 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
                   </button>
 
                   {isPrivacyOpen && (
-                    <div className="absolute top-[48px] left-0 w-full z-20 bg-popover border border-border shadow-2xl rounded-b-xl flex flex-col pt-1 pb-2">
+                    <div className="absolute top-[48px] left-0 w-full z-20 bg-background border border-border shadow-2xl rounded-b-xl flex flex-col pt-1 pb-2">
                       <button
                         onClick={() => {
                           setPrivacySetting("Everyone");

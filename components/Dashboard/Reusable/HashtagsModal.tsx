@@ -19,50 +19,7 @@ interface HashtagsModalProps {
 }
 
 // Dummy trending hashtags for when search is empty (as requested)
-const DUMMY_TRENDING_HASHTAGS: HashtagData[] = [
-    {
-        uuid: "1",
-        canonical_form: "productdesigner",
-        display_form: "productdesigner",
-        usage_count: "72000",
-    },
-    {
-        uuid: "2",
-        canonical_form: "techindustry",
-        display_form: "techindustry",
-        usage_count: "6500000",
-    },
-    {
-        uuid: "3",
-        canonical_form: "artificialintelligence",
-        display_form: "artificialintelligence",
-        usage_count: "3200000",
-    },
-    {
-        uuid: "4",
-        canonical_form: "love",
-        display_form: "love",
-        usage_count: "10000",
-    },
-    {
-        uuid: "5",
-        canonical_form: "zaroncosmetics",
-        display_form: "zaroncosmetics",
-        usage_count: "5000000",
-    },
-    {
-        uuid: "6",
-        canonical_form: "piggyvestapp",
-        display_form: "piggyvestapp",
-        usage_count: "2700",
-    },
-    {
-        uuid: "7",
-        canonical_form: "apple",
-        display_form: "apple",
-        usage_count: "18000000",
-    },
-];
+const DUMMY_TRENDING_HASHTAGS: HashtagData[] = [];
 
 const formatUsageCount = (countStr: string) => {
     const count = parseInt(countStr, 10);
@@ -84,16 +41,8 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Remove the `#` prefix for the actual search term
         const searchTerm = debouncedSearch.startsWith("#") ? debouncedSearch.slice(1) : debouncedSearch;
 
-        // If empty search, show dummy trending
-        if (!searchTerm.trim()) {
-            setResults(DUMMY_TRENDING_HASHTAGS);
-            return;
-        }
-
-        // Race condition guard
         let isCurrent = true;
 
         const fetchHashtags = async () => {
@@ -137,7 +86,7 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
     useEffect(() => {
         if (!open) {
             setSearchValue("#");
-            setResults(DUMMY_TRENDING_HASHTAGS);
+            setResults([]);
         }
     }, [open]);
 
@@ -204,7 +153,6 @@ const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) =
                             Type a hashtag to search...
                         </div>
                     )}
-                    {/* Always render results if available, even while loading */}
                     {results.length > 0 &&
                         results.map((tag) => (
                             <button
