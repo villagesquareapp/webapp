@@ -446,8 +446,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <button
                   onClick={() => handleTabChange("explore")}
                   className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "explore"
-                    ? "border-[#31373f] bg-[#31373f] text-white dark:bg-foreground dark:text-background"
-                    : "border-[#31373f] bg-transparent text-muted-foreground hover:text-[#31373f] dark:hover:text-[#31373f]"
+                    ? "border-[#31373f] dark:border-transparent bg-[#31373f] text-white dark:bg-foreground dark:text-background"
+                    : "border-gray-200 dark:border-border bg-transparent text-muted-foreground hover:text-[#31373f] dark:hover:text-[#31373f]"
                     }`}
                 >
                   Explore
@@ -457,8 +457,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 <button
                   onClick={() => handleTabChange("connections")}
                   className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "connections"
-                    ? "border-[#31373f] bg-[#31373f] text-white dark:bg-foreground dark:text-background"
-                    : "border-[#31373f] bg-transparent text-muted-foreground hover:text-[#31373f] dark:hover:text-[#31373f]"
+                    ? "border-[#31373f] dark:border-transparent bg-[#31373f] text-white dark:bg-foreground dark:text-background"
+                    : "border-gray-200 dark:border-border bg-transparent text-muted-foreground hover:text-[#31373f] dark:hover:text-[#31373f]"
                     }`}
                 >
                   Connections
