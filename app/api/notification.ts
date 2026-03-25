@@ -24,7 +24,7 @@ export const readAllNotifications = async () => {
     const token = await getToken()
 
     const response = await apiPost(
-        `/app/notifications/read-all`,
+        `app/notifications/read-all`,
         {},
         token
     );

@@ -213,6 +213,8 @@ import { Separator } from "components/ui/separator";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { getNotifications, readAllNotifications } from "api/notification";
 
+const LAST_READ_KEY = "notifications_last_read_at";
+
 const Notification = () => {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState<number>(1);
@@ -220,10 +222,13 @@ const Notification = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   // Mark notifications as read when opened
   useEffect(() => {
     if (open) {
+      setUnreadCount(0);
+      localStorage.setItem(LAST_READ_KEY, new Date().toISOString());
       readAllNotifications().catch((error) => {
         console.error("Error marking notifications as read:", error);
       });
@@ -241,6 +246,27 @@ const Notification = () => {
         setNotifications((prev) =>
           pageNumber === 1 ? newNotifications : [...prev, ...newNotifications]
         );
+
+        if (pageNumber === 1 && !open) {
+          // If the API returns an explicit unread_count, use it
+          const apiUnread = (response.data as any).unread_count;
+          if (apiUnread != null) {
+            setUnreadCount(apiUnread);
+          } else {
+            // Fall back: count notifications newer than last read timestamp
+            const lastReadAt = localStorage.getItem(LAST_READ_KEY);
+            if (!lastReadAt) {
+              setUnreadCount(newNotifications.length);
+            } else {
+              const lastReadTime = new Date(lastReadAt).getTime();
+              const unread = newNotifications.filter((n) => {
+                const notifTime = n.time ? new Date(n.time).getTime() : 0;
+                return notifTime > lastReadTime;
+              }).length;
+              setUnreadCount(unread);
+            }
+          }
+        }
 
         const totalNotifications = response.data.total || 0;
         const currentTotal = (pageNumber - 1) * 15 + newNotifications.length;
@@ -316,9 +342,9 @@ const Notification = () => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger>
         <div className="relative">
-          {notificationsCount > 0 && (
-            <div className="bg-red-500 text-xs h-4 w-4 absolute -top-1 right-0 rounded-full flex items-center justify-center text-white">
-              {notificationsCount}
+          {unreadCount > 0 && (
+            <div className="bg-blue-500 text-xs h-4 w-[18px] absolute -top-1 right-0 rounded-full flex items-center justify-center text-white">
+              {unreadCount > 99 ? '99+' : unreadCount}
             </div>
           )}
           <FaBell className="text-foreground size-7 cursor-pointer" />
