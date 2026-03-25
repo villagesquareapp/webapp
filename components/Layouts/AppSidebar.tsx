@@ -137,7 +137,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       className={`rounded-lg transition-all duration-300 cursor-pointer w-full h-12 ${isActive
-                        ? "bg-foreground text-background hover:bg-foreground hover:text-background"
+                        ? "bg-[#31373f] text-white hover:bg-[#31373f] dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background"
                         : "text-muted-foreground"
                         }`}
                     >

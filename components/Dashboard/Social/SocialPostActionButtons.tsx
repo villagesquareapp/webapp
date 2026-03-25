@@ -57,7 +57,7 @@ const SocialPostActionButtons = ({
           <div className="flex flex-row gap-x-1 items-center">
             <BsBookmarkDashFill
               onClick={() => saveUnsavePost(post.uuid)}
-              className={`size-4 text-gray-400 ${post?.is_saved && "text-primary"
+              className={`size-4 text-gray-500 ${post?.is_saved && "text-primary"
                 } cursor-pointer`}
             />
           </div>
