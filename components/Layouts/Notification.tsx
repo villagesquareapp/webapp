@@ -347,7 +347,7 @@ const Notification = () => {
               {unreadCount > 99 ? '99+' : unreadCount}
             </div>
           )}
-          <FaBell className="text-foreground size-7 cursor-pointer" />
+          <FaBell className="text-[#31373f] dark:text-foreground size-7 cursor-pointer" />
         </div>
       </PopoverTrigger>
 

@@ -532,7 +532,7 @@ const AddPost = ({
                         </button> */}
 
                         {/* Media Upload */}
-                        <label className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
+                        <label className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors">
                           <input
                             type="file"
                             accept="image/*,video/*"
@@ -565,19 +565,19 @@ const AddPost = ({
 
                         {/* Location */}
                         <div
-                          className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+                          className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveLocationItemIndex(idx)}
                         >
                           <IoLocationSharp size={20} className={it.address ? "text-[#4A9EFF]" : ""} />
                         </div>
                         <div
-                          className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+                          className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveMentionItemIndex(idx)}
                         >
                           <VscMention size={20} />
                         </div>
                         <div
-                          className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors"
+                          className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveHashtagItemIndex(idx)}
                         >
                           <FiHash size={20} />
@@ -596,7 +596,7 @@ const AddPost = ({
                         <span className="truncate">{it.address}</span>
                         <button
                           onClick={() => updateItem(idx, { address: "", latitude: "", longitude: "" })}
-                          className="ml-1 shrink-0 text-[#8E8E93] hover:text-white transition-colors"
+                          className="ml-1 shrink-0 text-white hover:text-[#8E8E93] transition-colors"
                         >
                           <IoClose size={14} />
                         </button>
