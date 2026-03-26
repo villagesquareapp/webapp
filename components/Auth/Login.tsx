@@ -62,7 +62,7 @@ export function Login({ className, ...props }: LoginProps) {
         // fcm_token: null,
         // audience: "web",
         redirect: false,
-        callbackUrl: "/dashboard/social",
+        callbackUrl: "/home",
       });
 
       console.log("Result:", result);
@@ -80,7 +80,7 @@ export function Login({ className, ...props }: LoginProps) {
         console.log("Got here 3");
         setIsRedirecting(true);
         toast.success("Logged in successfully");
-        router.push("/dashboard/social");
+        router.push("/home");
       }
     } catch (error) {
       console.log("Got here 4");
@@ -102,7 +102,7 @@ export function Login({ className, ...props }: LoginProps) {
   //     setIsGoogleLoading(true);
   //     const result = await signIn("google", {
   //       redirect: false,
-  //       callbackUrl: "/dashboard/social",
+  //       callbackUrl: "/home",
   //     });
 
   //     if (result?.error) {
@@ -113,7 +113,7 @@ export function Login({ className, ...props }: LoginProps) {
   //         toast.error(result.error);
   //       }
   //     } else if (result?.ok) {
-  //       router.push("/dashboard/social");
+  //       router.push("/home");
   //     }
   //   } catch (error) {
   //     console.error("Google sign-in error:", error);
@@ -128,7 +128,7 @@ export function Login({ className, ...props }: LoginProps) {
       setIsGoogleLoading(true);
 
       const result = await signIn("google", {
-        callbackUrl: "/dashboard/social", 
+        callbackUrl: "/home", 
         redirect: false,
       });
 
@@ -150,7 +150,7 @@ export function Login({ className, ...props }: LoginProps) {
       if (result?.error) {
         toast.error(result.error);
       } else {
-        router.push("/dashboard/social");
+        router.push("/home");
         toast.success("Logged in successfully");
       }
     } catch (error) {

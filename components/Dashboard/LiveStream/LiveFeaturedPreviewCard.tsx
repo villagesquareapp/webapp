@@ -104,7 +104,7 @@ const LiveFeaturedPreviewCard = ({ featuredLivestreamData }: LiveFeaturedPreview
   const imageSrc = featuredLivestreamData.cover || "/images/vs-logo.webp";
 
   return (
-    <Link href={`/dashboard/live-streams/${featuredLivestreamData.uuid}`} className="block">
+    <Link href={`/live-streams/${featuredLivestreamData.uuid}`} className="block">
       <div className="relative rounded-lg overflow-hidden group cursor-pointer transition-transform hover:scale-[1.02]">
         {/* Live Badge */}
         <div className="absolute top-2 left-2 z-20 bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">

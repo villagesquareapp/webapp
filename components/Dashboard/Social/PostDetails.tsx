@@ -157,12 +157,12 @@ const PostDetails = ({
       prev.map((reply) =>
         reply.uuid === replyId
           ? {
-              ...reply,
-              likes_count: reply.is_liked
-                ? (Number(reply.likes_count) - 1).toString()
-                : (Number(reply.likes_count) + 1).toString(),
-              is_liked: !reply.is_liked,
-            }
+            ...reply,
+            likes_count: reply.is_liked
+              ? (Number(reply.likes_count) - 1).toString()
+              : (Number(reply.likes_count) + 1).toString(),
+            is_liked: !reply.is_liked,
+          }
           : reply,
       ),
     );
@@ -176,12 +176,12 @@ const PostDetails = ({
           prev.map((reply) =>
             reply.uuid === replyId
               ? {
-                  ...reply,
-                  likes_count: reply.is_liked
-                    ? (Number(reply.likes_count) + 1).toString()
-                    : (Number(reply.likes_count) - 1).toString(),
-                  is_liked: !reply.is_liked,
-                }
+                ...reply,
+                likes_count: reply.is_liked
+                  ? (Number(reply.likes_count) + 1).toString()
+                  : (Number(reply.likes_count) - 1).toString(),
+                is_liked: !reply.is_liked,
+              }
               : reply,
           ),
         );
@@ -193,12 +193,12 @@ const PostDetails = ({
         prev.map((reply) =>
           reply.uuid === replyId
             ? {
-                ...reply,
-                likes_count: reply.is_liked
-                  ? (Number(reply.likes_count) + 1).toString()
-                  : (Number(reply.likes_count) - 1).toString(),
-                is_liked: !reply.is_liked,
-              }
+              ...reply,
+              likes_count: reply.is_liked
+                ? (Number(reply.likes_count) + 1).toString()
+                : (Number(reply.likes_count) - 1).toString(),
+              is_liked: !reply.is_liked,
+            }
             : reply,
         ),
       );
@@ -252,7 +252,7 @@ const PostDetails = ({
           />
         </div>
 
-        <Separator className="opacity-40 md:mt-4 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+        <Separator className="opacity-80 md:mt-4 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
 
         {/* Reply box */}
         <div className="flex items-center gap-3 py-3">
@@ -270,7 +270,7 @@ const PostDetails = ({
             </button>
           </div>
         </div>
-        <Separator className="opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+        <Separator className="opacity-80 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
         {/* Comments */}
         {isLoadingReplies ? (
           <LoadingSpinner />
@@ -290,7 +290,7 @@ const PostDetails = ({
                     <div className="flex-1">
                       <div className="flex flex-col">
                         <div className="flex flex-row items-center max-w-80">
-                          <span className="font-semibold text-sm text-white">
+                          <span className="font-semibold text-sm text-foreground">
                             {reply.user?.name}
                           </span>
                           {!!reply?.user?.verified_status && (
@@ -388,14 +388,14 @@ const PostDetails = ({
                   />
                   {/* Internal divider for all replies except the bottom one which is handled outside */}
                   {index < replies.length - 1 && (
-                    <Separator className="mt-2 mb-2 opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+                    <Separator className="mt-2 mb-2 opacity-80 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
                   )}
                 </div>
               );
             })}
 
             {/* Bottom Border under last reply */}
-            <Separator className="mt-2 opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+            <Separator className="mt-2 opacity-80 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
           </div>
         ) : (
           <div className="py-6">

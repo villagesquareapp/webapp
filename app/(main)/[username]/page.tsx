@@ -1,0 +1,30 @@
+import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "api/auth/authOptions";
+import ProfilePage from "components/Dashboard/Profile/ProfilePage";
+
+// Routes that must never be treated as usernames
+const RESERVED_ROUTES = new Set([
+    "dashboard", "auth", "api", "account-deletion",
+    "home", "vflix", "messages", "live-streams", "wallet", "posts",
+    "explore", "search", "settings", "notifications",
+    "privacy-policy", "refund-policy", "about-us", "disclaimer",
+    "eula", "tac", "contact-us", "en", "fr", "es", "de", "pt",
+]);
+
+export default async function UserProfilePage({
+    params,
+}: {
+    params: Promise<{ username: string }>;
+}) {
+    const { username } = await params;
+
+    if (RESERVED_ROUTES.has(username.toLowerCase())) {
+        notFound();
+    }
+
+    const session = await getServerSession(authOptions);
+    const isOwnProfile = session?.user?.username === username;
+
+    return <ProfilePage username={username} isOwnProfile={isOwnProfile} />;
+}

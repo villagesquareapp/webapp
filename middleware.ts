@@ -12,7 +12,12 @@ export default withAuth({
 });
 
 export const config = {
-    matcher: [
-        "/dashboard/:path*",
-    ],
+  matcher: [
+    "/home/:path*",
+    "/vflix/:path*",
+    "/messages/:path*",
+    "/live-streams/:path*",
+    "/wallet/:path*",
+    "/posts/:path*",
+  ],
 }; 

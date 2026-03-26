@@ -89,7 +89,7 @@ const StreamSetupModal = () => {
   //       setGiftingEnabled(false);
 
   //       // Redirect to the livestream setup page
-  //       router.push(`/dashboard/live-streams/${response.data.uuid}`);
+  //       router.push(`/live-streams/${response.data.uuid}`);
   //     } else {
   //       toast.error(response.message || "Failed to create livestream");
   //     }
@@ -140,7 +140,7 @@ const StreamSetupModal = () => {
   setGiftingEnabled(false);
 
   // Redirect to setup page (without uuid since we haven't created it yet)
-  router.push("/dashboard/live-streams/setup");
+  router.push("/live-streams/setup");
   
   // toast.success("Ready to go live! Click 'Start Live Stream' when ready.");
 }, [

@@ -377,7 +377,7 @@ const LivestreamViewer = ({
         })
       );
     }
-    router.push("/dashboard/live-streams");
+    router.push("/live-streams");
   };
 
   const handleQAClick = () => {
@@ -915,7 +915,7 @@ const LivestreamViewer = ({
 
               {/* Close Button */}
               <Button
-                onClick={() => router.push("/dashboard/live-streams")}
+                onClick={() => router.push("/live-streams")}
                 className="absolute top-8 right-8 bg-transparent hover:bg-white/10 text-white p-2"
                 size="icon"
               >

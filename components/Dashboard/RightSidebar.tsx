@@ -9,6 +9,8 @@ import { FaHeart, FaCommentAlt } from "react-icons/fa";
 import { BiMessageRounded } from "react-icons/bi";
 import { TbDots } from "react-icons/tb";
 import { Skeleton } from "components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { useDataCache } from "context/DataCacheContext";
 
 function formatCount(count: string | number): string {
   const num = typeof count === "string" ? parseInt(count, 10) : count;
@@ -19,6 +21,9 @@ function formatCount(count: string | number): string {
 }
 
 const RightSidebar = () => {
+  const router = useRouter();
+  const { getCachedData, setCachedData, isCacheValid } = useDataCache();
+
   const [trendingPosts, setTrendingPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,12 +31,22 @@ const RightSidebar = () => {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
 
   useEffect(() => {
+    const cacheKey = "right-sidebar-trending";
+    const cached = getCachedData<any[]>(cacheKey);
+
+    if (cached && isCacheValid(cacheKey, 10)) {
+      setTrendingPosts(cached);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchTrending = async () => {
       try {
         const res = await fetch("/api/posts/trending?window=24h&page=1&limit=4");
         const data = await res.json();
         if (data?.status && data?.data?.data) {
           setTrendingPosts(data.data.data);
+          setCachedData(cacheKey, data.data.data);
         }
       } catch (error) {
         console.error("Error fetching trending posts:", error);
@@ -41,15 +56,26 @@ const RightSidebar = () => {
     };
 
     fetchTrending();
-  }, []);
+  }, [getCachedData, setCachedData, isCacheValid]);
 
   useEffect(() => {
+    const cacheKey = "right-sidebar-suggestions";
+    const cached = getCachedData<any[]>(cacheKey);
+
+    if (cached && isCacheValid(cacheKey, 15)) {
+      setSuggestedUsers(cached);
+      setIsLoadingSuggestions(false);
+      return;
+    }
+
     const fetchSuggestions = async () => {
       try {
         const res = await fetch("/api/users/suggestions");
         const data = await res.json();
         if (data?.status && data?.data) {
-          setSuggestedUsers(data.data.slice(0, 5));
+          const suggestions = data.data.slice(0, 5);
+          setSuggestedUsers(suggestions);
+          setCachedData(cacheKey, suggestions);
         }
       } catch (error) {
         console.error("Error fetching user suggestions:", error);
@@ -59,7 +85,7 @@ const RightSidebar = () => {
     };
 
     fetchSuggestions();
-  }, []);
+  }, [getCachedData, setCachedData, isCacheValid]);
 
   const handleFollow = async (userId: string) => {
     // Optimistic UI Update
@@ -129,10 +155,7 @@ const RightSidebar = () => {
               const postImage = post.media?.[0]?.media_thumbnail || post.media?.[0]?.media_url || "";
 
               const handleTrendClick = () => {
-                const event = new CustomEvent("openSocialPostDetails", {
-                  detail: post,
-                });
-                window.dispatchEvent(event);
+                router.push(`/posts/${post.uuid}`);
               };
 
               return (

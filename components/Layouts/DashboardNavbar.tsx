@@ -42,7 +42,7 @@ const DashboardNavbar = () => {
 
         <div
           className={
-            pathname.includes("/vflix")
+            pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "w-[565px] ml-[268px] mr-[63px]"
               : "w-[650px] px-4 lg:px-6"
           }
@@ -93,7 +93,7 @@ const DashboardNavbar = () => {
         {/* Right hand side Navbar */}
         <div
           className={
-            pathname.includes("/vflix")
+            pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16"
               : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"
           }

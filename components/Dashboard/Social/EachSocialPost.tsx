@@ -5,6 +5,7 @@ import PostText from "./PostText";
 import PostVideo from "./PostVideo";
 import SocialPostActionButtons from "./SocialPostActionButtons";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const EachSocialPost = ({
   post,
@@ -31,6 +32,7 @@ const EachSocialPost = ({
   onOpenPostDetails: () => void;
   onOpenReplyModal: () => void;
 }) => {
+  const router = useRouter();
   const [showPostDetails, setShowPostDetails] = useState(false);
   const [clickedMediaIndex, setClickedMediaIndex] = useState(0);
 
@@ -48,10 +50,10 @@ const EachSocialPost = ({
       setTimeout(() => {
         setIsPlayingVideo(false);
         setCurrentVideoPlaying("");
-        onOpenPostDetails();
+        router.push(`/posts/${post.uuid}`);
       }, 150);
     } else {
-      onOpenPostDetails();
+      router.push(`/posts/${post.uuid}`);
     }
   };
 
