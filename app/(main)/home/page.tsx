@@ -5,7 +5,7 @@ import { authOptions } from "api/auth/authOptions";
 import SocialPage from "components/Dashboard/Social/SocialPage";
 
 export const metadata: Metadata = {
-  title: "Social Feed | Village Square Dashboard",
+  title: "Social Feed | VillageSquare",
 };
 
 const Page = async () => {

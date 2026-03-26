@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Messages | Village Square Dashboard",
+  title: "Messages | VillageSquare",
 };
 
 const MessagesPage = () => {
