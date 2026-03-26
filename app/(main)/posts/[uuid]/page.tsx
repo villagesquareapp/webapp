@@ -16,14 +16,14 @@ export default async function PostDetailPage({
 
     const response = await getPostDetails(uuid);
 
-    if (!response?.status || !response?.data) {
+    if (!response?.data) {
         notFound();
     }
 
     return (
         <div className="flex flex-col w-full h-full overflow-y-auto custom-scrollbar">
             <PostDetailPageClient
-                initialPost={response.data}
+                initialPost={response.data as IPost}
                 user={session.user}
             />
         </div>
