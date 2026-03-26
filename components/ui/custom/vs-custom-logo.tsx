@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSidebar } from "components/ui/sidebar";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 const VsCustomLogo = () => {
   const { state } = useSidebar();
@@ -13,7 +14,9 @@ const VsCustomLogo = () => {
 
   return (
     <div className={`flex items-center gap-x-2 justify-start ml-5`}>
-      <img src="/images/vs_logo.png" alt="logo" width={32} height={32} className="shrink-0" />
+      <Link href="/home">
+        <img src="/images/vs_logo.png" alt="logo" width={32} height={32} className="shrink-0" />
+      </Link>
       {/* <p className="!font-[Ogonek Unicase] text-2xl">VillageSquare</p> */}
       {!isCollapsed && (
         <img key={logoSrc} src={logoSrc} alt="VS-Logo" className="hidden md:block w-[210px] h-auto z-[1000] shrink-0 object-contain" />
