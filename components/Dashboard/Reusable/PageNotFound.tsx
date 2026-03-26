@@ -1,8 +1,19 @@
+"use client";
+
 import { Button } from "components/ui/button";
+import { useSidebar } from "components/ui/sidebar";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 
 const PageNotFound = () => {
+    const { setOpen } = useSidebar();
+
+    // Always expand the sidebar on 404 pages
+    useEffect(() => {
+        setOpen(true);
+    }, [setOpen]);
+
     return (
         <div className="flex flex-col gap-y-3 w-full place-items-center m-auto py-20">
             <Image src="/images/result.png" alt="Not Found" width={250} height={250} />
