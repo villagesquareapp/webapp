@@ -40,13 +40,13 @@ import React from "react";
 const items = [
   {
     title: "Social",
-    url: "/dashboard/social",
+    url: "/home",
     icon: <GoHome className="!size-6 -ml-0.5" />,
     activeIcon: <GoHomeFill className="fill-background text-background !size-6 -mt-0.5" />,
   },
   {
     title: "Vflix",
-    url: "/dashboard/vflix",
+    url: "/vflix",
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
@@ -101,9 +101,9 @@ export function AppSidebar() {
   const { setOpen, state } = useSidebar();
 
   React.useEffect(() => {
-    if (pathname.includes("/dashboard/vflix")) {
+    if (pathname.includes("/vflix")) {
       setOpen(false);
-    } else if (pathname.includes("/dashboard/social")) {
+    } else if (pathname.includes("/home")) {
       setOpen(true);
     }
   }, [pathname, setOpen]);
@@ -111,7 +111,7 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
 
   const handleCreatePost = () => {
-    if (pathname.includes("/dashboard/vflix")) {
+    if (pathname.includes("/vflix")) {
       openVFlixUpload();
     } else {
       openAddPost();

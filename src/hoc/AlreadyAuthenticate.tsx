@@ -8,7 +8,7 @@ export function AlreadyAuthenticate<P extends object>(WrappedComponent: Componen
     const session = await getServerSession(authOptions);
 
     if (session) {
-      redirect("/dashboard/social");
+      redirect("/home");
     }
 
     return <WrappedComponent {...props} />;

@@ -12,6 +12,8 @@ interface DataCacheContextType {
   setCachedData: <T>(key: string, data: T) => void;
   isCacheValid: (key: string, maxAgeMinutes?: number) => boolean;
   clearCache: (key?: string) => void;
+  getScrollPosition: (key: string) => number;
+  setScrollPosition: (key: string, position: number) => void;
 }
 
 const DataCacheContext = createContext<DataCacheContextType | undefined>(undefined);
@@ -20,6 +22,7 @@ const DEFAULT_CACHE_DURATION = 5; // 5 minutes
 
 export const DataCacheProvider = ({ children }: { children: React.ReactNode }) => {
   const [cache, setCache] = useState<Map<string, CacheEntry<any>>>(new Map());
+  const [scrollPositions, setScrollPositions] = useState<Map<string, number>>(new Map());
 
   const getCachedData = useCallback(<T,>(key: string): T | null => {
     const entry = cache.get(key);
@@ -58,6 +61,18 @@ export const DataCacheProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, []);
 
+  const getScrollPosition = useCallback((key: string): number => {
+    return scrollPositions.get(key) || 0;
+  }, [scrollPositions]);
+
+  const setScrollPosition = useCallback((key: string, position: number) => {
+    setScrollPositions((prev) => {
+      const newScroll = new Map(prev);
+      newScroll.set(key, position);
+      return newScroll;
+    });
+  }, []);
+
   return (
     <DataCacheContext.Provider
       value={{
@@ -65,6 +80,8 @@ export const DataCacheProvider = ({ children }: { children: React.ReactNode }) =
         setCachedData,
         isCacheValid,
         clearCache,
+        getScrollPosition,
+        setScrollPosition,
       }}
     >
       {children}

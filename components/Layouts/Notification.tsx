@@ -212,6 +212,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover";
 import { Separator } from "components/ui/separator";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { getNotifications, readAllNotifications } from "api/notification";
+import { useRouter } from "next/navigation";
 
 const LAST_READ_KEY = "notifications_last_read_at";
 
@@ -223,6 +224,7 @@ const Notification = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observerTarget = useRef<HTMLDivElement>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const router = useRouter();
 
   // Mark notifications as read when opened
   useEffect(() => {
@@ -378,63 +380,75 @@ const Notification = () => {
               </div>
 
               {/* Notification items */}
-              {notifs.map((notification, index) => (
-                <div key={index}>
-                  <div className="px-4 py-2 bg-background hover:bg-background/50 transition">
-                    <div className="flex flex-row items-center gap-x-3">
-                      {notification.subject?.icon ? (
-                        <CustomAvatar
-                          src={notification.subject.icon}
-                          name={notification.subject.name}
-                          className="size-9"
-                        />
-                      ) : (
-                        <CustomAvatar
-                          src="https://cdn-assets.villagesquare.io/profile_pictures/default_user.png"
-                          name={notification.subject?.name || "?"}
-                          className="size-9"
-                        />
-                      )}
+              {notifs.map((notification, index) => {
+                const handleNotificationClick = () => {
+                  setOpen(false);
+                  if (notification.service_id) {
+                    router.push(`/posts/${notification.service_id}`);
+                  }
+                };
 
-                      <div className="flex-1">
-                        <div className="text-sm leading-tight">
-                          {notification.subject?.name ? (
-                            <span className="font-medium">
-                              {notification.subject.name}{" "}
-                            </span>
-                          ) : (
-                            <span className="font-medium">Someone </span>
-                          )}
-                          {notification.notification_type === 'post_reply' ? (
-                            <span className="text-muted-foreground">
-                              {notification.description || "replied to your post."}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">
-                              {notification.description || "interacted with your post."}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {notification.time_ago || "Just now"} ago
-                        </span>
-                      </div>
-
-                      {notification.object?.thumbnail && (
-                        <div className="size-12 relative rounded-md overflow-hidden">
-                          <Image
-                            src={notification.object.thumbnail}
-                            alt="notification thumbnail"
-                            fill
-                            className="object-cover"
+                return (
+                  <div key={index}>
+                    <div
+                      className="px-4 py-2 bg-background hover:bg-background/50 transition cursor-pointer"
+                      onClick={handleNotificationClick}
+                    >
+                      <div className="flex flex-row items-center gap-x-3">
+                        {notification.subject?.icon ? (
+                          <CustomAvatar
+                            src={notification.subject.icon}
+                            name={notification.subject.name}
+                            className="size-9"
                           />
+                        ) : (
+                          <CustomAvatar
+                            src="https://cdn-assets.villagesquare.io/profile_pictures/default_user.png"
+                            name={notification.subject?.name || "?"}
+                            className="size-9"
+                          />
+                        )}
+
+                        <div className="flex-1">
+                          <div className="text-sm leading-tight">
+                            {notification.subject?.name ? (
+                              <span className="font-medium">
+                                {notification.subject.name}{" "}
+                              </span>
+                            ) : (
+                              <span className="font-medium">Someone </span>
+                            )}
+                            {notification.notification_type === 'post_reply' ? (
+                              <span className="text-muted-foreground">
+                                {notification.description || "replied to your post."}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                {notification.description || "interacted with your post."}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {notification.time_ago || "Just now"} ago
+                          </span>
                         </div>
-                      )}
+
+                        {notification.object?.thumbnail && (
+                          <div className="size-12 relative rounded-md overflow-hidden">
+                            <Image
+                              src={notification.object.thumbnail}
+                              alt="notification thumbnail"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <Separator className="w-full" />
                   </div>
-                  <Separator className="w-full" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))}
 

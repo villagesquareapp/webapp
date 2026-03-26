@@ -439,7 +439,7 @@ const AddPost = ({
                         aria-hidden="true"
                       >
                         {!it.caption ? (
-                          <span className="text-[#48484A]">What's on your mind?</span>
+                          <span className="text-muted-foreground dark:text-gray-300">What's on your mind?</span>
                         ) : (
                           it.caption.split(/(\s+)/).map((part, i) => {
                             if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
@@ -532,7 +532,7 @@ const AddPost = ({
                         </button> */}
 
                         {/* Media Upload */}
-                        <label className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors">
+                        <label className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors">
                           <input
                             type="file"
                             accept="image/*,video/*"
@@ -565,26 +565,26 @@ const AddPost = ({
 
                         {/* Location */}
                         <div
-                          className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors"
+                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveLocationItemIndex(idx)}
                         >
                           <IoLocationSharp size={20} className={it.address ? "text-[#4A9EFF]" : ""} />
                         </div>
                         <div
-                          className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors"
+                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveMentionItemIndex(idx)}
                         >
                           <VscMention size={20} />
                         </div>
                         <div
-                          className="cursor-pointer text-foreground hover:text-[#8E8E93] transition-colors"
+                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveHashtagItemIndex(idx)}
                         >
                           <FiHash size={20} />
                         </div>
                       </div>
 
-                      <div className="text-[13px] text-[#48484A] font-semibold">
+                      <div className="text-[13px] text-muted-foreground dark:text-[#48484A] font-semibold">
                         {it.caption.length}/500
                       </div>
                     </div>

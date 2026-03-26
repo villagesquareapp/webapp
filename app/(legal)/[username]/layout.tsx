@@ -5,12 +5,12 @@ export default async function LocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: Promise<{ username: string }>;
 }) {
-  const { locale } = await params;
+  const { username } = await params;
 
   return (
-    <html lang={locale}>
+    <html lang={username}>
       <body>{children}</body>
     </html>
   );
