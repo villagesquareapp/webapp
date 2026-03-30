@@ -131,6 +131,25 @@ interface IUser {
   provider_token?: string;
 }
 
+interface IUserProfileRelationship {
+  is_self: boolean;
+  is_following: boolean;
+  is_followed_by: boolean;
+  is_blocking: boolean;
+  is_blocked_by: boolean;
+}
+
+interface IUserProfileResponse extends IUser {
+  followers: number;
+  following: number;
+  posts: number;
+  total_likes: number;
+  is_following: boolean;
+  is_blocked: boolean;
+  date_joined: string;
+  relationship: IUserProfileRelationship;
+}
+
 interface IRegisterResponse extends IUser { }
 
 type IRegistrationType = "google" | "password" | "apple" | "facebook";
@@ -365,6 +384,8 @@ interface IVflix {
   is_followed: boolean;
   is_giftable: boolean;
   _source?: string;
+  allow_comments?: boolean;
+  mentions?: IMention[];
 }
 
 interface IPostMedia {
@@ -399,6 +420,12 @@ interface IPostUser {
   checkmark_verification_status: boolean;
   premium_verification_status: boolean;
   online: boolean;
+  verification_badge?: string;
+}
+
+interface IMention {
+  username: string;
+  uuid: string;
 }
 
 interface IPost {
@@ -419,9 +446,11 @@ interface IPost {
   updated_at: Date;
   user: IPostUser;
   media: IPostMedia[];
+  thumbnail?: string;
   formatted_time: string;
   is_saved: boolean;
   is_liked: boolean;
+  mentions?: IMention[];
 }
 
 interface IPaginatedResponse<T> {

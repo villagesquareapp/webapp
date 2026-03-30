@@ -399,7 +399,7 @@ export default function VflixCard({
             />
             <span className="flex flex-row gap-x-2 items-center max-w-60">
               <span className="font-semibold text-sm truncate">
-                {post?.user.username}
+                {post?.user.name}
               </span>
               {!!post?.user?.verified_status && (
                 <HiMiniCheckBadge className="size-5 text-green-600" />
