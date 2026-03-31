@@ -122,7 +122,7 @@ interface IUser {
     is_self: boolean;
     is_following: boolean;
     is_followed_by: boolean;
-  }
+  };
   token: string;
   access_token?: string;
   refresh_token?: string;
@@ -150,7 +150,7 @@ interface IUserProfileResponse extends IUser {
   relationship: IUserProfileRelationship;
 }
 
-interface IRegisterResponse extends IUser { }
+interface IRegisterResponse extends IUser {}
 
 type IRegistrationType = "google" | "password" | "apple" | "facebook";
 interface ISignup {
@@ -207,8 +207,7 @@ interface IFeaturedLivestream {
   };
 }
 
-interface IFeaturedLivestreamResponse
-  extends IPaginatedResponse<IFeaturedLivestream> { }
+interface IFeaturedLivestreamResponse extends IPaginatedResponse<IFeaturedLivestream> {}
 
 interface IStartLivestream {
   title: string;
@@ -248,8 +247,7 @@ interface IStartLivestreamData {
   deleted_at: string | null;
 }
 
-interface IStreamLivestreamResponse
-  extends IPaginatedResponse<IStartLivestreamData> { }
+interface IStreamLivestreamResponse extends IPaginatedResponse<IStartLivestreamData> {}
 
 interface ILivestreamDetails {
   uuid: string;
@@ -343,7 +341,7 @@ interface INotifications {
   time_ago: string;
 }
 
-interface INotificationsResponse extends IPaginatedResponse<INotifications> { }
+interface INotificationsResponse extends IPaginatedResponse<INotifications> {}
 
 interface IVflix {
   uuid: string;
@@ -432,6 +430,10 @@ interface IPost {
   uuid: string;
   user_id: string;
   caption: string;
+  parent_post_id: string | null;
+  root_post_id: string;
+  quote_post_id: string | null;
+  thread_id: string | null;
   address: string | null;
   latitude: string | null;
   longitude: string | null;
@@ -441,9 +443,11 @@ interface IPost {
   shares_count: string;
   likes_count: string;
   replies_count: string | number;
+  impression: string;
   additional_metadata: any;
   created_at: Date;
   updated_at: Date;
+  deleted_at: Date | null;
   user: IPostUser;
   media: IPostMedia[];
   thumbnail?: string;
@@ -461,11 +465,11 @@ interface IPaginatedResponse<T> {
   last_page: number;
 }
 
-interface IPostsResponse extends IPaginatedResponse<IPost> { }
+interface IPostsResponse extends IPaginatedResponse<IPost> {}
 
-interface IVFlixResponse extends IPaginatedResponse<IVflix> { }
+interface IVFlixResponse extends IPaginatedResponse<IVflix> {}
 
-interface ICommentsResponse extends IPaginatedResponse<IPostComment> { }
+interface ICommentsResponse extends IPaginatedResponse<IPostComment> {}
 
 interface IPostComment {
   uuid: string;
@@ -564,10 +568,9 @@ interface INewVflixCommentResponse {
   reply_count: number;
 }
 
-interface IGetVflixCommentResponse
-  extends IPaginatedResponse<IGetVflixComments> { }
+interface IGetVflixCommentResponse extends IPaginatedResponse<IGetVflixComments> {}
 
-interface INewPostResponse extends IPost { }
+interface INewPostResponse extends IPost {}
 
 interface ILikeOrUnlikePostResponse {
   is_liked: boolean;

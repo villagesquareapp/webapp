@@ -58,3 +58,27 @@ export const getUserLikedPosts = async (userId: string, page: number = 1) => {
         throw error;
     }
 };
+
+/**
+ * Resolves a username to a UUID using the user search endpoint.
+ * Used as a fallback when navigating directly to /username without a uid param.
+ */
+export const resolveUsernameToUUID = async (username: string): Promise<string | null> => {
+    try {
+        const token = await getToken();
+        const response = await apiGet<{ data: { data: Array<{ uuid: string; username: string }> } }>(
+            `/users/search?query=${encodeURIComponent(username)}`,
+            token
+        );
+        if (response?.data?.data && Array.isArray(response.data.data)) {
+            const match = response.data.data.find(
+                (u) => u.username?.toLowerCase() === username.toLowerCase()
+            );
+            return match?.uuid || null;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error resolving username to UUID:", error);
+        return null;
+    }
+};

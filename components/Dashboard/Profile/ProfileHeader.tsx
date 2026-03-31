@@ -56,7 +56,7 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
                             </>
                         ) : (
                             <>
-                                <Button className={`rounded-full h-8 px-8 text-xs font-semibold ${profile.relationship?.is_following ? 'bg-background text-foreground border border-foreground hover:bg-background' : 'bg-foreground text-background hover:bg-foreground/90'}`}>
+                                <Button className={`rounded-full h-8 px-8 text-xs font-semibold ${profile.relationship?.is_following ? 'bg-transparent text-foreground border border-blue-700 hover:bg-background' : 'bg-blue-700 text-white hover:bg-blue-600/90'}`}>
                                     {profile.relationship?.is_following ? "Following" : "Follow"}
                                 </Button>
                                 <Button variant="outline" className="rounded-full h-8 px-6 text-xs font-semibold">

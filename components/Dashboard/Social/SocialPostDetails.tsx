@@ -75,7 +75,7 @@ const SocialPostDetails = ({
 
       <div className="flex flex-col">
         {/* Post text with highlighted hashtags */}
-        <PostText text={post?.caption} />
+        <PostText text={post?.caption} mentions={post?.mentions} />
         {!!post?.media?.length && (
           <div className="p-4 w-full">
             <Carousel

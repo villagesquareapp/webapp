@@ -1,25 +1,54 @@
 import ProfilePage from "components/Dashboard/Profile/ProfilePage";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
-import { getProfile } from "api/user";
+import { getProfile, resolveUsernameToUUID } from "api/user";
 
-export default async function Page({ params }: { params: Promise<{ username: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ username: string }>;
+  searchParams: Promise<{ uid?: string }>;
+}) {
   const resolvedParams = await params;
   const username = resolvedParams.username;
+  const { uid } = await searchParams;
 
   const session = await getServerSession(authOptions);
-
-  // Check if viewing own profile
   const isOwnProfile = session?.user?.username === username;
 
-  // Fetch profile server-side using uuid for own profile, username for others
   let initialProfile: IUserProfileResponse | null = null;
+
   try {
-    const userId = isOwnProfile ? session?.user?.uuid : username;
-    if (userId) {
-      const response = await getProfile(userId);
-      if (response?.status && response.data) {
-        initialProfile = response.data;
+    if (isOwnProfile) {
+      const userId = session?.user?.uuid;
+      if (userId) {
+        const response = await getProfile(userId);
+        if (response?.status && response.data) {
+          initialProfile = response.data;
+        }
+      }
+    } else {
+      // Step 1: Try uid param or username directly
+      const firstAttemptId = uid || username;
+      try {
+        const response = await getProfile(firstAttemptId);
+        if (response?.status && response.data) {
+          initialProfile = response.data;
+        }
+      } catch {
+        // Step 1 failed — try step 2
+      }
+
+      // Step 2: Resolve username → UUID via mentions search
+      if (!initialProfile) {
+        const resolvedUUID = await resolveUsernameToUUID(username);
+        if (resolvedUUID) {
+          const response = await getProfile(resolvedUUID);
+          if (response?.status && response.data) {
+            initialProfile = response.data;
+          }
+        }
       }
     }
   } catch (error) {
