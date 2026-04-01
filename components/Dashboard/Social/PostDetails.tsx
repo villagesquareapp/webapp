@@ -43,7 +43,7 @@ interface PostDetailsProps {
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
   initialMediaIndex?: number;
-  onOpenReplyModal: (post: IPost, replyToComment?: IPostComment) => void;
+  onOpenReplyModal: (post: IPost | IPostComment, replyToComment?: IPostComment) => void;
   onReplySuccess: (newReply: IPostComment) => void;
   newReply?: IPostComment | null;
   // isReplyModalOpen: boolean;

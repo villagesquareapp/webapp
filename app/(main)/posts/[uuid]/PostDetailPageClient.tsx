@@ -67,8 +67,8 @@ export default function PostDetailPageClient({
         }
     };
 
-    const handleOpenReplyModal = (p: IPost, r?: IPostComment) => {
-        setPostForReply(p);
+    const handleOpenReplyModal = (p: IPost | IPostComment, r?: IPostComment) => {
+        setPostForReply(p as IPost);
         setReplyToComment(r || null);
         setIsReplyModalOpen(true);
     };

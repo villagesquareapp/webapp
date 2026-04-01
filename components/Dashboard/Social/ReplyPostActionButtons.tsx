@@ -21,7 +21,7 @@ const ReplyPostActionButtons = ({
   disableCommentButton?: boolean;
   likeUnlikePost: (postId: string) => void;
   saveUnsavePost: (postId: string) => void;
-  reply: IPost;
+  reply: IPostComment;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   user?: IUser;
   onOpenReplyModal: () => void;

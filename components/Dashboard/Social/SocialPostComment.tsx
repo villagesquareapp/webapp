@@ -24,7 +24,7 @@ const SocialPostComment = ({
   user,
   onOpenReplyModal,
 }: {
-  post: IPost;
+  post: IPost | IPostComment;
   disableCommentButton?: boolean;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   user?: IUser;

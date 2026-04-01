@@ -444,7 +444,7 @@ interface IPost {
   shares_count: string;
   likes_count: string;
   replies_count: string | number;
-  impression: string;
+  impressions: string;
   additional_metadata: any;
   created_at: Date;
   updated_at: Date;
@@ -452,6 +452,7 @@ interface IPost {
   user: IPostUser;
   media: IPostMedia[];
   thumbnail?: string;
+  is_thread_continuation?: boolean;
   formatted_time: string;
   is_saved: boolean;
   is_liked: boolean;
@@ -499,7 +500,7 @@ interface IPostComment {
   formatted_time: string;
   is_saved: boolean;
   is_liked: boolean;
-  is_thread_continuation: boolean;
+  is_thread_continuation?: boolean;
 }
 
 interface IGetVflixComments {
