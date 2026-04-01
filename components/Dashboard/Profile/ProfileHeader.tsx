@@ -86,11 +86,11 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
                 </div>
 
                 <div className="flex flex-col items-end gap-4 self-start">
-                    {isOwnProfile && (
+                    {/* {isOwnProfile && (
                         <button className="text-muted-foreground hover:text-foreground mb-1">
                             <Settings className="size-5" />
                         </button>
-                    )}
+                    )} */}
                     <div className={`flex items-center gap-4 text-sm ${isOwnProfile ? "mt-2" : "mt-8"}`}>
                         <div className="flex items-center gap-1">
                             <span className="font-bold">{profile.followers?.toLocaleString() || 0}</span>

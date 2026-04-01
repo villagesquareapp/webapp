@@ -5,12 +5,14 @@ import CustomAvatar from "components/ui/custom/custom-avatar";
 import { Heart } from "lucide-react";
 import { IoStatsChart } from "react-icons/io5";
 import { PiHeartFill } from "react-icons/pi";
+import { useRouter } from "next/navigation";
 
 interface HotOnVflixProps {
   onVideoSelect: (video: IVflix) => void;
 }
 
 const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
+  const router = useRouter();
   const [hotVideos, setHotVideos] = useState<IVflix[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -124,7 +126,13 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
                         name={userName}
                         className="size-6 border-none"
                       />
-                      <span className="text-[13px] font-semibold text-white truncate">
+                      <span
+                        className="text-[13px] font-semibold text-white truncate cursor-pointer hover:underline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (video.user?.username) router.push(`/u/${video.user.username}`);
+                        }}
+                      >
                         {userName}
                       </span>
                     </div>
