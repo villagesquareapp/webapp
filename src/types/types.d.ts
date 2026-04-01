@@ -380,6 +380,7 @@ interface IVflix {
   formatted_date: string;
   is_liked: boolean;
   is_followed: boolean;
+  is_followed_by?: boolean;
   is_giftable: boolean;
   _source?: string;
   allow_comments?: boolean;

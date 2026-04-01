@@ -43,6 +43,21 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
   const scrollRef = useRef(0);
 
+  // Restore scroll position when returning from post details
+  useEffect(() => {
+    const saved = sessionStorage.getItem("social-scroll-pos");
+    if (saved) {
+      const scrollContainer = document.getElementById("social-main-scroll");
+      if (scrollContainer) {
+        // Use requestAnimationFrame to wait for the DOM to be ready
+        requestAnimationFrame(() => {
+          scrollContainer.scrollTop = Number(saved);
+          sessionStorage.removeItem("social-scroll-pos");
+        });
+      }
+    }
+  }, []);
+
   // Check cache on mount
   useEffect(() => {
     const cacheKey = `social-posts-${activeTab}`;

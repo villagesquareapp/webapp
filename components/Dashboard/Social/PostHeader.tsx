@@ -48,9 +48,12 @@ const PostHeader = ({
     e.stopPropagation();
     e.preventDefault();
     const username = post?.user?.username;
-    const uuid = post?.user?.uuid;
     if (username) {
-      router.push(`/${username}${uuid ? `?uid=${uuid}` : ""}`);
+      const scrollContainer = document.getElementById("social-main-scroll");
+      if (scrollContainer) {
+        sessionStorage.setItem("social-scroll-pos", String(scrollContainer.scrollTop));
+      }
+      router.push(`/u/${username}`);
     }
   };
 
