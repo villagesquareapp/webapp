@@ -142,16 +142,25 @@ const DashboardNavbar = () => {
                 </div>
               </div>
             </PopoverTrigger>
-            <PopoverContent className="w-40 p-2" align="end">
-              <div className="flex flex-col gap-1 w-full">
-                {/* <Link href={`/user/${user?.username || ""}`}>
-                  <Button variant="outline" className="w-full h-9">
+            <PopoverContent
+              className="w-48 p-3 rounded-xl shadow-md border bg-background z-50"
+              align="end"
+            >
+              <div className="flex flex-col gap-2">
+                <Link href={`/u/${user?.username || ""}`}>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-foreground justify-start h-10 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition"
+                  >
                     View Profile
                   </Button>
-                </Link> */}
+                </Link>
+
+                <div className="border-t my-1" />
+
                 <Button
-                  variant="outline"
-                  className="w-full h-9"
+                  variant="ghost"
+                  className="w-full justify-start h-10 px-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition"
                   onClick={() => signOut({ callbackUrl: "/auth/login" })}
                 >
                   Logout
