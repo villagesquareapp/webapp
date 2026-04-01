@@ -44,9 +44,13 @@ const EachSocialPost = ({
   ) => {
     e.stopPropagation();
 
-    // If a video is playing, pause it before opening the details
+    // Save scroll position before navigating to post details
+    const scrollContainer = document.getElementById("social-main-scroll");
+    if (scrollContainer) {
+      sessionStorage.setItem("social-scroll-pos", String(scrollContainer.scrollTop));
+    }
+
     if (isPlayingVideo) {
-      // Small delay to ensure we don't create race conditions
       setTimeout(() => {
         setIsPlayingVideo(false);
         setCurrentVideoPlaying("");
@@ -72,7 +76,7 @@ const EachSocialPost = ({
           onClick={(e) => handlePostClickWithVideoPause(e)}
           className="cursor-pointer"
         >
-          <PostText text={post?.caption} />
+          <PostText text={post?.caption} mentions={post?.mentions} />
         </div>
         {!!post?.media?.length && (
           <div

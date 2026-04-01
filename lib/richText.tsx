@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 
-export const parseRichText = (text: string) => {
+export const parseRichText = (text: string, mentions?: IMention[]) => {
     if (!text) return null;
 
     const parts = text.split(/(\s+)/);
@@ -14,9 +14,17 @@ export const parseRichText = (text: string) => {
             const punctuation = match[3];
 
             const isHashtag = symbol === "#";
-            const linkHref = isHashtag
-                ? `/search?q=%23${content}`
-                : `/${content}`;
+
+            let linkHref: string;
+            if (isHashtag) {
+                linkHref = `/search?q=%23${content}`;
+            } else {
+                // Look up the UUID from the mentions array
+                const mention = mentions?.find(
+                    (m) => m.username.toLowerCase() === content.toLowerCase()
+                );
+                linkHref = `/u/${content}`;
+            }
 
             return (
                 <React.Fragment key={index}>
@@ -35,3 +43,4 @@ export const parseRichText = (text: string) => {
         return <React.Fragment key={index}>{part}</React.Fragment>;
     });
 };
+

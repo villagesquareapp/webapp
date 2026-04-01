@@ -105,6 +105,13 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     }
   }, [isVFlixUploadOpen]);
 
+  // Auto-focus caption textarea when step becomes 2
+  useEffect(() => {
+    if (step === 2 && captionInputRef.current) {
+      setTimeout(() => captionInputRef.current?.focus(), 100);
+    }
+  }, [step]);
+
   // Hashtags Fetch Effect
   useEffect(() => {
     if (activeHashtagSearch === null) {

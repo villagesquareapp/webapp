@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { v4 as uuidv4 } from "uuid";
 import updateLocale from "dayjs/plugin/updateLocale";
+import { useRouter } from "next/navigation";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -41,6 +42,21 @@ const PostHeader = ({
   showMoreDetailButton?: boolean;
   post: IPost;
 }) => {
+  const router = useRouter();
+
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const username = post?.user?.username;
+    if (username) {
+      const scrollContainer = document.getElementById("social-main-scroll");
+      if (scrollContainer) {
+        sessionStorage.setItem("social-scroll-pos", String(scrollContainer.scrollTop));
+      }
+      router.push(`/u/${username}`);
+    }
+  };
+
   return (
     <div
       key={`${post.uuid}-${uuidv4()}`}
@@ -48,14 +64,19 @@ const PostHeader = ({
     >
       {/* Post Header */}
       <div className="flex flex-row gap-x-3 items-center">
-        <CustomAvatar
-          src={post?.user?.profile_picture || ""}
-          name={post?.user?.name || ""}
-          className="size-8 border-foreground border-[1.5px]"
-        />
+        <div onClick={handleUserClick} className="cursor-pointer">
+          <CustomAvatar
+            src={post?.user?.profile_picture || ""}
+            name={post?.user?.name || ""}
+            className="size-8 border-foreground border-[1.5px]"
+          />
+        </div>
         <div className="flex flex-col">
           <span className="flex flex-row items-center max-w-80">
-            <span className="font-semibold text-sm truncate">
+            <span
+              className="font-semibold text-sm truncate cursor-pointer hover:underline"
+              onClick={handleUserClick}
+            >
               {post?.user?.name}
             </span>
             {!!post?.user?.verified_status && (
@@ -68,18 +89,12 @@ const PostHeader = ({
               {dayjs(post?.created_at).fromNow()}
             </p>
           </span>
-          <span className="text-xs text-gray-400">
+          <span
+            className="text-xs text-gray-400 cursor-pointer hover:underline w-fit"
+            onClick={handleUserClick}
+          >
             @{post?.user?.username}
           </span>
-          {/* <span className="flex flex-row items-center gap-x-1">
-            {post?.address && (
-              <>
-                <span className="text-xs text-muted-foreground">
-                  {post?.address}
-                </span>{" "}
-              </>
-            )}
-          </span> */}
         </div>
       </div>
       {/* Post Actions */}
@@ -94,8 +109,6 @@ const PostHeader = ({
               className="bg-background w-fit p-0 text-center z-[50]"
             >
               <div className="text-sm px-20 py-3 cursor-pointer">Report</div>
-              {/* <Separator className="my-2" />
-              <div className="px-20 py-3">Block</div> */}
             </PopoverContent>
           </Popover>
         ) : (
@@ -107,3 +120,4 @@ const PostHeader = ({
 };
 
 export default PostHeader;
+

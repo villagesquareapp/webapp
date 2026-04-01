@@ -43,7 +43,7 @@ const LikedPostCard = ({
             >
                 {/* Post caption */}
                 <div onClick={(e) => { e.stopPropagation(); handlePostClick(); }} className="cursor-pointer">
-                    <PostText text={post?.caption} />
+                    <PostText text={post?.caption} mentions={post?.mentions} />
                 </div>
 
                 {/* Media */}

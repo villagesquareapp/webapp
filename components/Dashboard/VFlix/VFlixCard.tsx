@@ -24,18 +24,19 @@ import { toast } from "sonner";
 function FollowButton({
   userId,
   isFollowed,
+  isFollowedBy,
   postId,
   setVideos,
 }: {
   userId: string;
   isFollowed: boolean;
+  isFollowedBy?: boolean;
   postId: string;
   setVideos: React.Dispatch<React.SetStateAction<IVflix[]>>;
 }) {
   const [following, setFollowing] = useState(isFollowed);
   const [loading, setLoading] = useState(false);
 
-  // Sync with prop changes (e.g. when navigating between videos)
   useEffect(() => {
     setFollowing(isFollowed);
   }, [isFollowed]);
@@ -44,49 +45,48 @@ function FollowButton({
     e.stopPropagation();
     if (loading) return;
 
-    const newFollowing = !following;
-    // Optimistic update
-    setFollowing(newFollowing);
+    const wasFollowing = following;
+    setFollowing(!wasFollowing);
     setLoading(true);
 
     try {
-      const endpoint = newFollowing
-        ? `/api/users/${userId}/follow`
-        : `/api/users/${userId}/unfollow`;
+      const endpoint = wasFollowing
+        ? `/api/users/${userId}/unfollow`
+        : `/api/users/${userId}/follow`;
       const res = await fetch(endpoint, { method: "POST" });
       const result = await res.json();
 
       if (!result?.status) {
-        // Revert on failure
-        setFollowing(!newFollowing);
+        setFollowing(wasFollowing);
         toast.error(result?.message || "Action failed");
       } else {
-        // Update the parent videos state so follow status persists
         setVideos((prev) =>
           prev.map((v) =>
-            v.user.uuid === userId ? { ...v, is_followed: newFollowing } : v,
+            v.user.uuid === userId ? { ...v, is_followed: !wasFollowing } : v,
           ),
         );
       }
-    } catch (error) {
-      // Revert on error
-      setFollowing(!newFollowing);
+    } catch {
+      setFollowing(wasFollowing);
       toast.error("An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
+  const label = following ? "Following" : isFollowedBy ? "Follow Back" : "Follow";
+
   return (
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
-        ? "bg-white/10 text-white/80 hover:bg-white/20"
-        : "bg-[#0D1E34] hover:bg-[#0D1E34]/80"
-        } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${
+        following
+          ? "bg-white/10 text-white/80 hover:bg-white/20"
+          : "bg-[#0D1E34] hover:bg-[#0D1E34]/80 text-white"
+      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
-      {following ? "Following" : "Follow"}
+      {label}
     </button>
   );
 }
@@ -409,6 +409,7 @@ export default function VflixCard({
               <FollowButton
                 userId={post.user.uuid}
                 isFollowed={post.is_followed}
+                isFollowedBy={post.is_followed_by}
                 postId={post.uuid}
                 setVideos={setVideos}
               />

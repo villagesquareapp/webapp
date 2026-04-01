@@ -61,7 +61,13 @@ const ProfileMetrics = ({ profile }: ProfileMetricsProps) => {
                             <div
                                 key={user.uuid || i}
                                 className="flex items-center gap-3 cursor-pointer hover:bg-accent/50 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                                onClick={() => router.push(`/${user.username}`)}
+                                onClick={() => {
+                                    const scrollContainer = document.getElementById("social-main-scroll");
+                                    if (scrollContainer) {
+                                        sessionStorage.setItem("social-scroll-pos", String(scrollContainer.scrollTop));
+                                    }
+                                    router.push(`/u/${user.username}`);
+                                }}
                             >
                                 <CustomAvatar
                                     src={user.profile_picture || ""}

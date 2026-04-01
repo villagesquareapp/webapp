@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useCallback } from "react";
 
 interface CacheEntry<T> {
   data: T;
@@ -18,59 +18,44 @@ interface DataCacheContextType {
 
 const DataCacheContext = createContext<DataCacheContextType | undefined>(undefined);
 
-const DEFAULT_CACHE_DURATION = 5; // 5 minutes
+const DEFAULT_CACHE_DURATION = 5;
+
+// Module-level stores — survive React remounts and navigation
+const dataCache = new Map<string, CacheEntry<any>>();
+const scrollCache = new Map<string, number>();
 
 export const DataCacheProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cache, setCache] = useState<Map<string, CacheEntry<any>>>(new Map());
-  const [scrollPositions, setScrollPositions] = useState<Map<string, number>>(new Map());
 
   const getCachedData = useCallback(<T,>(key: string): T | null => {
-    const entry = cache.get(key);
-    return entry ? entry.data : null;
-  }, [cache]);
+    const entry = dataCache.get(key);
+    return entry ? (entry.data as T) : null;
+  }, []);
 
   const setCachedData = useCallback(<T,>(key: string, data: T) => {
-    setCache((prev) => {
-      const newCache = new Map(prev);
-      newCache.set(key, {
-        data,
-        timestamp: Date.now(),
-      });
-      return newCache;
-    });
+    dataCache.set(key, { data, timestamp: Date.now() });
   }, []);
 
   const isCacheValid = useCallback((key: string, maxAgeMinutes: number = DEFAULT_CACHE_DURATION): boolean => {
-    const entry = cache.get(key);
+    const entry = dataCache.get(key);
     if (!entry) return false;
-
-    const now = Date.now();
-    const ageInMinutes = (now - entry.timestamp) / (1000 * 60);
+    const ageInMinutes = (Date.now() - entry.timestamp) / (1000 * 60);
     return ageInMinutes < maxAgeMinutes;
-  }, [cache]);
+  }, []);
 
   const clearCache = useCallback((key?: string) => {
     if (key) {
-      setCache((prev) => {
-        const newCache = new Map(prev);
-        newCache.delete(key);
-        return newCache;
-      });
+      dataCache.delete(key);
     } else {
-      setCache(new Map());
+      dataCache.clear();
     }
   }, []);
 
   const getScrollPosition = useCallback((key: string): number => {
-    return scrollPositions.get(key) || 0;
-  }, [scrollPositions]);
+    return scrollCache.get(key) || 0;
+  }, []);
 
   const setScrollPosition = useCallback((key: string, position: number) => {
-    setScrollPositions((prev) => {
-      const newScroll = new Map(prev);
-      newScroll.set(key, position);
-      return newScroll;
-    });
+    scrollCache.set(key, position);
   }, []);
 
   return (
