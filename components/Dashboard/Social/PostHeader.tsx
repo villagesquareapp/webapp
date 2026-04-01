@@ -57,6 +57,11 @@ const PostHeader = ({
     }
   };
 
+  const handleUserHover = () => {
+    const username = post?.user?.username;
+    if (username) router.prefetch(`/u/${username}`);
+  };
+
   return (
     <div
       key={`${post.uuid}-${uuidv4()}`}
@@ -64,7 +69,7 @@ const PostHeader = ({
     >
       {/* Post Header */}
       <div className="flex flex-row gap-x-3 items-center">
-        <div onClick={handleUserClick} className="cursor-pointer">
+        <div onClick={handleUserClick} onMouseEnter={handleUserHover} className="cursor-pointer">
           <CustomAvatar
             src={post?.user?.profile_picture || ""}
             name={post?.user?.name || ""}
@@ -76,6 +81,7 @@ const PostHeader = ({
             <span
               className="font-semibold text-sm truncate cursor-pointer hover:underline"
               onClick={handleUserClick}
+              onMouseEnter={handleUserHover}
             >
               {post?.user?.name}
             </span>

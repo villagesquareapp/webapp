@@ -3,6 +3,29 @@ import { authOptions } from "api/auth/authOptions";
 import ProfilePage from "components/Dashboard/Profile/ProfilePage";
 import ProfileNotFound from "components/Dashboard/Profile/ProfileNotFound";
 import { getProfile, resolveUsernameToUUID } from "api/user";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+    const { username } = await params;
+    const resolvedUUID = await resolveUsernameToUUID(username).catch(() => null);
+    if (resolvedUUID) {
+        const res = await getProfile(resolvedUUID).catch(() => null);
+        const profile = res?.data;
+        if (profile) {
+            return {
+                title: `${profile.name} (@${profile.username}) on VS`,
+                description: profile.bio || `View ${profile.name}'s profile on Village Square.`,
+            };
+        }
+    }
+    return {
+        title: `@${username} on VS`,
+    };
+}
 
 export default async function UserProfilePage({
     params,

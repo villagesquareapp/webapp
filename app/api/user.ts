@@ -61,9 +61,14 @@ export const getUserLikedPosts = async (userId: string, page: number = 1) => {
 
 /**
  * Resolves a username to a UUID using the user search endpoint.
- * Used as a fallback when navigating directly to /username without a uid param.
+ * Cached in-memory to avoid repeated API calls for the same username.
  */
+const usernameUUIDCache = new Map<string, string>();
+
 export const resolveUsernameToUUID = async (username: string): Promise<string | null> => {
+    const cached = usernameUUIDCache.get(username.toLowerCase());
+    if (cached) return cached;
+
     try {
         const token = await getToken();
         const response = await apiGet<{ data: { data: Array<{ uuid: string; username: string }> } }>(
@@ -74,7 +79,10 @@ export const resolveUsernameToUUID = async (username: string): Promise<string | 
             const match = response.data.data.find(
                 (u) => u.username?.toLowerCase() === username.toLowerCase()
             );
-            return match?.uuid || null;
+            if (match?.uuid) {
+                usernameUUIDCache.set(username.toLowerCase(), match.uuid);
+                return match.uuid;
+            }
         }
         return null;
     } catch (error) {

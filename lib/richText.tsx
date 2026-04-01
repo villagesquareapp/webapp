@@ -30,6 +30,7 @@ export const parseRichText = (text: string, mentions?: IMention[]) => {
                 <React.Fragment key={index}>
                     <Link
                         href={linkHref}
+                        prefetch={true}
                         className="text-blue-500 hover:underline font-medium"
                         onClick={(e) => e.stopPropagation()}
                     >
