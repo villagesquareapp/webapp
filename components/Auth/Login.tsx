@@ -244,7 +244,7 @@ export function Login({ className, ...props }: LoginProps) {
             <Button
               type="submit"
               size={"lg"}
-              className="auth_button text-white"
+              className="auth_button text-red-600"
               disabled={
                 isLoading || isAppleLoading || isGoogleLoading || isRedirecting
               }

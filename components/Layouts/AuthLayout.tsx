@@ -1,16 +1,29 @@
-'use client';
+"use client";
 
 import CustomToaster from "components/ui/custom/custom-toaster";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
+import { useTheme } from "next-themes";
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { setTheme, theme } = useTheme();
+
+  useEffect(() => {
+    const previous = theme;
+    setTheme("dark");
+    return () => {
+      // Restore previous theme when leaving auth pages
+      if (previous) setTheme(previous);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const footerLinks = [
     { name: "About Us", path: "/about-us" },
     { name: "Privacy Policy", path: "/privacy-policy" },
@@ -23,6 +36,8 @@ export default function AuthLayout({
 
   const params = useParams();
   const localePrefix = params?.locale ? `/${params.locale}` : "en";
+
+  const logoSrc = "/images/VillageSquare.png";
 
   return (
     <div className="min-h-[100dvh] relative">
@@ -45,7 +60,19 @@ export default function AuthLayout({
               height={150}
             />
             <div className="flex flex-col items-start justify-center mt-2">
-              <Image src="https://cdn-assets.villagesquare.io/assets/VillageSquare.png" alt="VS-Logo" width={320} height={150} />
+              {/* <Image
+                src="https://cdn-assets.villagesquare.io/assets/VillageSquare.png"
+                alt="VS-Logo"
+                width={320}
+                height={150}
+              /> */}
+              <img
+                key={logoSrc}
+                src={logoSrc}
+                alt="VS-Logo"
+                className="hidden md:block w-[320px] h-auto z-[1000] shrink-0 object-contain"
+              />
+
               <p className="font-poppins text-[23px] mt-2">
                 Where Connections Flourish.
               </p>
@@ -56,12 +83,19 @@ export default function AuthLayout({
         <div className="lg:p-8 w-full">
           <div className="flex w-full flex-col justify-center space-y-4 lg:w-[450px] sm:w-[350px] px-8 sm:px-0">
             <div className="flex items-center justify-center mb-4 lg:hidden">
-              <Image
+              {/* <img
                 src="/images/vs_logo.png"
                 alt="VS-Logo"
                 width={80}
                 height={80}
                 className="object-contain"
+              /> */}
+              <img
+                src="/images/vs_logo.png"
+                alt="logo"
+                width={80}
+                height={80}
+                className="shrink-0 object-contain"
               />
             </div>
 
@@ -78,7 +112,7 @@ export default function AuthLayout({
             <Link
               href={`/${localePrefix}${link.path}`}
               className="text-sm text-gray-500 hover:text-gray-700 mx-2 font-bold"
-              target='_blank' 
+              target="_blank"
             >
               {link.name}
             </Link>
