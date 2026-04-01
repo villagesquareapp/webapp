@@ -12,6 +12,7 @@ import { VSSend } from "components/icons/village-square";
 import { PiHeartFill } from "react-icons/pi";
 import { toast } from "sonner";
 import { BsDot } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 
 interface Props {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export default function VflixComments({
   user,
   source,
 }: Props) {
+  const router = useRouter();
   const [comments, setComments] = useState<IGetVflixComments[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [commentContent, setCommentContent] = useState<string>("");
@@ -252,7 +254,10 @@ export default function VflixComments({
                   />
                   <div className="flex flex-col w-full">
                     <div className="flex items-center">
-                      <span className="font-semibold text-base text-foreground">
+                      <span
+                        className="font-semibold text-base text-foreground cursor-pointer hover:underline"
+                        onClick={() => comment?.user?.username && router.push(`/u/${comment.user.username}`)}
+                      >
                         {comment?.user?.name}
                       </span>
                       {!!comment?.user?.verified_status && (

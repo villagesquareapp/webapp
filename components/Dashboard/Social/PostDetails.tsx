@@ -31,6 +31,7 @@ import ReplyToPostModal from "./ReplyToPostModal";
 import { BsDot } from "react-icons/bs";
 import { PostText } from "./PostText";
 import { Separator } from "components/ui/separator";
+import { useRouter } from "next/navigation";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -66,6 +67,8 @@ const PostDetails = ({
   onReplySuccess,
   newReply,
 }: PostDetailsProps) => {
+  const router = useRouter();
+
   const {
     replyingTo,
     setReplyingTo,
@@ -290,7 +293,10 @@ const PostDetails = ({
                     <div className="flex-1">
                       <div className="flex flex-col">
                         <div className="flex flex-row items-center max-w-80">
-                          <span className="font-semibold text-sm text-foreground">
+                          <span
+                            className="font-semibold text-sm text-foreground cursor-pointer hover:underline"
+                            onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}`)}
+                          >
                             {reply.user?.name}
                           </span>
                           {!!reply?.user?.verified_status && (
@@ -303,7 +309,10 @@ const PostDetails = ({
                             {reply.formatted_time}{" "}
                           </p>
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div
+                          className="text-xs text-gray-400 cursor-pointer hover:underline w-fit"
+                          onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}`)}
+                        >
                           @{reply.user?.username}
                         </div>
                       </div>

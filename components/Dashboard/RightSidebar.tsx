@@ -261,10 +261,13 @@ const RightSidebar = () => {
           ) : suggestedUsers.length > 0 ? (
             suggestedUsers.map((person, idx) => (
               <div key={person.uuid || idx} className="flex items-center justify-between">
-                <div className="flex items-center gap-x-3">
+                <div
+                  className="flex items-center gap-x-3 cursor-pointer"
+                  onClick={() => router.push(`/u/${person.username}`)}
+                >
                   <CustomAvatar src={person.profile_picture || ""} name={person.name} className="size-10" />
                   <div className="flex flex-col leading-tight">
-                    <p className="font-semibold text-sm line-clamp-1">{person.name}</p>
+                    <p className="font-semibold text-sm line-clamp-1 hover:underline">{person.name}</p>
                     <p className="text-xs text-muted-foreground line-clamp-1">
                       @{person.username}
                     </p>
