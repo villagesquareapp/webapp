@@ -20,6 +20,7 @@ import { Separator } from "components/ui/separator";
 import { FaEllipsisH } from "react-icons/fa";
 import ShareModal from "../Reusable/ShareModal";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 function FollowButton({
   userId,
@@ -80,11 +81,10 @@ function FollowButton({
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${
-        following
-          ? "bg-white/10 text-white/80 hover:bg-white/20"
-          : "bg-[#0D1E34] hover:bg-[#0D1E34]/80 text-white"
-      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
+        ? "bg-white/10 text-white/80 hover:bg-white/20"
+        : "bg-[#0D1E34] hover:bg-[#0D1E34]/80 text-white"
+        } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {label}
     </button>
@@ -114,12 +114,27 @@ export default function VflixCard({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
-  const [isBuffering, setIsBuffering] = useState<boolean>(false);
+  const [isBuffering, setIsBuffering] = useState<boolean>(true);
   const [showControls, setShowControls] = useState<boolean>(false);
+  const [showPlayIcon, setShowPlayIcon] = useState<boolean>(false);
+  const [showPauseIcon, setShowPauseIcon] = useState<boolean>(false);
   const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideIconTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    const nextState = !isPlaying;
+    setIsPlaying(nextState);
+
+    // Trigger Icon animations
+    if (nextState) {
+      setShowPlayIcon(true);
+      if (hideIconTimeoutRef.current) clearTimeout(hideIconTimeoutRef.current);
+      hideIconTimeoutRef.current = setTimeout(() => setShowPlayIcon(false), 800);
+    } else {
+      setShowPauseIcon(true);
+      if (hideIconTimeoutRef.current) clearTimeout(hideIconTimeoutRef.current);
+      hideIconTimeoutRef.current = setTimeout(() => setShowPauseIcon(false), 800);
+    }
   };
 
   const toggleMute = (e: React.MouseEvent) => {
@@ -368,26 +383,52 @@ export default function VflixCard({
             </PopoverContent>
           </Popover>
         </div>
-        {isBuffering && (
-          <div className="absolute inset-0 flex items-center justify-center z-30">
-            <LoadingSpinner />
-          </div>
-        )}
+
+        {/* Buffering Loader overlay */}
+        <AnimatePresence>
+          {isBuffering && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+            >
+              <div className="w-8 h-8 border-2 border-white/20 border-t-white/90 rounded-full animate-spin glow-shadow" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Transient Play/Pause icon overlay */}
+        <AnimatePresence>
+          {showPlayIcon && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1.5 }}
+              exit={{ opacity: 0, scale: 2 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+            >
+              <CirclePlay className="w-8 h-8 text-white/90 drop-shadow-xl" />
+            </motion.div>
+          )}
+          {showPauseIcon && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1.5 }}
+              exit={{ opacity: 0, scale: 2 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+            >
+              <CirclePause className="w-8 h-8 text-white/90 drop-shadow-xl" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Clickable area for play/pause - only covers the video, not the bottom controls */}
         <button
           onClick={togglePlay}
-          className="absolute inset-0 bottom-[120px] flex items-center justify-center z-10 transition-opacity duration-200"
-        >
-          {(showControls || !isPlaying) && !isBuffering && (
-            <>
-              {isPlaying ? (
-                <CirclePause className="w-8 h-8 text-white/80 drop-shadow-lg" />
-              ) : (
-                <CirclePlay className="w-8 h-8 text-white/80 drop-shadow-lg" />
-              )}
-            </>
-          )}
-        </button>
+          className="absolute inset-x-0 top-0 bottom-[160px] z-10"
+        />
         {/* Bottom info */}
         <div className="absolute bottom-10 left-4 right-4 text-white z-30 pointer-events-auto">
           {/* User row */}
@@ -471,9 +512,6 @@ export default function VflixCard({
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <span className="font-medium text-white/90">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
               <button
                 onClick={toggleMute}
                 className="hover:scale-110 transition-transform pointer-events-auto text-white"
