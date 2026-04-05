@@ -6,7 +6,7 @@ import { MdVerified } from "react-icons/md";
 
 const VerificationContent = () => {
     return (
-        <div className="max-w-[700px] pt-2">
+        <div className="max-w-[500px] pt-2">
             <h2 className="text-[22px] font-semibold mb-1">Get Verified on VillageSquare</h2>
             <p className="text-muted-foreground text-sm mb-8">Complete this action on the mobile app</p>
 

@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import { Search, ChevronRight, ArrowUpRight, LogOut } from "lucide-react";
 import EditProfileContent from "./EditProfileContent";
 import VerificationContent from "./VerificationContent";
+import RateUsContent from "./RateUsContent";
+import ChangePasswordContent from "./ChangePasswordContent";
+import BlockedContent from "./BlockedContent";
+import DeactivateAccountContent from "./DeactivateAccountContent";
 
 const menuSections = [
     {
@@ -11,6 +15,8 @@ const menuSections = [
         items: [
             { id: "edit_profile", label: "Edit Profile", icon: ChevronRight },
             { id: "verification", label: "Verification", icon: ChevronRight },
+            { id: "change_password", label: "Change Password", icon: ChevronRight },
+            { id: "blocked", label: "Blocked", icon: ChevronRight, badge: "6" },
             { id: "deactivate", label: "Deactivate / Delete Account", icon: ChevronRight },
         ],
     },
@@ -45,15 +51,15 @@ const SettingsPageClient = () => {
     return (
         <div className="flex w-full h-[calc(100vh-80px)] overflow-hidden text-white pt-2 bg-background">
             {/* Left Sidebar */}
-            <div className="w-[320px] lg:w-[500px] h-full overflow-y-auto border-r border-[#2C2C2C] flex flex-col pr-4 pl-2">
+            <div className="w-[320px] lg:w-[500px] h-full overflow-y-auto border-r border-[#2C2C2C] flex flex-col pr-4 pl-2 pb-10">
 
                 {/* Menu Sections */}
                 {menuSections.map((section, idx) => (
                     <div key={idx} className="mb-6">
-                        <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider mx-2">
+                        <h3 className="text-xs font-semibold text-muted-foreground my-3 uppercase tracking-wider mx-2">
                             {section.title}
                         </h3>
-                        <div className="flex flex-col border border-[#2C2C2E] rounded-xl overflow-hidden bg-[#18181A]/50">
+                        <div className="flex flex-col border border-[#2C2C2E] rounded-xl overflow-hidden">
                             {section.items.map((item, index) => {
                                 const Icon = item.icon;
                                 const isActive = activeTab === item.id;
@@ -61,7 +67,7 @@ const SettingsPageClient = () => {
                                     <React.Fragment key={item.id}>
                                         <button
                                             onClick={() => {
-                                                if (item.external) return; // Might handle external routing differently
+                                                if ('external' in item && item.external) return; // Might handle external routing differently
                                                 if (item.id === 'signout') {
                                                     // handle sign out
                                                     return;
@@ -71,8 +77,15 @@ const SettingsPageClient = () => {
                                             className={`flex items-center justify-between px-4 py-3.5 text-sm transition-colors ${isActive ? "bg-[#252528] font-medium" : "hover:bg-[#202022] text-[#E0E0E0]"
                                                 }`}
                                         >
-                                            <span>{item.label}</span>
-                                            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                            <span className="flex items-center">
+                                                {item.label}
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {'badge' in item && item.badge && (
+                                                    <span className="text-xs font-bold text-white pr-1.5">{item.badge}</span>
+                                                )}
+                                                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                            </div>
                                         </button>
                                         {index < section.items.length - 1 && (
                                             <div className="h-px bg-[#2C2C2E]" />
@@ -89,7 +102,11 @@ const SettingsPageClient = () => {
             <div className="flex-1 h-full overflow-y-auto px-2 lg:px-4 py-0 pb-16">
                 {activeTab === "edit_profile" && <EditProfileContent />}
                 {activeTab === "verification" && <VerificationContent />}
-                {activeTab !== "edit_profile" && activeTab !== "verification" && (
+                {activeTab === "rate" && <RateUsContent />}
+                {activeTab === "change_password" && <ChangePasswordContent />}
+                {activeTab === "blocked" && <BlockedContent />}
+                {activeTab === "deactivate" && <DeactivateAccountContent />}
+                {activeTab !== "edit_profile" && activeTab !== "verification" && activeTab !== "rate" && activeTab !== "change_password" && activeTab !== "blocked" && activeTab !== "deactivate" && (
                     <div className="flex items-center justify-center h-full text-muted-foreground">
                         {activeTab} content coming soon
                     </div>
