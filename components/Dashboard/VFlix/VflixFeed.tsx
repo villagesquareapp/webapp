@@ -252,8 +252,8 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   };
 
   return (
-    <div className="flex items-center gap-0 md:gap-6 w-full max-w-full px-2 md:px-0 relative">
-      <div className="relative w-full md:w-[565px] h-[calc(100vh-140px)] md:h-[90vh] rounded-xl shadow-lg overflow-hidden flex-shrink-0 bg-black">
+    <div className="flex items-center justify-center w-full h-full relative gap-10">
+      <div className="relative w-full max-w-[450px] md:w-[450px] h-[calc(100vh-140px)] md:h-[90vh] rounded-[20px] shadow-2xl overflow-hidden flex-shrink-0 bg-black">
         <AnimatePresence initial={false} custom={direction}>
           {videos[currentIndex] && (
             <motion.div

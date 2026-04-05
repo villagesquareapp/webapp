@@ -90,3 +90,24 @@ export const resolveUsernameToUUID = async (username: string): Promise<string | 
         return null;
     }
 };
+
+export const updateProfile = async (formData: FormData) => {
+    try {
+        const token = await getToken();
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
+
+        const response = await fetch(`${API_URL}/users/profile/update`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        return { status: false, message: "Failed to update profile. Please try again." };
+    }
+};

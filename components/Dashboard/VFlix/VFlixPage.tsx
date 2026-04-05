@@ -38,9 +38,9 @@ const VFlixPage = React.memo(({ user }: { user: IUser }) => {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col h-full overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex justify-center h-full overflow-y-auto no-scrollbar relative">
         {/* Feed */}
-        <div className="flex py-6 lg:ml-[268px]">
+        <div className="flex py-6 w-full max-w-4xl justify-center">
           <VflixFeed
             activeTab={activeTab}
             user={user}
