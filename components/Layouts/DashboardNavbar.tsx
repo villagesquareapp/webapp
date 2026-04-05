@@ -44,7 +44,9 @@ const DashboardNavbar = () => {
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "w-[565px] ml-[268px] mr-[63px]"
-              : "w-[650px] px-4 lg:px-6"
+              : pathname.startsWith("/settings")
+                ? "w-[320px] lg:w-[500px] pl-4 pr-6"
+                : "w-[650px] px-4 lg:px-6"
           }
         >
           <div className="relative w-full">
@@ -95,7 +97,9 @@ const DashboardNavbar = () => {
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16"
-              : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"
+              : pathname.startsWith("/settings")
+                ? "flex-1 flex items-center justify-end gap-x-4 pr-8 lg:pr-16"
+                : "flex-1 flex items-center justify-end gap-x-4 pr-8 lg:pr-16"
           }
         >
           {/* Theme Toggle */}

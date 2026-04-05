@@ -1,0 +1,102 @@
+"use client";
+
+import React, { useState } from "react";
+import { Search, ChevronRight, ArrowUpRight, LogOut } from "lucide-react";
+import EditProfileContent from "./EditProfileContent";
+import VerificationContent from "./VerificationContent";
+
+const menuSections = [
+    {
+        title: "ACCOUNT",
+        items: [
+            { id: "edit_profile", label: "Edit Profile", icon: ChevronRight },
+            { id: "verification", label: "Verification", icon: ChevronRight },
+            { id: "deactivate", label: "Deactivate / Delete Account", icon: ChevronRight },
+        ],
+    },
+    {
+        title: "HELP & SUPPORT",
+        items: [
+            { id: "faqs", label: "FAQs", icon: ChevronRight },
+            { id: "about", label: "About Us", icon: ArrowUpRight, external: true },
+            { id: "support", label: "Contact / Support", icon: ArrowUpRight, external: true },
+        ],
+    },
+    {
+        title: "LEGAL",
+        items: [
+            { id: "privacy", label: "Privacy Policy", icon: ArrowUpRight, external: true },
+            { id: "terms", label: "Terms & Condition", icon: ArrowUpRight, external: true },
+            { id: "eula", label: "EULA for VillageSquare", icon: ArrowUpRight, external: true },
+        ],
+    },
+    {
+        title: "APP & REFERENCE",
+        items: [
+            { id: "rate", label: "Rate Us", icon: ChevronRight },
+            { id: "signout", label: "Sign Out", icon: ChevronRight }, // We could use a standard sign out icon, but UI has ChevronRight
+        ],
+    },
+];
+
+const SettingsPageClient = () => {
+    const [activeTab, setActiveTab] = useState("edit_profile");
+
+    return (
+        <div className="flex w-full h-[calc(100vh-80px)] overflow-hidden text-white pt-2 bg-background">
+            {/* Left Sidebar */}
+            <div className="w-[320px] lg:w-[500px] h-full overflow-y-auto border-r border-[#2C2C2C] flex flex-col pr-4 pl-2">
+
+                {/* Menu Sections */}
+                {menuSections.map((section, idx) => (
+                    <div key={idx} className="mb-6">
+                        <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider mx-2">
+                            {section.title}
+                        </h3>
+                        <div className="flex flex-col border border-[#2C2C2E] rounded-xl overflow-hidden bg-[#18181A]/50">
+                            {section.items.map((item, index) => {
+                                const Icon = item.icon;
+                                const isActive = activeTab === item.id;
+                                return (
+                                    <React.Fragment key={item.id}>
+                                        <button
+                                            onClick={() => {
+                                                if (item.external) return; // Might handle external routing differently
+                                                if (item.id === 'signout') {
+                                                    // handle sign out
+                                                    return;
+                                                }
+                                                setActiveTab(item.id)
+                                            }}
+                                            className={`flex items-center justify-between px-4 py-3.5 text-sm transition-colors ${isActive ? "bg-[#252528] font-medium" : "hover:bg-[#202022] text-[#E0E0E0]"
+                                                }`}
+                                        >
+                                            <span>{item.label}</span>
+                                            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                        </button>
+                                        {index < section.items.length - 1 && (
+                                            <div className="h-px bg-[#2C2C2E]" />
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Right Content Area */}
+            <div className="flex-1 h-full overflow-y-auto px-2 lg:px-4 py-0 pb-16">
+                {activeTab === "edit_profile" && <EditProfileContent />}
+                {activeTab === "verification" && <VerificationContent />}
+                {activeTab !== "edit_profile" && activeTab !== "verification" && (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                        {activeTab} content coming soon
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default SettingsPageClient;

@@ -124,6 +124,7 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
                 <Button
                   variant="outline"
                   className="rounded-full h-8 px-4 text-xs font-semibold"
+                  onClick={() => router.push('/settings')}
                 >
                   Edit Profile
                 </Button>
