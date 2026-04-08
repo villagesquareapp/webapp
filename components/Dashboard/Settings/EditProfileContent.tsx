@@ -154,13 +154,13 @@ const EditProfileContent = () => {
         return (
             <div className="max-w-[500px] py-8">
                 <div className="animate-pulse space-y-6">
-                    <div className="h-6 bg-[#18181A] rounded w-32" />
-                    <div className="h-20 bg-[#18181A] rounded-xl" />
-                    <div className="h-20 bg-[#18181A] rounded-xl" />
-                    <div className="h-14 bg-[#18181A] rounded-xl" />
-                    <div className="h-14 bg-[#18181A] rounded-xl" />
-                    <div className="h-14 bg-[#18181A] rounded-xl" />
-                    <div className="h-14 bg-[#18181A] rounded-xl" />
+                    <div className="h-6 bg-[#1717190D] dark:bg-[#18181A] rounded w-32" />
+                    <div className="h-20 bg-[#1717190D] dark:bg-[#18181A] rounded-xl" />
+                    <div className="h-20 bg-[#1717190D] dark:bg-[#18181A] rounded-xl" />
+                    <div className="h-14 bg-[#1717190D] dark:bg-[#18181A] rounded-xl" />
+                    <div className="h-14 bg-[#1717190D] dark:bg-[#18181A] rounded-xl" />
+                    <div className="h-14 bg-[#1717190D] dark:bg-[#18181A] rounded-xl" />
+                    <div className="h-14 bg-[#1717190D] dark:bg-[#18181A] rounded-xl" />
                 </div>
             </div>
         );
@@ -194,10 +194,10 @@ const EditProfileContent = () => {
             )}
 
             <div className="max-w-[500px]">
-                <h2 className="text-xl font-semibold mb-6 pt-2">Edit Profile</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-6 pt-2">Edit Profile</h2>
 
                 {/* Profile Header with editable name/username */}
-                <div className="bg-[#18181A] rounded-xl p-4 flex items-center mb-8 relative">
+                <div className="bg-[#1717190D] dark:bg-[#232325] rounded-xl p-4 flex items-center mb-8 relative">
                     <div className="relative mr-4">
                         <CustomAvatar
                             src={profilePicture}
@@ -224,7 +224,7 @@ const EditProfileContent = () => {
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="bg-transparent font-semibold text-[15px] focus:outline-none w-full"
+                            className="bg-transparent font-semibold text-foreground text-[15px] focus:outline-none w-full"
                             placeholder="Full Name"
                         />
                         <input
@@ -240,10 +240,10 @@ const EditProfileContent = () => {
                 <div className="space-y-6">
                     {/* Bio */}
                     <div>
-                        <h3 className="text-[15px] font-semibold mb-3">Bio</h3>
-                        <div className="bg-[#18181A] rounded-xl p-4 border border-[#2C2C2E] focus-within:border-neutral-500 transition-colors relative">
+                        <h3 className="text-[15px] font-semibold mb-3 text-foreground">Bio</h3>
+                        <div className="bg-background rounded-xl p-4 border border-border focus-within:border-neutral-500 transition-colors relative">
                             <textarea
-                                className="w-full bg-transparent text-sm resize-none focus:outline-none min-h-[60px]"
+                                className="w-full bg-transparent text-foreground text-sm resize-none focus:outline-none min-h-[60px]"
                                 value={bio}
                                 onChange={(e) => {
                                     if (e.target.value.length <= BIO_MAX) setBio(e.target.value);
@@ -257,11 +257,11 @@ const EditProfileContent = () => {
 
                     {/* Email Address */}
                     <div>
-                        <h3 className="text-[15px] font-semibold mb-3">Email Address</h3>
-                        <div className="bg-[#18181A] rounded-xl p-4 border border-[#2C2C2E] flex items-center justify-between focus-within:border-neutral-500 transition-colors">
+                        <h3 className="text-[15px] font-semibold mb-3 text-foreground">Email Address</h3>
+                        <div className="bg-background rounded-xl p-4 border border-border flex items-center justify-between focus-within:border-neutral-500 transition-colors">
                             <input
                                 type="text"
-                                className="bg-transparent text-sm w-full focus:outline-none"
+                                className="bg-transparent text-sm w-full text-foreground focus:outline-none"
                                 value={email}
                                 onChange={(e) => {
                                     if (e.target.value.length <= EMAIL_MAX) setEmail(e.target.value);
@@ -277,21 +277,21 @@ const EditProfileContent = () => {
 
                     {/* Gender */}
                     <div ref={genderRef} className="relative">
-                        <h3 className="text-[15px] font-semibold mb-3">Gender</h3>
+                        <h3 className="text-[15px] text-foreground font-semibold mb-3">Gender</h3>
                         <button
                             onClick={() => setShowGenderDropdown(!showGenderDropdown)}
-                            className="w-full bg-[#18181A] rounded-xl p-4 border border-[#2C2C2E] flex items-center justify-between hover:bg-[#202022] transition-colors"
+                            className="w-full bg-background rounded-xl p-4 border border-border flex items-center justify-between hover:bg-background/90 transition-colors"
                         >
-                            <span className="text-sm">{gender || "Select"}</span>
+                            <span className="text-sm text-foreground">{gender || "Select"}</span>
                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
                         </button>
                         {showGenderDropdown && (
-                            <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#2C2C2E] rounded-xl shadow-lg overflow-hidden">
+                            <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-xl shadow-lg overflow-hidden">
                                 {GENDERS.map((g) => (
                                     <button
                                         key={g}
                                         onClick={() => { setGender(g); setShowGenderDropdown(false); }}
-                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-[#252528] transition-colors ${gender === g ? "text-blue-500 font-medium" : ""}`}
+                                        className={`w-full text-foreground text-left px-4 py-3 text-sm hover:bg-background/30 transition-colors ${gender === g ? "text-blue-500 font-medium" : ""}`}
                                     >
                                         {g}
                                     </button>
@@ -302,24 +302,24 @@ const EditProfileContent = () => {
 
                     {/* Date of birth */}
                     <div>
-                        <h3 className="text-[15px] font-semibold mb-3">Date of birth</h3>
+                        <h3 className="text-[15px] font-semibold text-foreground mb-3">Date of birth</h3>
                         <div className="flex gap-3">
                             {/* Day */}
                             <div ref={dayRef} className="flex-1 relative">
                                 <button
                                     onClick={() => setShowDayDropdown(!showDayDropdown)}
-                                    className="w-full bg-[#18181A] rounded-xl p-3 border border-[#2C2C2E] flex items-center justify-between cursor-pointer hover:bg-[#202022]"
+                                    className="w-full bg-background rounded-xl p-3 border border-border flex items-center justify-between cursor-pointer hover:bg-background/90"
                                 >
-                                    <span className="text-sm">{dobDay || "Day"}</span>
+                                    <span className="text-sm text-foreground">{dobDay || "Day"}</span>
                                     <ChevronDown className="w-4 h-4 text-muted-foreground" />
                                 </button>
                                 {showDayDropdown && (
-                                    <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#2C2C2E] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                                    <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
                                         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                                             <button
                                                 key={d}
                                                 onClick={() => { setDobDay(String(d)); setShowDayDropdown(false); }}
-                                                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#252528] transition-colors ${dobDay === String(d) ? "text-blue-500 font-medium" : ""}`}
+                                                className={`w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-background/30 transition-colors ${dobDay === String(d) ? "text-blue-500 font-medium" : ""}`}
                                             >
                                                 {d}
                                             </button>
@@ -331,18 +331,18 @@ const EditProfileContent = () => {
                             <div ref={monthRef} className="flex-[2] relative">
                                 <button
                                     onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-                                    className="w-full bg-[#18181A] rounded-xl p-3 border border-[#2C2C2E] flex items-center justify-between cursor-pointer hover:bg-[#202022]"
+                                    className="w-full bg-background rounded-xl p-3 border border-border flex items-center justify-between cursor-pointer hover:bg-background/90"
                                 >
-                                    <span className="text-sm">{dobMonth || "Month"}</span>
+                                    <span className="text-sm text-foreground">{dobMonth || "Month"}</span>
                                     <ChevronDown className="w-4 h-4 text-muted-foreground" />
                                 </button>
                                 {showMonthDropdown && (
-                                    <div className="absolute z-10 w-full mt-1 bg-[#1A1A1A] border border-[#2C2C2E] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                                    <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
                                         {MONTHS.map((m) => (
                                             <button
                                                 key={m}
                                                 onClick={() => { setDobMonth(m); setShowMonthDropdown(false); }}
-                                                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#252528] transition-colors ${dobMonth === m ? "text-blue-500 font-medium" : ""}`}
+                                                className={`w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-background/30 transition-colors ${dobMonth === m ? "text-blue-500 font-medium" : ""}`}
                                             >
                                                 {m}
                                             </button>
@@ -351,12 +351,12 @@ const EditProfileContent = () => {
                                 )}
                             </div>
                             {/* Year */}
-                            <div className="flex-[2] bg-[#18181A] rounded-xl p-3 border border-[#2C2C2E] flex items-center justify-between relative cursor-pointer hover:bg-[#202022]">
+                            <div className="flex-[2] bg-background rounded-xl p-3 border border-border flex items-center justify-between relative cursor-pointer hover:bg-background/90">
                                 <input
                                     type="text"
                                     value={dobYear}
                                     onChange={(e) => setDobYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                                    className="bg-transparent text-sm w-full focus:outline-none"
+                                    className="bg-transparent text-foreground text-sm w-full focus:outline-none"
                                     placeholder="Year"
                                 />
                                 <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -366,12 +366,12 @@ const EditProfileContent = () => {
 
                     {/* Location */}
                     <div>
-                        <h3 className="text-[15px] font-semibold mb-3">Location</h3>
-                        <div className="bg-[#18181A] rounded-xl p-4 border border-[#2C2C2E] flex items-center focus-within:border-neutral-500 transition-colors">
+                        <h3 className="text-[15px] text-foreground font-semibold mb-3">Location</h3>
+                        <div className="bg-background rounded-xl p-4 border border-border flex items-center focus-within:border-neutral-500 transition-colors">
                             <MapPin className="w-4 h-4 text-muted-foreground mr-3 shrink-0" />
                             <input
                                 type="text"
-                                className="bg-transparent text-sm w-full focus:outline-none"
+                                className="bg-transparent text-sm text-foreground w-full focus:outline-none"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                             />

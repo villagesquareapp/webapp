@@ -28,7 +28,7 @@ const DeactivateAccountContent = () => {
             {/* Step 1: Selection */}
             {step === "selection" && (
                 <>
-                    <h2 className="text-[22px] font-semibold mb-1">Deactivate / delete account</h2>
+                    <h2 className="text-[22px] text-foreground font-semibold mb-1">Deactivate / delete account</h2>
                     <p className="text-muted-foreground text-sm mb-8 leading-relaxed pr-8">
                         If you need a break, you can temporarily deactivate your account. Your
                         profile and content will be hidden until you return.
@@ -38,10 +38,10 @@ const DeactivateAccountContent = () => {
                         {/* Deactivate Option */}
                         <div
                             onClick={() => setSelection("deactivate")}
-                            className={`border rounded-xl p-5 cursor-pointer transition-colors ${selection === "deactivate" ? "border-blue-500 bg-[#1A1E29]" : "border-[#2C2C2E] bg-[#18181A] hover:bg-[#202022]"
+                            className={`border rounded-xl p-5 cursor-pointer transition-colors ${selection === "deactivate" ? "border-blue-500 text-white bg-[#1A1E29]" : "border-border bg-[#eaeae8] dark:bg-[#232325] hover:bg-[#eaeae8]/50"
                                 }`}
                         >
-                            <h3 className="font-semibold text-[15px] mb-2 text-[#E0E0E0]">Deactivate account</h3>
+                            <h3 className="font-semibold text-[15px] mb-2 text-foreground">Deactivate account</h3>
                             <p className="text-[13px] text-muted-foreground leading-relaxed pr-4">
                                 Deactivating your account is temporary. Your profile and
                                 activity will be hidden on VillageSquare until you reactivate
@@ -52,10 +52,10 @@ const DeactivateAccountContent = () => {
                         {/* Delete Option */}
                         <div
                             onClick={() => setSelection("delete")}
-                            className={`border rounded-xl p-5 cursor-pointer transition-colors ${selection === "delete" ? "border-red-500 bg-[#291A1A]" : "border-[#2C2C2E] bg-[#18181A] hover:bg-[#202022]"
+                            className={`border rounded-xl p-5 cursor-pointer transition-colors ${selection === "delete" ? "border-red-500 bg-[#291A1A] text-white" : "border-border bg-[#eaeae8] dark:bg-[#232325] hover:bg-[#eaeae8]/50"
                                 }`}
                         >
-                            <h3 className="font-semibold text-[15px] mb-2 text-[#E0E0E0]">Delete account</h3>
+                            <h3 className="font-semibold text-[15px] mb-2 text-foreground">Delete account</h3>
                             <p className="text-[13px] text-muted-foreground leading-relaxed pr-4">
                                 Deleting your VillageSquare account is permanent. Once
                                 deleted, your profile, posts, photos, videos, comments,
@@ -81,19 +81,19 @@ const DeactivateAccountContent = () => {
             {/* Step 2: Deactivate Password */}
             {step === "deactivate_password" && (
                 <>
-                    <h2 className="text-[22px] font-semibold mb-1">Confirm your password</h2>
+                    <h2 className="text-[22px] text-foreground font-semibold mb-1">Confirm your password</h2>
                     <p className="text-muted-foreground text-[15px] mb-8 leading-relaxed pr-8">
                         To complete your deactivation request, enter the password linked to
                         your account.
                     </p>
 
-                    <div className="bg-[#18181A] rounded-xl p-4 border border-[#2C2C2E] focus-within:border-neutral-500 transition-colors mb-4">
+                    <div className="bg-background rounded-xl p-4 border border-border focus-within:border-neutral-500 transition-colors mb-4">
                         <input
                             type="password"
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="bg-transparent text-[15px] w-full focus:outline-none placeholder:text-muted-foreground"
+                            className="bg-transparent text-[15px] w-full focus:outline-none text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
@@ -118,17 +118,17 @@ const DeactivateAccountContent = () => {
             {/* Step 3: Delete Warning */}
             {step === "delete_warning" && (
                 <>
-                    <h2 className="text-[22px] font-semibold mb-6">Delete account?</h2>
+                    <h2 className="text-[22px] font-semibold mb-6 text-foreground">Delete account?</h2>
 
                     <div className="mb-6">
-                        <p className="text-[#E0E0E0] text-[15px] mb-1">Deleting your account is permanent.</p>
-                        <p className="text-[#E0E0E0] text-[15px] pr-8">
+                        <p className="text-muted-foreground text-[15px] mb-1">Deleting your account is permanent.</p>
+                        <p className="text-muted-foreground text-[15px] pr-8">
                             Once deleted, your profile, posts, photos, videos, comments,
                             likes and connections will be permanently removed.
                         </p>
                     </div>
 
-                    <p className="text-[#E0E0E0] font-semibold text-[15px] mb-6">
+                    <p className="text-foreground font-semibold text-[15px] mb-6">
                         This action cannot be undone.
                     </p>
 
@@ -162,30 +162,30 @@ const DeactivateAccountContent = () => {
             {/* Step 4: Delete Password Confirmation */}
             {step === "delete_password" && (
                 <>
-                    <h2 className="text-[22px] font-semibold mb-6">Confirm account deletion</h2>
+                    <h2 className="text-[22px] font-semibold mb-6 text-foreground">Confirm account deletion</h2>
 
-                    <p className="text-[#E0E0E0] text-[15px] mb-10">
+                    <p className="text-muted-foreground text-[15px] mb-10">
                         To confirm, enter the password linked to your account.
                     </p>
 
                     <div className="space-y-4 mb-16">
-                        <div className="bg-[#18181A] rounded-xl p-4 py-4 border border-[#2C2C2E] focus-within:border-neutral-500 transition-colors">
+                        <div className="bg-background rounded-xl p-4 py-4 border border-border focus-within:border-neutral-500 transition-colors">
                             <input
                                 type="password"
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="bg-transparent text-[15px] w-full focus:outline-none placeholder:text-[#A0A0A0]"
+                                className="bg-transparent text-foreground text-[15px] w-full focus:outline-none placeholder:text-[#A0A0A0]"
                             />
                         </div>
 
-                        <div className="bg-[#18181A] rounded-xl p-4 py-4 border border-[#2C2C2E] focus-within:border-neutral-500 transition-colors">
+                        <div className="bg-background rounded-xl p-4 py-4 border border-border focus-within:border-neutral-500 transition-colors">
                             <input
                                 type="text"
                                 placeholder="Type DELETE to confirm"
                                 value={deleteConfirmation}
                                 onChange={(e) => setDeleteConfirmation(e.target.value)}
-                                className="bg-transparent text-[15px] w-full focus:outline-none placeholder:text-[#A0A0A0]"
+                                className="bg-transparent text-foreground text-[15px] w-full focus:outline-none placeholder:text-[#A0A0A0]"
                             />
                         </div>
                     </div>

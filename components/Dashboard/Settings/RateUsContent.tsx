@@ -43,10 +43,10 @@ const RateUsContent = () => {
 
     return (
         <div className="max-w-[800px] pt-4 lg:pt-8 w-full mx-auto md:mx-0">
-            <h2 className="text-[22px] font-semibold mb-1">How's your experience on VillageSquare?</h2>
+            <h2 className="text-[22px] text-foreground font-semibold mb-1">How's your experience on VillageSquare?</h2>
             <p className="text-muted-foreground text-sm mb-8">Your feedback helps us build a better community for you.</p>
 
-            <div className="bg-[#18181A]/40 border border-[#2C2C2E] rounded-xl p-8 max-w-[500px]">
+            <div className="dark:bg-[#18181A]/40 bg-[#eaeae8] border border-border rounded-xl p-8 max-w-[500px]">
 
                 {/* Star Rating Section */}
                 <div className="flex flex-col items-center mb-8">
@@ -77,7 +77,7 @@ const RateUsContent = () => {
                     </div>
 
                     {/* App Store CTA */}
-                    <p className="text-[15px] font-medium mb-4">We're glad you love VillageSquare 💙</p>
+                    <p className="text-[15px] font-medium mb-4 text-foreground">We're glad you love VillageSquare 💙</p>
                     <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-8 rounded-lg text-sm transition-colors">
                         Leave a review on App Store
                     </button>
@@ -87,7 +87,7 @@ const RateUsContent = () => {
 
                 {/* Improvements Section */}
                 <div className="mb-8">
-                    <h3 className="text-[15px] font-medium mb-4 text-center md:text-left">What could we do better?</h3>
+                    <h3 className="text-[15px] text-foreground font-medium mb-4 text-center md:text-left">What could we do better?</h3>
                     <div className="flex flex-wrap gap-3 mb-6 justify-center md:justify-start">
                         {improvementTags.map(tag => (
                             <button
@@ -95,7 +95,7 @@ const RateUsContent = () => {
                                 onClick={() => toggleImprovement(tag)}
                                 className={`px-4 py-2 rounded-lg text-[13px] border transition-colors ${selectedImprovements.includes(tag)
                                     ? "bg-blue-600/10 border-blue-600 text-blue-500"
-                                    : "border-[#2C2C2E] text-muted-foreground hover:bg-[#202022]"
+                                    : "border-border bg-[#dfdfde] dark:bg-[#252527] text-muted-foreground dark:hover:bg-[#202022]"
                                     }`}
                             >
                                 {tag}
@@ -103,7 +103,7 @@ const RateUsContent = () => {
                         ))}
                     </div>
 
-                    <div className="bg-[#18181A] rounded-xl border border-[#2C2C2E] p-4 focus-within:border-neutral-500 transition-colors">
+                    <div className="dark:bg-[#18181A] bg-[#eaeae8] rounded-xl border dark:border-border border-[#ccc] p-4 focus-within:border-neutral-500 transition-colors">
                         <textarea
                             className="w-full bg-transparent text-sm resize-none focus:outline-none min-h-[80px] placeholder:text-muted-foreground"
                             placeholder="Tell us more (optional)"
@@ -111,11 +111,11 @@ const RateUsContent = () => {
                     </div>
                 </div>
 
-                <div className="h-px bg-[#2C2C2E] w-full my-8" />
+                <div className="h-px dark:bg-[#2C2C2E] bg-[#ccc] w-full my-8" />
 
                 {/* Features Section */}
                 <div className="mb-8">
-                    <h3 className="text-[15px] font-medium mb-4 text-center">What feature do you enjoy the most?</h3>
+                    <h3 className="text-[15px] font-medium mb-4 text-center text-foreground">What feature do you enjoy the most?</h3>
                     <div className="flex flex-wrap gap-3 justify-center">
                         {featureTags.map(tag => (
                             <button
@@ -123,7 +123,7 @@ const RateUsContent = () => {
                                 onClick={() => toggleFeature(tag)}
                                 className={`px-5 py-2 rounded-full text-[13px] border transition-colors ${selectedFeatures.includes(tag)
                                     ? "bg-blue-600/10 border-blue-600 text-blue-500"
-                                    : "bg-[#18181A] border-[#2C2C2E] text-muted-foreground hover:bg-[#202022]"
+                                    : "border-border bg-[#dfdfde] dark:bg-[#252527] text-muted-foreground dark:hover:bg-[#202022]"
                                     }`}
                             >
                                 {tag}

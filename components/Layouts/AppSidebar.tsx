@@ -42,13 +42,13 @@ const items = [
     title: "Social",
     url: "/home",
     icon: <GoHome className="!size-6 -ml-0.5" />,
-    activeIcon: <GoHomeFill className="fill-background text-background !size-6 -mt-0.5" />,
+    activeIcon: <GoHomeFill className="fill-foreground text-foreground dark:fill-background dark:text-background !size-6 -mt-0.5" />,
   },
   {
     title: "Vflix",
     url: "/vflix",
     icon: <VFlixOutline className="!size-6" />,
-    activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
+    activeIcon: <VFlixFill className="fill-foreground text-foreground dark:fill-background dark:text-background !size-6 " />,
   },
   // {
   //   title: "Messages",
@@ -133,11 +133,11 @@ export function AppSidebar() {
                 const Icon: any = isActive ? item.activeIcon : item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.title} className="px-[10px]">
+                  <SidebarMenuItem key={item.title} className="px-2.5">
                     <SidebarMenuButton
                       asChild
                       className={`rounded-lg transition-all duration-300 cursor-pointer w-full h-12 ${isActive
-                        ? "bg-[#31373f] text-white hover:bg-[#31373f] dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background"
+                        ? "bg-[#1717190D] text-foreground hover:bg-[#1717190D] dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background"
                         : "text-muted-foreground"
                         }`}
                     >
@@ -154,7 +154,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="bg-background pb-8 pl-[22px] pr-6">
+      <SidebarFooter className="bg-background pb-8 pl-[1.375rem] pr-6">
         {isCollapsed ? (
           <Button
             onClick={handleCreatePost}

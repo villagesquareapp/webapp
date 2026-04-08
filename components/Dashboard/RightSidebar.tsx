@@ -15,7 +15,8 @@ import { useDataCache } from "context/DataCacheContext";
 function formatCount(count: string | number): string {
   const num = typeof count === "string" ? parseInt(count, 10) : count;
   if (isNaN(num)) return "0";
-  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (num >= 1000000)
+    return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
   if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
   return num.toString();
 }
@@ -42,7 +43,9 @@ const RightSidebar = () => {
 
     const fetchTrending = async () => {
       try {
-        const res = await fetch("/api/posts/trending?window=24h&page=1&limit=4");
+        const res = await fetch(
+          "/api/posts/trending?window=24h&page=1&limit=4",
+        );
         const data = await res.json();
         if (data?.status && data?.data?.data) {
           setTrendingPosts(data.data.data);
@@ -91,20 +94,26 @@ const RightSidebar = () => {
     // Optimistic UI Update
     setSuggestedUsers((prev) =>
       prev.map((user) =>
-        user.uuid === userId ? { ...user, is_followed: !user.is_followed } : user
-      )
+        user.uuid === userId
+          ? { ...user, is_followed: !user.is_followed }
+          : user,
+      ),
     );
 
     try {
-      const res = await fetch(`/api/users/${userId}/follow`, { method: "POST" });
+      const res = await fetch(`/api/users/${userId}/follow`, {
+        method: "POST",
+      });
       const data = await res.json();
 
       // If the API returns a success, we can optionally resync with the server value
       if (data?.status && data?.data?.is_followed !== undefined) {
         setSuggestedUsers((prev) =>
           prev.map((user) =>
-            user.uuid === userId ? { ...user, is_followed: data.data.is_followed } : user
-          )
+            user.uuid === userId
+              ? { ...user, is_followed: data.data.is_followed }
+              : user,
+          ),
         );
       }
     } catch (error) {
@@ -112,8 +121,10 @@ const RightSidebar = () => {
       // Revert the optimistic update on failure
       setSuggestedUsers((prev) =>
         prev.map((user) =>
-          user.uuid === userId ? { ...user, is_followed: !user.is_followed } : user
-        )
+          user.uuid === userId
+            ? { ...user, is_followed: !user.is_followed }
+            : user,
+        ),
       );
     }
   };
@@ -121,7 +132,7 @@ const RightSidebar = () => {
   return (
     <div className="flex flex-col gap-6 sticky top-24 pb-12 h-[calc(100vh-6rem)] overflow-y-auto overflow-x-hidden no-scrollbar">
       {/* Hot Trends Section */}
-      <div className="w-full border border-border rounded-[20px] flex flex-col">
+      <div className="w-full border border-border rounded-[1.25rem] flex flex-col">
         <div className="px-3 py-2 border-b border-border">
           <h3 className="font-bold flex items-center gap-2 text-base text-foreground">
             <span className="text-xl text-foreground">🔥</span> Hot Trends
@@ -131,7 +142,10 @@ const RightSidebar = () => {
         <div className="pb-2 flex flex-col">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="px-3 flex flex-col border-b border-border pb-3 py-3">
+              <div
+                key={i}
+                className="px-3 flex flex-col border-b border-border pb-3 py-3"
+              >
                 <div className="flex items-center gap-x-2 mb-2">
                   <Skeleton className="size-10 rounded-full bg-accent" />
                   <div className="space-y-1">
@@ -152,7 +166,10 @@ const RightSidebar = () => {
               // const formattedTime = post.formatted_time || "";
               const likes = post.likes_count || 0;
               const comments = post.replies_count || 0;
-              const postImage = post.media?.[0]?.media_thumbnail || post.media?.[0]?.media_url || "";
+              const postImage =
+                post.media?.[0]?.media_thumbnail ||
+                post.media?.[0]?.media_url ||
+                "";
 
               const handleTrendClick = () => {
                 router.push(`/posts/${post.uuid}`);
@@ -203,12 +220,13 @@ const RightSidebar = () => {
                           <FaHeart className="size-3.5" /> {formatCount(likes)}
                         </div>
                         <div className="flex items-center gap-1.5 focus:outline-none cursor-pointer">
-                          <BiMessageRounded className="size-4" /> {formatCount(comments)}
+                          <BiMessageRounded className="size-4" />{" "}
+                          {formatCount(comments)}
                         </div>
                       </div>
                     </div>
                     {postImage && (
-                      <div className="w-24 h-[70px] shrink-0 relative rounded-lg overflow-hidden my-auto bg-black/20">
+                      <div className="w-24 aspect-[4/3] shrink-0 relative rounded-lg overflow-hidden my-auto bg-black/20">
                         <Image
                           src={postImage}
                           alt="post media"
@@ -239,7 +257,7 @@ const RightSidebar = () => {
       </div>
 
       {/* Who to Connect With Section */}
-      <div className="w-full border border-border rounded-[20px] flex flex-col p-5">
+      <div className="w-full border border-border rounded-[1.25rem] flex flex-col p-5">
         <h3 className="font-bold mb-5 text-base text-foreground">
           Who to Connect With
         </h3>
@@ -255,20 +273,35 @@ const RightSidebar = () => {
                     <Skeleton className="h-2 w-16 bg-accent" />
                   </div>
                 </div>
-                <Skeleton className="h-8 w-[72px] rounded-full bg-accent" />
+                <Skeleton className="h-8 w-[4.5rem] rounded-full bg-accent" />
               </div>
             ))
           ) : suggestedUsers.length > 0 ? (
             suggestedUsers.map((person, idx) => (
-              <div key={person.uuid || idx} className="flex items-center justify-between">
+              <div
+                key={person.uuid || idx}
+                className="flex items-center justify-between"
+              >
                 <div
                   className="flex items-center gap-x-3 cursor-pointer"
                   onClick={() => router.push(`/u/${person.username}`)}
                 >
-                  <CustomAvatar src={person.profile_picture || ""} name={person.name} className="size-10" />
-                  <div className="flex flex-col leading-tight">
+                  <CustomAvatar
+                    src={person.profile_picture || ""}
+                    name={person.name}
+                    className="size-10"
+                  />
+                  {/* <div className="flex flex-col leading-tight">
                     <p className="font-semibold text-sm line-clamp-1 hover:underline">{person.name}</p>
                     <p className="text-xs text-muted-foreground line-clamp-1">
+                      @{person.username}
+                    </p>
+                  </div> */}
+                  <div className="flex flex-col leading-tight max-w-[120px]">
+                    <p className="font-semibold text-sm truncate hover:underline">
+                      {person.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
                       @{person.username}
                     </p>
                   </div>
@@ -276,21 +309,20 @@ const RightSidebar = () => {
                 <Button
                   size="sm"
                   onClick={() => handleFollow(person.uuid)}
-                  className={`h-8 rounded-full px-5 text-xs font-semibold ${person.is_followed
-                    ? "bg-transparent border border-border text-foreground hover:bg-accent"
-                    : "bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white"
-                    }`}
+                  className={`h-8 rounded-full px-5 text-xs font-semibold ${
+                    person.is_followed
+                      ? "bg-transparent border border-border text-foreground hover:bg-accent"
+                      : "bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white"
+                  }`}
                 >
-                  {person.is_followed ? (
-                    "Following"
-                  ) : (
-                    "Follow"
-                  )}
+                  {person.is_followed ? "Following" : "Follow"}
                 </Button>
               </div>
             ))
           ) : (
-            <div className="text-center text-sm text-muted-foreground py-4">No suggestions available.</div>
+            <div className="text-center text-sm text-muted-foreground py-4">
+              No suggestions available.
+            </div>
           )}
         </div>
       </div>
