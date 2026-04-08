@@ -5,14 +5,12 @@ const SocialMainWrapper = ({ children }: { children: React.ReactNode }) => {
     <div className="flex flex-row w-full h-full relative overflow-hidden">
       <div
         id="social-main-scroll"
-        className="w-full lg:w-[650px] shrink-0 border-r border-border h-full overflow-y-auto px-4 lg:px-6 pt-4 pb-8 no-scrollbar"
+        className="flex-1 w-full lg:max-w-[64rem] border-r border-border h-full overflow-y-auto px-4 lg:px-6 pt-4 pb-8 no-scrollbar shrink-0"
       >
         {children}
       </div>
-      <div className="hidden lg:block flex-1 pt-4 px-4 lg:px-6 h-full overflow-hidden">
-        <div className="w-[350px] h-full">
-          <RightSidebar />
-        </div>
+      <div className="hidden lg:block lg:w-[24rem] pt-4 px-4 lg:pl-6 lg:pr-12 h-full overflow-hidden shrink-0">
+        <RightSidebar />
       </div>
     </div>
   );

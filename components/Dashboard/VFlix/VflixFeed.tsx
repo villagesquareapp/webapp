@@ -252,57 +252,59 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   };
 
   return (
-    <div className="flex items-center justify-center w-full h-full relative gap-10">
-      <div className="relative w-full max-w-[450px] md:w-[450px] h-[calc(100vh-180px)] md:h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black">
-        <AnimatePresence initial={false} custom={direction}>
-          {videos[currentIndex] && (
-            <motion.div
-              key={currentIndex}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                y: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
-              }}
-              className="absolute inset-0 w-full h-full"
-            >
-              <VflixCard
-                post={videos[currentIndex]}
-                user={user}
-                setVideos={setVideos}
-                likeUnlikeVflix={likeUnlikeVflix}
-                onCommentClick={() => toggleComments(currentPost.uuid, currentPost._source)}
-                isMuted={isMuted}
-                setIsMuted={setIsMuted}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {loading && videos.length === 0 && <VFlixSkeleton />}
-        {loading && videos.length > 0 && <LoadingSpinner />}
-      </div>
+    <div className="flex items-center justify-start w-full h-full relative pl-[17rem]">
+      <div className="relative flex items-center">
+        <div className="relative aspect-[9/16] h-[calc(100vh-180px)] md:h-[90vh] w-auto max-w-full md:max-w-[500px] rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black">
+          <AnimatePresence initial={false} custom={direction}>
+            {videos[currentIndex] && (
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  y: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 },
+                }}
+                className="absolute inset-0 w-full h-full"
+              >
+                <VflixCard
+                  post={videos[currentIndex]}
+                  user={user}
+                  setVideos={setVideos}
+                  likeUnlikeVflix={likeUnlikeVflix}
+                  onCommentClick={() => toggleComments(currentPost.uuid, currentPost._source)}
+                  isMuted={isMuted}
+                  setIsMuted={setIsMuted}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {loading && videos.length === 0 && <VFlixSkeleton />}
+          {loading && videos.length > 0 && <LoadingSpinner />}
+        </div>
 
-      {/* Vertical Navigation Arrows */}
-      <div className="hidden md:flex flex-col gap-4">
-        <button
-          onClick={prevVideo}
-          disabled={currentIndex === 0}
-          className={`p-3 rounded-full flex items-center justify-center transition-colors ${currentIndex > 0 ? "bg-[#131B2B] hover:bg-[#1A2438] text-white" : "bg-[#131B2B]/50 text-gray-600 cursor-not-allowed"
-            }`}
-        >
-          <ChevronUp className="w-6 h-6" />
-        </button>
-        <button
-          onClick={nextVideo}
-          disabled={loading}
-          className={`p-3 rounded-full flex items-center justify-center transition-colors ${!loading ? "bg-[#131B2B] hover:bg-[#1A2438] text-white" : "bg-[#131B2B]/50 text-gray-600 cursor-not-allowed"
-            }`}
-        >
-          {loading ? null : <ChevronDown className="w-6 h-6" />}
-        </button>
+        {/* Vertical Navigation Arrows */}
+        <div className="hidden md:flex flex-col gap-4 absolute -right-20">
+          <button
+            onClick={prevVideo}
+            disabled={currentIndex === 0}
+            className={`p-3 rounded-full flex items-center justify-center transition-colors ${currentIndex > 0 ? "bg-[#131B2B] hover:bg-[#1A2438] text-white" : "bg-[#131B2B]/50 text-gray-600 cursor-not-allowed"
+              }`}
+          >
+            <ChevronUp className="w-6 h-6" />
+          </button>
+          <button
+            onClick={nextVideo}
+            disabled={loading}
+            className={`p-3 rounded-full flex items-center justify-center transition-colors ${!loading ? "bg-[#131B2B] hover:bg-[#1A2438] text-white" : "bg-[#131B2B]/50 text-gray-600 cursor-not-allowed"
+              }`}
+          >
+            {loading ? null : <ChevronDown className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} source={activePostSource} user={user} />

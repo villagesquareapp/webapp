@@ -8,6 +8,12 @@ import {
   VolumeX,
   Volume2,
   MoreVertical,
+  Bookmark,
+  CircleSlash,
+  Info,
+  Ban,
+  MessageCircleOff,
+  Trash2,
 } from "lucide-react";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { HiMiniCheckBadge } from "react-icons/hi2";
@@ -170,10 +176,28 @@ export default function VflixCard({
     console.log("Report post:", post.uuid);
   };
 
+  const handleNotInterested = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add not interested logic here
+    console.log("Not interested in post:", post.uuid);
+  };
+
   const handleBlock = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Add block logic here
     console.log("Block user:", post.user.uuid);
+  };
+
+  const handleDisableComment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add disable comment logic here
+    console.log("Disable comment on post:", post.uuid);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add delete logic here
+    console.log("Delete post:", post.uuid);
   };
 
   const formatTime = (time: number) => {
@@ -466,31 +490,68 @@ export default function VflixCard({
               </Button>
             </PopoverTrigger>
             <PopoverContent
-              className="p-0 w-[200px]"
+              className="p-1 px-[0.7rem] pt-2 pb-2 w-[240px] bg-background/95 backdrop-blur-xl border border-white/10 rounded-[22px] shadow-2xl z-[60] pointer-events-auto"
               side="bottom"
               align="end"
-              sideOffset={8}
+              sideOffset={12}
             >
-              <div
-                className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
-                onClick={handleSave}
-              >
-                Save
-              </div>
-              <Separator className="bg-gray-700" />
-              <div
-                className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
-                onClick={handleReport}
-              >
-                Report
-              </div>
-              <Separator className="bg-gray-700" />
-              <div
-                className="p-4 cursor-pointer hover:bg-accent text-center text-sm font-medium"
-                onClick={handleBlock}
-              >
-                Block
-              </div>
+              {post.user.uuid === user?.uuid ? (
+                /* Own video menu */
+                <div className="flex flex-col gap-0.5">
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-white/5 rounded-2xl transition-all group"
+                    onClick={handleDisableComment}
+                  >
+                    <MessageCircleOff className="size-5 text-foreground/80 group-hover:text-foreground" />
+                    <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">Disable comment</span>
+                  </div>
+
+                  <Separator className="bg-border/50 mx-2" />
+
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-red-500/10 rounded-2xl transition-all group"
+                    onClick={handleDelete}
+                  >
+                    <Ban className="size-5 text-red-500 group-hover:text-red-400" />
+                    <span className="text-[15px] font-medium text-red-500 group-hover:text-red-400">Delete</span>
+                  </div>
+                </div>
+              ) : (
+                /* Other user's video menu */
+                <div className="flex flex-col gap-0.5">
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-white/5 rounded-2xl transition-all group"
+                    onClick={handleSave}
+                  >
+                    <Bookmark className="size-5 text-foreground/80 group-hover:text-foreground" />
+                    <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">Save</span>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-white/5 rounded-2xl transition-all group"
+                    onClick={handleNotInterested}
+                  >
+                    <CircleSlash className="size-5 text-foreground/80 group-hover:text-foreground" />
+                    <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">Not interested</span>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-white/5 rounded-2xl transition-all group"
+                    onClick={handleReport}
+                  >
+                    <Info className="size-5 text-foreground/80 group-hover:text-foreground" />
+                    <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">Report</span>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-red-500/10 rounded-2xl transition-all group"
+                    onClick={handleBlock}
+                  >
+                    <Ban className="size-5 text-red-500 group-hover:text-red-400" />
+                    <span className="text-[15px] font-medium text-red-500 group-hover:text-red-400">Block</span>
+                  </div>
+                </div>
+              )}
             </PopoverContent>
           </Popover>
         </div>
@@ -538,7 +599,7 @@ export default function VflixCard({
           className="absolute inset-x-0 top-0 bottom-[160px] z-10"
         />
         {/* Bottom info */}
-        <div className="absolute bottom-10 left-4 right-4 text-white z-30 pointer-events-auto">
+        <div className="absolute bottom-3 left-4 right-4 text-white z-30 pointer-events-auto">
           {/* User row */}
           <div className="flex items-center gap-2 pointer-events-auto">
             <CustomAvatar
@@ -568,14 +629,14 @@ export default function VflixCard({
           {/* Caption */}
           <div
             onClick={(e) => handlePostClickWithVideoPause(e)}
-            className="cursor-pointer pointer-events-auto mt-1"
+            className="cursor-pointer pointer-events-auto"
           >
             {post?.caption && <VflixText text={post.caption} />}
           </div>
 
           {/* Date */}
           {post?.created_at && (
-            <p className="text-[10px] py-1 text-gray-300 mt-1">
+            <p className="text-[10px] py-1 text-gray-300">
               {post.formatted_date}
             </p>
           )}

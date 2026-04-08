@@ -60,7 +60,7 @@ const BlockedContent = () => {
 
     return (
         <div className="max-w-[500px] pt-4 lg:pt-8 w-full mx-auto md:mx-0">
-            <h2 className="text-[22px] font-semibold mb-1">Blocked accounts</h2>
+            <h2 className="text-[22px] text-foreground font-semibold mb-1">Blocked accounts</h2>
             <p className="text-muted-foreground text-sm mb-6">You can block users anytime from their profile.</p>
 
             <div className="flex flex-col gap-6">
@@ -74,7 +74,7 @@ const BlockedContent = () => {
                             />
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-1">
-                                    <span className="font-semibold text-[15px]">{user.name}</span>
+                                    <span className="font-semibold text-foreground text-[15px]">{user.name}</span>
                                     {user.verified && (
                                         <MdVerified className="text-green-500 w-[14px] h-[14px]" />
                                     )}
@@ -85,7 +85,7 @@ const BlockedContent = () => {
 
                         <button
                             onClick={() => handleUnblock(user.id)}
-                            className="bg-[#202022] hover:bg-[#2C2C2E] border border-[#2C2C2E] rounded-full px-5 py-2 text-[13px] font-medium transition-colors"
+                            className="bg-[#dfdfdd] dark:bg-[#202022] text-foreground hover:bg-[#2C2C2E] border border-border rounded-full px-5 py-2 text-[13px] font-medium transition-colors"
                         >
                             Unblock
                         </button>

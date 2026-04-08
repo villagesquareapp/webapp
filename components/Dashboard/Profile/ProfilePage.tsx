@@ -23,7 +23,7 @@ const ProfilePage = ({ username, isOwnProfile, initialProfile }: ProfilePageProp
     return (
         <div className="flex flex-row w-full h-full relative overflow-hidden">
             {/* Main Content Area */}
-            <div className="w-full lg:w-[650px] shrink-0 border-r border-border h-full overflow-y-auto px-4 lg:px-6 pt-4 pb-8 no-scrollbar">
+            <div className="flex-1 w-full lg:max-w-[64rem] shrink-0 border-r border-border h-full overflow-y-auto px-4 lg:px-6 pt-4 pb-8 no-scrollbar">
                 {loading ? (
                     <div className="flex flex-col w-full pb-4 border-b border-border gap-4 mt-2">
                         <div className="flex items-center justify-between">
@@ -62,7 +62,7 @@ const ProfilePage = ({ username, isOwnProfile, initialProfile }: ProfilePageProp
             </div>
 
             {/* Right Sidebar - Profile Metrics */}
-            <div className="hidden lg:flex w-[400px] pt-4 px-4 lg:px-6 h-full overflow-hidden shrink-0">
+            <div className="hidden lg:flex w-[24rem] pt-4 px-4 lg:pl-6 lg:pr-12 h-full overflow-hidden shrink-0">
                 <div className="w-full h-full overflow-y-auto no-scrollbar pb-8">
                     {loading ? (
                         <div className="flex flex-col gap-4 w-full">

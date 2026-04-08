@@ -40,13 +40,14 @@ const DashboardNavbar = () => {
           <SidebarTrigger />
         </div>
 
+        {/* Center Search Bar */}
         <div
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
-              ? "w-[565px] ml-[268px] mr-[63px]"
+              ? "flex-1 max-w-[35rem] ml-[17rem] mr-[4rem]"
               : pathname.startsWith("/settings")
-                ? "w-[320px] lg:w-[500px] pl-4 pr-6"
-                : "w-[650px] px-4 lg:px-6"
+                ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
+                : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
           }
         >
           <div className="relative w-full">
@@ -96,82 +97,88 @@ const DashboardNavbar = () => {
         <div
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
-              ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-16"
+              ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-[4rem]"
               : pathname.startsWith("/settings")
-                ? "flex-1 flex items-center justify-end gap-x-4 pr-18 lg:pr-20"
-                : "w-[400px] flex items-center justify-end gap-x-4 px-4 lg:px-6"
+                ? "flex-1 flex items-center justify-end gap-x-4 pr-[4.5rem] lg:pr-[5rem]"
+                : "flex items-center justify-end px-4 lg:pl-6 lg:pr-12 lg:w-[24rem] lg:shrink-0"
           }
         >
-          {/* Theme Toggle */}
-          <button
-            className="text-muted-foreground hover:text-foreground hidden sm:block transition-colors"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "light" ? (
-              <Moon className="size-6" />
-            ) : (
-              <Sun className="size-[22px]" />
-            )}
-          </button>
-
-          <div className="relative">
-            <Notification />
-          </div>
-
-          {/* Wallet Icon */}
-          {/* <button className="text-muted-foreground hover:text-foreground hidden sm:block">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
-              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
-              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
-            </svg>
-          </button> */}
-
-          {/* Profile */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="flex items-center gap-x-2 cursor-pointer">
-                <CustomAvatar
-                  src={user?.profile_picture || ""}
-                  name={getInitials(user?.name || "")}
-                  className="size-8 md:size-9"
-                />
-                <div className="hidden lg:flex flex-col items-start">
-                  <span className="text-sm font-bold uppercase">
-                    {user?.name.split(" ")[0]}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    @{user?.username || ""}
-                  </span>
-                </div>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-48 p-3 rounded-xl shadow-md border bg-background z-50"
-              align="end"
+          <div className={
+            pathname === "/vflix" || pathname.startsWith("/vflix/") || pathname.startsWith("/settings")
+              ? "contents"
+              : "flex-1 flex items-center justify-end gap-x-4"
+          }>
+            {/* Theme Toggle */}
+            <button
+              className="text-muted-foreground hover:text-foreground hidden sm:block transition-colors"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
-              <div className="flex flex-col gap-2">
-                <Link href={`/u/${user?.username || ""}`}>
+              {theme === "light" ? (
+                <Moon className="size-6" />
+              ) : (
+                <Sun className="size-[22px]" />
+              )}
+            </button>
+
+            <div className="relative">
+              <Notification />
+            </div>
+
+            {/* Wallet Icon */}
+            {/* <button className="text-muted-foreground hover:text-foreground hidden sm:block">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+              </svg>
+            </button> */}
+
+            {/* Profile */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="flex items-center gap-x-2 cursor-pointer">
+                  <CustomAvatar
+                    src={user?.profile_picture || ""}
+                    name={getInitials(user?.name || "")}
+                    className="size-8 md:size-9"
+                  />
+                  <div className="hidden lg:flex flex-col items-start">
+                    <span className="text-sm font-bold uppercase">
+                      {user?.name.split(" ")[0]}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      @{user?.username || ""}
+                    </span>
+                  </div>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-48 p-3 rounded-xl shadow-md border bg-background z-50"
+                align="end"
+              >
+                <div className="flex flex-col gap-2">
+                  <Link href={`/u/${user?.username || ""}`}>
+                    <Button
+                      variant="ghost"
+                      className="w-full text-foreground justify-start h-10 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition"
+                    >
+                      View Profile
+                    </Button>
+                  </Link>
+
+                  <div className="border-t my-1" />
+
                   <Button
                     variant="ghost"
-                    className="w-full text-foreground justify-start h-10 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition"
+                    className="w-full justify-start h-10 px-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition"
+                    onClick={() => signOut({ callbackUrl: "/auth/login" })}
                   >
-                    View Profile
+                    Logout
                   </Button>
-                </Link>
-
-                <div className="border-t my-1" />
-
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-10 px-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition"
-                  onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                >
-                  Logout
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
     </div>
