@@ -44,7 +44,7 @@ const DashboardNavbar = () => {
         <div
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
-              ? "flex-1 max-w-[35rem] ml-[17rem] mr-[4rem]"
+              ? "flex-1 max-w-[35rem] lg:ml-[17rem] lg:mr-[4rem] mx-4"
               : pathname.startsWith("/settings")
                 ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
                 : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
@@ -63,7 +63,7 @@ const DashboardNavbar = () => {
                   setIsSearchFocused(false);
                 }
               }}
-              className="bg-accent h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm text-foreground"
+              className="bg-[#1717191A] dark:bg-[#232325] h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm text-foreground"
             />
             {/* {searchValue.length > 0 && isSearchFocused && (
               <div className="search-results absolute left-0 top-[52px] w-full bg-background rounded-lg border shadow-lg z-50">

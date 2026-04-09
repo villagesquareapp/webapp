@@ -37,8 +37,8 @@ const VflixActionButtons = ({
             if (!disableCommentButton) onCommentClick();
           }}
         >
-          <IoChatbubbleEllipses className="w-5 h-5" />
-          <p className="text-sm">{post.comments_count}</p>
+          <IoChatbubbleEllipses className={`w-5 h-5 ${post.allow_comments === false ? "opacity-40" : ""}`} />
+          <p className={`text-sm ${post.allow_comments === false ? "opacity-40" : ""}`}>{post.comments_count}</p>
         </div>
         <div
           className="flex flex-row gap-x-1 items-center cursor-pointer"

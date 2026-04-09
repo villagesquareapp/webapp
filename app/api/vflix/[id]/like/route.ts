@@ -11,19 +11,17 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
         let formData = new FormData();
         try {
             formData = await request.formData();
-        } catch (e) {
-        }
+        } catch (e) {}
 
         const url = new URL(request.url);
         const source = url.searchParams.get("source");
-        const endpoint = source === "legacy" ? `posts/vflix/${id}/like` : `vflix/${id}/like`;
+        const endpoint = source === "legacy"
+            ? `vflix/${id}/like?source=legacy`
+            : `vflix/${id}/like`;
 
         const response = await apiPost<ILikeOrUnlikeVflixResponse>(
             endpoint,
-            {
-                body: formData,
-                isFormData: true
-            },
+            { body: formData, isFormData: true },
             token
         );
         return NextResponse.json(response);

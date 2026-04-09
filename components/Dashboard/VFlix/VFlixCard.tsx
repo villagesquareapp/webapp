@@ -58,7 +58,7 @@ function FollowButton({
 
     try {
       const endpoint = wasFollowing
-        ? `/api/users/${userId}/unfollow`
+        ? `/api/users/${userId}/follow`
         : `/api/users/${userId}/follow`;
       const res = await fetch(endpoint, { method: "POST" });
       const result = await res.json();
@@ -91,9 +91,9 @@ function FollowButton({
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
-        ? "bg-white/10 text-white/80 hover:bg-white/20"
-        : "bg-[#0D1E34] hover:bg-[#0D1E34]/80 text-white"
+      className={`ml-1 px-4 py-1 rounded-full text-[13px] font-semibold transition-all ${following
+        ? "bg-transparent border-[1px] border-white/20 text-white/80 hover:bg-white/10"
+        : "bg-transparent border-[1px] border-[#0D52D2] text-white hover:bg-[#0D52D2]/20"
         } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {label}
@@ -188,10 +188,30 @@ export default function VflixCard({
     console.log("Block user:", post.user.uuid);
   };
 
-  const handleDisableComment = (e: React.MouseEvent) => {
+  const handleToggleComments = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Add disable comment logic here
-    console.log("Disable comment on post:", post.uuid);
+    try {
+      const res = await fetch(`/api/vflix/${post.uuid}/toggle-comments`, {
+        method: "POST",
+      });
+      const result = await res.json();
+
+      if (result?.status) {
+        toast.success(result.message);
+        setVideos((prev) =>
+          prev.map((v) =>
+            v.uuid === post.uuid
+              ? { ...v, allow_comments: result.data.allow_comments }
+              : v,
+          ),
+        );
+      } else {
+        toast.error(result?.message || "Failed to toggle comments");
+      }
+    } catch (error) {
+      console.error("Toggle comments error:", error);
+      toast.error("An error occurred while toggling comments");
+    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -500,10 +520,12 @@ export default function VflixCard({
                 <div className="flex flex-col gap-0.5">
                   <div
                     className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-white/5 rounded-2xl transition-all group"
-                    onClick={handleDisableComment}
+                    onClick={handleToggleComments}
                   >
                     <MessageCircleOff className="size-5 text-foreground/80 group-hover:text-foreground" />
-                    <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">Disable comment</span>
+                    <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">
+                      {post.allow_comments === false ? "Enable comment" : "Disable comment"}
+                    </span>
                   </div>
 
                   <Separator className="bg-border/50 mx-2" />

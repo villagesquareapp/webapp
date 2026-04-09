@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VflixCard from "./VFlixCard";
-import { likeOrUnlikeVflix } from "api/vflix";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
@@ -107,15 +106,11 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
     );
 
     try {
-      let result;
-
-      if (source === "legacy") {
-        result = await likeOrUnlikeVflix(postId);
-      } else {
-        const url = `/api/vflix/${postId}/like`;
-        const res = await fetch(url, { method: "POST" });
-        result = await res.json();
-      }
+      const url = source === "legacy"
+        ? `/api/vflix/${postId}/like?source=legacy`
+        : `/api/vflix/${postId}/like`;
+      const res = await fetch(url, { method: "POST" });
+      const result = await res.json();
 
       if (!result?.status) {
         toast.error("Failed to like video");
@@ -252,7 +247,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   };
 
   return (
-    <div className="flex items-center justify-start w-full h-full relative pl-[17rem]">
+    <div className="flex items-center justify-center lg:justify-start w-full h-full relative lg:pl-[17rem]">
       <div className="relative flex items-center">
         <div className="relative aspect-[9/16] h-[calc(100vh-180px)] md:h-[90vh] w-auto max-w-full md:max-w-[500px] rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black">
           <AnimatePresence initial={false} custom={direction}>
@@ -307,7 +302,14 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
         </div>
       </div>
 
-      <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} source={activePostSource} user={user} />
+      <VflixComments
+        isOpen={isCommentsOpen}
+        onClose={toggleComments}
+        postId={activePostId}
+        source={activePostSource}
+        user={user}
+        allowComments={videos.find((v) => v.uuid === activePostId)?.allow_comments !== false}
+      />
     </div>
   );
 }

@@ -42,13 +42,13 @@ const items = [
     title: "Social",
     url: "/home",
     icon: <GoHome className="!size-6 -ml-0.5" />,
-    activeIcon: <GoHomeFill className="fill-foreground text-foreground dark:fill-background dark:text-background !size-6 -mt-0.5" />,
+    activeIcon: <GoHomeFill className="fill-background text-background !size-6 -mt-0.5" />,
   },
   {
     title: "Vflix",
     url: "/vflix",
     icon: <VFlixOutline className="!size-6" />,
-    activeIcon: <VFlixFill className="fill-foreground text-foreground dark:fill-background dark:text-background !size-6 " />,
+    activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
   // {
   //   title: "Messages",
@@ -137,7 +137,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       className={`rounded-lg transition-all duration-300 cursor-pointer w-full h-12 ${isActive
-                        ? "bg-[#1717190D] text-foreground hover:bg-[#1717190D] dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background"
+                        ? "bg-[#31373f] text-background hover:bg-[#1717190D] dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background"
                         : "text-muted-foreground"
                         }`}
                     >
