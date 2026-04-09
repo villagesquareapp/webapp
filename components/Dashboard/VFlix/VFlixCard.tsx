@@ -58,7 +58,7 @@ function FollowButton({
 
     try {
       const endpoint = wasFollowing
-        ? `/api/users/${userId}/unfollow`
+        ? `/api/users/${userId}/follow`
         : `/api/users/${userId}/follow`;
       const res = await fetch(endpoint, { method: "POST" });
       const result = await res.json();
@@ -91,9 +91,9 @@ function FollowButton({
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className={`ml-2 px-3 py-1 rounded text-xs font-medium transition-colors ${following
-        ? "bg-white/10 text-white/80 hover:bg-white/20"
-        : "bg-[#0D1E34] hover:bg-[#0D1E34]/80 text-white"
+      className={`ml-1 px-4 py-1 rounded-full text-[13px] font-semibold transition-all ${following
+        ? "bg-transparent border-[1px] border-white/20 text-white/80 hover:bg-white/10"
+        : "bg-transparent border-[1px] border-[#0D52D2] text-white hover:bg-[#0D52D2]/20"
         } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {label}
