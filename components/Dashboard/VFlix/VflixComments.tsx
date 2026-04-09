@@ -20,6 +20,7 @@ interface Props {
   postId: string | null;
   user: IUser;
   source?: string;
+  allowComments?: boolean;
 }
 
 export default function VflixComments({
@@ -28,6 +29,7 @@ export default function VflixComments({
   postId,
   user,
   source,
+  allowComments = true,
 }: Props) {
   const router = useRouter();
   const [comments, setComments] = useState<IGetVflixComments[]>([]);
@@ -240,6 +242,18 @@ export default function VflixComments({
             <div className="flex-1 flex items-center justify-center">
               <LoadingSpinner />
             </div>
+          ) : !allowComments ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-4">
+              <div className="p-4 bg-gray-800/50 rounded-full">
+                <IoChatbubbleEllipses className="w-12 h-12 text-gray-400" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-white">Comments are disabled</h3>
+                <p className="text-gray-400 max-w-xs mx-auto">
+                  The creator has turned off comments for this video.
+                </p>
+              </div>
+            </div>
           ) : comments.length > 0 ? (
             comments.map((comment) => (
               <div
@@ -263,7 +277,7 @@ export default function VflixComments({
                       {!!comment?.user?.verified_status && (
                         <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
                       )}
-                      <BsDot className="text-foreground"/>
+                      <BsDot className="text-foreground" />
                       {comment.formatted_time && (
                         <span className="text-foreground text-sm">
                           {comment.formatted_time}
@@ -371,52 +385,54 @@ export default function VflixComments({
             </div>
           )}
         </div>
-        <div className="absolute bottom-0 w-full bg-background border-t px-6 h-fit gap-y-4 py-4 flex flex-col">
-          <div className="flex h-fit flex-row justify-between items-center">
-            {/* {["👍", "❤️", "👏", "😊", "😐", "🤩", "😢"].map((emoji, index) => (
-              <span
-                key={index}
-                className="text-3xl cursor-pointer hover:scale-110 transition-transform"
-                onClick={() => handleEmojiClick(emoji)}
-              >
-                {emoji}{" "}
-              </span>
-            ))} */}
-          </div>
-          <div className="flex flex-col h-fit gap-y-2">
-            {replyingTo && (
-              <div className="flex items-center justify-between bg-gray-800 text-xs text-gray-300 p-2 rounded-lg">
-                <span>Replying to <span className="font-semibold text-white">@{replyingTo.username}</span></span>
-                <IoClose className="size-4 cursor-pointer hover:text-white" onClick={() => setReplyingTo(null)} />
-              </div>
-            )}
-            <div className="flex flex-row h-fit gap-x-2 items-center">
-              <CustomAvatar
-                src={user.profile_picture || ""}
-                name="user profile"
-                className="size-12 border-foreground border"
-              />
-              <textarea
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
-                placeholder={replyingTo ? `Replying to @${replyingTo.username}...` : "Add a comment..."}
-                disabled={isSubmitting}
-                className="flex-1 resize-none h-10 p-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 outline-none"
-              />
-              <div
-                className={`p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex cursor-pointer ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                onClick={onSubmitComment}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="size-6 flex m-auto animate-spin" />
-                ) : (
-                  <VSSend className="size-6 flex m-auto" />
-                )}
+        {allowComments && (
+          <div className="absolute bottom-0 w-full bg-background border-t px-6 h-fit gap-y-4 py-4 flex flex-col">
+            <div className="flex h-fit flex-row justify-between items-center">
+              {/* {["👍", "❤️", "👏", "😊", "😐", "🤩", "😢"].map((emoji, index) => (
+                <span
+                  key={index}
+                  className="text-3xl cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => handleEmojiClick(emoji)}
+                >
+                  {emoji}{" "}
+                </span>
+              ))} */}
+            </div>
+            <div className="flex flex-col h-fit gap-y-2">
+              {replyingTo && (
+                <div className="flex items-center justify-between bg-gray-800 text-xs text-gray-300 p-2 rounded-lg">
+                  <span>Replying to <span className="font-semibold text-white">@{replyingTo.username}</span></span>
+                  <IoClose className="size-4 cursor-pointer hover:text-white" onClick={() => setReplyingTo(null)} />
+                </div>
+              )}
+              <div className="flex flex-row h-fit gap-x-2 items-center">
+                <CustomAvatar
+                  src={user.profile_picture || ""}
+                  name="user profile"
+                  className="size-12 border-foreground border"
+                />
+                <textarea
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.target.value)}
+                  placeholder={replyingTo ? `Replying to @${replyingTo.username}...` : "Add a comment..."}
+                  disabled={isSubmitting}
+                  className="flex-1 resize-none h-10 p-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 outline-none"
+                />
+                <div
+                  className={`p-2 shrink-0 rounded-full size-12 place-content-center bg-primary items-center flex cursor-pointer ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  onClick={onSubmitComment}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="size-6 flex m-auto animate-spin" />
+                  ) : (
+                    <VSSend className="size-6 flex m-auto" />
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

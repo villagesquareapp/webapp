@@ -302,7 +302,14 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
         </div>
       </div>
 
-      <VflixComments isOpen={isCommentsOpen} onClose={toggleComments} postId={activePostId} source={activePostSource} user={user} />
+      <VflixComments
+        isOpen={isCommentsOpen}
+        onClose={toggleComments}
+        postId={activePostId}
+        source={activePostSource}
+        user={user}
+        allowComments={videos.find((v) => v.uuid === activePostId)?.allow_comments !== false}
+      />
     </div>
   );
 }
