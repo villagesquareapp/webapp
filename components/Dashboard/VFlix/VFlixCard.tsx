@@ -14,6 +14,7 @@ import {
   Ban,
   MessageCircleOff,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { HiMiniCheckBadge } from "react-icons/hi2";
@@ -131,6 +132,7 @@ export default function VflixCard({
   const [showPauseIcon, setShowPauseIcon] = useState<boolean>(false);
   const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideIconTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isTogglingComments, setIsTogglingComments] = useState(false);
 
   const togglePlay = () => {
     const nextState = !isPlaying;
@@ -190,6 +192,9 @@ export default function VflixCard({
 
   const handleToggleComments = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isTogglingComments) return;
+
+    setIsTogglingComments(true);
     try {
       const res = await fetch(`/api/vflix/${post.uuid}/toggle-comments`, {
         method: "POST",
@@ -211,6 +216,8 @@ export default function VflixCard({
     } catch (error) {
       console.error("Toggle comments error:", error);
       toast.error("An error occurred while toggling comments");
+    } finally {
+      setIsTogglingComments(false);
     }
   };
 
@@ -519,12 +526,16 @@ export default function VflixCard({
                 /* Own video menu */
                 <div className="flex flex-col gap-0.5">
                   <div
-                    className="flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:bg-white/5 rounded-2xl transition-all group"
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group ${isTogglingComments ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-white/5"}`}
                     onClick={handleToggleComments}
                   >
-                    <MessageCircleOff className="size-5 text-foreground/80 group-hover:text-foreground" />
+                    {isTogglingComments ? (
+                      <Loader2 className="size-5 text-foreground/80 animate-spin" />
+                    ) : (
+                      <MessageCircleOff className="size-5 text-foreground/80 group-hover:text-foreground" />
+                    )}
                     <span className="text-[15px] font-medium text-foreground/80 group-hover:text-foreground">
-                      {post.allow_comments === false ? "Enable comment" : "Disable comment"}
+                      {isTogglingComments ? (post.allow_comments === false ? "Enabling..." : "Disabling...") : (post.allow_comments === false ? "Enable comment" : "Disable comment")}
                     </span>
                   </div>
 
