@@ -70,7 +70,7 @@ const ProfilePage = ({ username, isOwnProfile, initialProfile }: ProfilePageProp
                             <Skeleton className="h-40 w-full" />
                         </div>
                     ) : (
-                        <ProfileMetrics profile={profile} />
+                        <ProfileMetrics profile={profile} isOwnProfile={isOwnProfile} />
                     )}
                 </div>
             </div>
