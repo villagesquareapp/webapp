@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { usePostUploadContext } from "context/PostUploadContext";
-import { createVflixPost } from "app/api/vflix";
 import { Dialog, DialogContent } from "components/ui/dialog";
 import { Button } from "components/ui/button";
 import { IoClose } from "react-icons/io5";
@@ -329,7 +328,12 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
         episode_number: null,
       };
 
-      const response = await createVflixPost(payload);
+      const res = await fetch("/api/vflix/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const response = await res.json();
 
       if (!response?.status) {
         throw new Error(response?.message || "Failed to publish VFlix");

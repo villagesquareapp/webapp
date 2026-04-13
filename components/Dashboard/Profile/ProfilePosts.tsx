@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import EachSocialPost from "components/Dashboard/Social/EachSocialPost";
-import { getUserPosts } from "api/user";
 import { Skeleton } from "components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -31,7 +30,8 @@ const ProfilePosts = ({ userId }: ProfilePostsProps) => {
                 setLoadingMore(true);
             }
 
-            const response = await getUserPosts(userId, pageNumber);
+            const res = await fetch(`/api/users/${userId}/posts?page=${pageNumber}`);
+            const response = await res.json();
 
             if (response?.status && response.data) {
                 const fetchedPosts = response.data.data;

@@ -273,6 +273,7 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
                   onCommentClick={() => toggleComments(currentPost.uuid, currentPost._source)}
                   isMuted={isMuted}
                   setIsMuted={setIsMuted}
+                  onNext={nextVideo}
                 />
               </motion.div>
             )}
