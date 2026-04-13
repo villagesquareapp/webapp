@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import LikedPostCard from "./LikedPostCard";
-import { getUserLikedPosts } from "api/user";
 import { Skeleton } from "components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -32,7 +31,8 @@ const ProfileLikedPosts = ({ userId }: ProfileLikedPostsProps) => {
                     setLoadingMore(true);
                 }
 
-                const response = await getUserLikedPosts(userId, pageNumber);
+                const res = await fetch(`/api/users/${userId}/liked-posts?page=${pageNumber}`);
+                const response = await res.json();
 
                 if (response?.status && response.data) {
                     const fetchedPosts = response.data.data;

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { getUserVflix } from "api/user";
 import { Skeleton } from "components/ui/skeleton";
 import { toast } from "sonner";
 import { Play } from "lucide-react";
@@ -32,7 +31,8 @@ const ProfileVflix = ({ userId }: ProfileVflixProps) => {
                 setLoadingMore(true);
             }
 
-            const response = await getUserVflix(userId, pageNumber);
+            const res = await fetch(`/api/users/${userId}/vflix?page=${pageNumber}`);
+            const response = await res.json();
 
             if (response?.status && response.data) {
                 const fetchedVideos = response.data.data;
