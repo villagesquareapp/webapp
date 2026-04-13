@@ -15,6 +15,7 @@ import {
   MessageCircleOff,
   Trash2,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { HiMiniCheckBadge } from "react-icons/hi2";
@@ -110,6 +111,7 @@ interface Props {
   onCommentClick: () => void;
   isMuted: boolean;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
+  onNext?: () => void;
 }
 
 export default function VflixCard({
@@ -120,9 +122,11 @@ export default function VflixCard({
   onCommentClick,
   isMuted,
   setIsMuted,
+  onNext,
 }: Props) {
   const playerRef = useRef<ReactPlayer>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [hasEnded, setHasEnded] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [volume, setVolume] = useState<number>(1);
@@ -276,6 +280,18 @@ export default function VflixCard({
   const handleBufferEnd = () => {
     setIsBuffering(false);
   };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setHasEnded(true);
+  };
+
+  // Reset ended state when video changes
+  useEffect(() => {
+    setHasEnded(false);
+    setIsPlaying(true);
+    setCurrentTime(0);
+  }, [post.uuid]);
 
   useEffect(() => {
     return () => {
@@ -441,7 +457,6 @@ export default function VflixCard({
           playing={isPlaying}
           muted={isMuted || volume === 0}
           volume={volume}
-          loop
           width="100%"
           height="100%"
           onProgress={handleProgress}
@@ -449,6 +464,7 @@ export default function VflixCard({
           onReady={handleReady}
           onBuffer={handleBuffer}
           onBufferEnd={handleBufferEnd}
+          onEnded={handleEnded}
           progressInterval={50}
           style={{ position: "absolute", top: 0, left: 0 }}
           config={{
@@ -598,6 +614,47 @@ export default function VflixCard({
               className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
             >
               <div className="w-8 h-8 border-2 border-white/20 border-t-white/90 rounded-full animate-spin glow-shadow" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Video ended overlay */}
+        <AnimatePresence>
+          {hasEnded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm"
+            >
+              <div className="flex flex-col items-center gap-4">
+                {onNext && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNext();
+                    }}
+                    className="flex items-center gap-2 bg-white text-black font-semibold text-sm px-6 py-3 rounded-full hover:bg-white/90 transition-colors shadow-lg"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                    Play Next Video
+                  </button>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHasEnded(false);
+                    setCurrentTime(0);
+                    playerRef.current?.seekTo(0);
+                    setIsPlaying(true);
+                  }}
+                  className="flex items-center gap-2 bg-white/10 border border-white/20 text-white font-medium text-sm px-6 py-3 rounded-full hover:bg-white/20 transition-colors"
+                >
+                  <CirclePlay className="w-4 h-4" />
+                  Watch Again
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
