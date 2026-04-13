@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, ChevronRight, ArrowUpRight, LogOut } from "lucide-react";
 import EditProfileContent from "./EditProfileContent";
 import VerificationContent from "./VerificationContent";
@@ -9,44 +9,56 @@ import ChangePasswordContent from "./ChangePasswordContent";
 import BlockedContent from "./BlockedContent";
 import DeactivateAccountContent from "./DeactivateAccountContent";
 
-const menuSections = [
-    {
-        title: "ACCOUNT",
-        items: [
-            { id: "edit_profile", label: "Edit Profile", icon: ChevronRight },
-            { id: "verification", label: "Verification", icon: ChevronRight },
-            { id: "change_password", label: "Change Password", icon: ChevronRight },
-            { id: "blocked", label: "Blocked", icon: ChevronRight, badge: "6" },
-            { id: "deactivate", label: "Deactivate / Delete Account", icon: ChevronRight },
-        ],
-    },
-    {
-        title: "HELP & SUPPORT",
-        items: [
-            { id: "faqs", label: "FAQs", icon: ChevronRight },
-            { id: "about", label: "About Us", icon: ArrowUpRight, external: true },
-            { id: "support", label: "Contact / Support", icon: ArrowUpRight, external: true },
-        ],
-    },
-    {
-        title: "LEGAL",
-        items: [
-            { id: "privacy", label: "Privacy Policy", icon: ArrowUpRight, external: true },
-            { id: "terms", label: "Terms & Condition", icon: ArrowUpRight, external: true },
-            { id: "eula", label: "EULA for VillageSquare", icon: ArrowUpRight, external: true },
-        ],
-    },
-    {
-        title: "APP & REFERENCE",
-        items: [
-            { id: "rate", label: "Rate Us", icon: ChevronRight },
-            { id: "signout", label: "Sign Out", icon: ChevronRight }, // We could use a standard sign out icon, but UI has ChevronRight
-        ],
-    },
-];
-
 const SettingsPageClient = () => {
     const [activeTab, setActiveTab] = useState("edit_profile");
+    const [blockedCount, setBlockedCount] = useState<number | null>(null);
+
+    useEffect(() => {
+        fetch("/api/users/blocked-count")
+            .then((r) => r.json())
+            .then((data) => {
+                if (data?.status && data?.data?.count !== undefined) {
+                    setBlockedCount(data.data.count);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+    const menuSections = [
+        {
+            title: "ACCOUNT",
+            items: [
+                { id: "edit_profile", label: "Edit Profile", icon: ChevronRight },
+                { id: "verification", label: "Verification", icon: ChevronRight },
+                { id: "change_password", label: "Change Password", icon: ChevronRight },
+                { id: "blocked", label: "Blocked", icon: ChevronRight, badge: blockedCount !== null ? String(blockedCount) : undefined },
+                { id: "deactivate", label: "Deactivate / Delete Account", icon: ChevronRight },
+            ],
+        },
+        {
+            title: "HELP & SUPPORT",
+            items: [
+                { id: "faqs", label: "FAQs", icon: ChevronRight },
+                { id: "about", label: "About Us", icon: ArrowUpRight, external: true },
+                { id: "support", label: "Contact / Support", icon: ArrowUpRight, external: true },
+            ],
+        },
+        {
+            title: "LEGAL",
+            items: [
+                { id: "privacy", label: "Privacy Policy", icon: ArrowUpRight, external: true },
+                { id: "terms", label: "Terms & Condition", icon: ArrowUpRight, external: true },
+                { id: "eula", label: "EULA for VillageSquare", icon: ArrowUpRight, external: true },
+            ],
+        },
+        {
+            title: "APP & REFERENCE",
+            items: [
+                { id: "rate", label: "Rate Us", icon: ChevronRight },
+                { id: "signout", label: "Sign Out", icon: ChevronRight },
+            ],
+        },
+    ];
 
     return (
         <div className="flex w-full h-[calc(100vh-80px)] overflow-hidden text-white pt-2 bg-background">
@@ -104,7 +116,9 @@ const SettingsPageClient = () => {
                 {activeTab === "verification" && <VerificationContent />}
                 {activeTab === "rate" && <RateUsContent />}
                 {activeTab === "change_password" && <ChangePasswordContent />}
-                {activeTab === "blocked" && <BlockedContent />}
+                {activeTab === "blocked" && (
+                    <BlockedContent onCountChange={(count) => setBlockedCount(count)} />
+                )}
                 {activeTab === "deactivate" && <DeactivateAccountContent />}
                 {activeTab !== "edit_profile" && activeTab !== "verification" && activeTab !== "rate" && activeTab !== "change_password" && activeTab !== "blocked" && activeTab !== "deactivate" && (
                     <div className="flex items-center justify-center h-full text-muted-foreground">

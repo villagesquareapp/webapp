@@ -21,7 +21,6 @@ const ProfileMetrics = ({ profile, isOwnProfile }: ProfileMetricsProps) => {
             setLoading(true);
             try {
                 if (isOwnProfile) {
-                    // Same endpoint as RightSidebar "Who to Connect With"
                     const res = await fetch("/api/users/suggestions");
                     const data = await res.json();
                     if (data?.status && data?.data) {
