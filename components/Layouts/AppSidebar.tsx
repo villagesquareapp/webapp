@@ -22,6 +22,8 @@ import { usePathname } from "next/navigation";
 import { BsMic, BsMicFill } from "react-icons/bs";
 import { FaHeart, FaShoppingBasket, FaUsers } from "react-icons/fa";
 import { GoHome, GoHomeFill } from "react-icons/go";
+import { IoMdSettings } from "react-icons/io";
+import { IoSettingsOutline } from "react-icons/io5";
 import { HiOutlineVideoCamera } from "react-icons/hi";
 import { MdMailOutline } from "react-icons/md";
 import { BiWorld } from "react-icons/bi";
@@ -50,47 +52,53 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: <IoSettingsOutline className="!size-6" />,
+    activeIcon: <IoMdSettings className="fill-background text-background !size-6" />,
+  }
   // {
   //   title: "Messages",
   //   url: "/dashboard/messages",
   //   icon: <MdMailOutline className="!size-6" />,
-  //   activeIcon: <VSMailFill className="fill-black !size-6" />,
+  //   activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
   // },
   // {
   //   title: "Dating hub",
   //   url: "#",
   //   icon: <FaHeart className="!size-5 ml-0.5" />,
-  //   activeIcon: <FaHeartCircleCheck className="fill-black !size-5 ml-0.5" />,
+  //   activeIcon: <FaHeartCircleCheck className="fill-background text-background !size-5 ml-0.5" />,
   // },
   // {
   //   title: "Echo",
   //   url: "#",
   //   icon: <BsMic className="!size-5 ml-0.5" />,
-  //   activeIcon: <BsMicFill className="fill-black !size-5 ml-0.5" />,
+  //   activeIcon: <BsMicFill className="fill-background text-background !size-5 ml-0.5" />,
   // },
   // {
   //   title: "Livestream",
   //   url: "/dashboard/live-streams",
   //   icon: <HiOutlineVideoCamera className="!size-6" />,
-  //   activeIcon: <VSCameraFill className="fill-black !size-6" />,
+  //   activeIcon: <VSCameraFill className="fill-background text-background !size-6" />,
   // },
   // {
   //   title: "Marketsquare",
   //   url: "#",
   //   icon: <FaShoppingBasket className="!size-5 ml-0.5" />,
-  //   activeIcon: <AiFillShopping className="fill-black !size-5 ml-0.5" />,
+  //   activeIcon: <AiFillShopping className="fill-background text-background !size-5 ml-0.5" />,
   // },
   // {
   //   title: "Tribes",
   //   url: "#",
   //   icon: <FaUsers className="!size-5 ml-0.5" />,
-  //   activeIcon: <FaUserGroup className="fill-black !size-5 ml-0.5" />,
+  //   activeIcon: <FaUserGroup className="fill-background text-background !size-5 ml-0.5" />,
   // },
   // {
   //   title: "ATC",
   //   url: "#",
   //   icon: <BiWorld className="!size-5 ml-0.5" />,
-  //   activeIcon: <MdOutlinePublic className="fill-black !size-5 ml-0.5" />,
+  //   activeIcon: <MdOutlinePublic className="fill-background text-background !size-5 ml-0.5" />,
   // },
 ];
 
@@ -137,8 +145,8 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       className={`rounded-lg transition-all duration-300 cursor-pointer w-full h-12 ${isActive
-                        ? "bg-[#31373f] text-background hover:bg-[#1717190D] dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background"
-                        : "text-muted-foreground"
+                        ? "bg-[#31373f] text-background hover:text-background hover:bg-[#31373f]/90 dark:bg-foreground dark:text-background dark:hover:bg-foreground/90 dark:hover:text-background"
+                        : "text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 dark:hover:text-foreground"
                         }`}
                     >
                       <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4">

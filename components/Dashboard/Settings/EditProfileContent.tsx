@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Camera, MapPin, CalendarDays, ChevronRight, ChevronDown, Check, Loader2 } from "lucide-react";
+import { Camera, MapPin, CalendarDays, ChevronRight, ChevronDown, Check, Loader2, X } from "lucide-react";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useSession } from "next-auth/react";
 import { useProfile } from "src/hooks/useProfile";
 import { updateProfile } from "app/api/user";
+import LocationPicker from "components/Dashboard/Social/LocationPicker";
 
 const MONTHS = [
     "January", "February", "March", "April", "May", "June",
@@ -33,6 +34,9 @@ const EditProfileContent = () => {
     const [dobMonth, setDobMonth] = useState("");
     const [dobYear, setDobYear] = useState("");
     const [location, setLocation] = useState("");
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [locationLatitude, setLocationLatitude] = useState("");
+    const [locationLongitude, setLocationLongitude] = useState("");
     const [profilePicture, setProfilePicture] = useState("");
     const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
 
@@ -168,8 +172,7 @@ const EditProfileContent = () => {
 
     return (
         <>
-            {/* Saving Overlay */}
-            {saving && (
+            {/* Saving Overlay */}            {saving && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                     <div className="bg-[#1A1A1A] border border-[#2C2C2E] rounded-2xl px-10 py-8 flex flex-col items-center gap-4 shadow-2xl">
                         <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
@@ -367,13 +370,43 @@ const EditProfileContent = () => {
                     {/* Location */}
                     <div>
                         <h3 className="text-[15px] text-foreground font-semibold mb-3">Location</h3>
-                        <div className="bg-background rounded-xl p-4 border border-border flex items-center focus-within:border-neutral-500 transition-colors">
-                            <MapPin className="w-4 h-4 text-muted-foreground mr-3 shrink-0" />
-                            <input
-                                type="text"
-                                className="bg-transparent text-sm text-foreground w-full focus:outline-none"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsLocationPickerOpen(true)}
+                                className="w-full bg-background rounded-xl p-4 border border-border flex items-center justify-between hover:border-neutral-500 transition-colors text-left"
+                            >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <MapPin className={`w-4 h-4 shrink-0 ${location ? "text-blue-400" : "text-muted-foreground"}`} />
+                                    <span className={`text-sm truncate ${location ? "text-foreground" : "text-muted-foreground"}`}>
+                                        {location || "Add location"}
+                                    </span>
+                                </div>
+                                {location && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setLocation("");
+                                            setLocationLatitude("");
+                                            setLocationLongitude("");
+                                        }}
+                                        className="ml-2 p-1 hover:bg-white/10 rounded-full transition-colors shrink-0"
+                                    >
+                                        <X className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                )}
+                            </button>
+
+                            <LocationPicker
+                                open={isLocationPickerOpen}
+                                onClose={() => setIsLocationPickerOpen(false)}
+                                onSelect={(loc) => {
+                                    setLocation(loc.address);
+                                    setLocationLatitude(loc.latitude);
+                                    setLocationLongitude(loc.longitude);
+                                }}
+                                currentAddress={location || undefined}
                             />
                         </div>
                     </div>
