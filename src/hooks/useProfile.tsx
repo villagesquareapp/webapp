@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getProfile } from "api/user";
 import { toast } from "sonner";
 
 export const useProfile = (userIdOrUsername: string) => {
@@ -14,7 +13,8 @@ export const useProfile = (userIdOrUsername: string) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await getProfile(userIdOrUsername);
+            const res = await fetch(`/api/users/${userIdOrUsername}/profile`);
+            const response = await res.json();
             if (response?.status && response.data) {
                 setProfile(response.data);
             } else {
