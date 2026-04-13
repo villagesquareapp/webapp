@@ -2,7 +2,7 @@ import React, { SVGProps } from "react";
 
 const SvgVFlixOutline = (props: SVGProps<SVGSVGElement>) => {
   return (
-    <svg viewBox="0 0 24 24" className="svg-icon" {...props}>
+    <svg viewBox="0 0 20.5 20.5" className="svg-icon" {...props}>
       <path
         d="M19.4167 12.9708V7.44583C19.4167 2.84167 17.575 1 12.9708 1H7.44583C2.84167 1 1 2.84167 1 7.44583V12.9708C1 17.575 2.84167 19.4167 7.44583 19.4167H12.9708C17.575 19.4167 19.4167 17.575 19.4167 12.9708Z"
         stroke="white"

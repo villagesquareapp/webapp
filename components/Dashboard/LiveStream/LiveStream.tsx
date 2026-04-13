@@ -245,9 +245,8 @@ const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLives
                   />
                 )}
                 <div
-                  className={`flex items-center mt-3 ${
-                    turnedOffComment ? "place-content-center gap-x-2" : "justify-between"
-                  }`}
+                  className={`flex items-center mt-3 ${turnedOffComment ? "place-content-center gap-x-2" : "justify-between"
+                    }`}
                 >
                   <div className="flex flex-row gap-x-2 items-center">
                     {/* {!turnOffQuestion && <LiveStreamQuestionAndAnswer />} */}
@@ -262,7 +261,7 @@ const LiveStream = ({ featuredLivestream }: { featuredLivestream: IFeaturedLives
                         <PopoverContent
                           align="start"
                           side="top"
-                          className="w-full mb-2 flex flex-row bg-accent border-2 border-white/10 shadow-md gap-x-2 p-4 rounded-lg"
+                          className="w-full mb-2 flex flex-row bg-accent border-2 border-border shadow-md gap-x-2 p-4 rounded-lg"
                           sideOffset={16}
                         >
                           <IoIosInformationCircle className="size-5 mt-1 flex shrink-0" />

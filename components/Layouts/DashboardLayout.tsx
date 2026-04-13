@@ -1,4 +1,4 @@
-import { SidebarProvider } from "components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "components/ui/sidebar";
 import React from "react";
 import { AppSidebar } from "./AppSidebar";
 import DashboardNavbar from "./DashboardNavbar";
@@ -9,26 +9,75 @@ import MobileBlockScreen from "./MobileBlockScreen";
 import { Splash } from "next/font/google";
 import SplashScreen from "./SplashScreen";
 import GlobalUploadProgress from "./GlobalUploadProgress";
+import { AddPostProvider } from "context/AddPostContext";
+import { DataCacheProvider } from "context/DataCacheContext";
+import { getServerSession } from "next-auth";
+import { authOptions } from "api/auth/authOptions";
+import AddPost from "components/Dashboard/Social/AddPost";
+import { VFlixUploadProvider } from "context/VFlixUploadContext";
+import VFlixUploadModal from "components/Dashboard/VFlix/VFlixUploadModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
+  const session = await getServerSession(authOptions);
+
   return (
     <>
       <SplashScreen />
       <GlobalUploadProgress />
-      <main className="relative font-albert-sans min-h-screen">
-        <SidebarProvider>
-          <DashboardNavbar />
-          <AppSidebar />
-          <div className="flex-1 mt-16 pl-0 md:pl-6 relative w-full overflow-x-hidden">{children}</div>
-        </SidebarProvider>
-        <CustomToaster />
-      </main>
+      <DataCacheProvider>
+        <AddPostProvider>
+          <VFlixUploadProvider>
+            {session?.user && (
+              <div className="hidden">
+                <AddPost user={session.user} />
+                <VFlixUploadModal user={session.user} />
+              </div>
+            )}
+            <main className="max-w-[90rem] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
+              <div className="w-full flex h-screen">
+                <SidebarProvider style={{ "--sidebar-width": "22rem", "--sidebar-width-icon": "8.75rem" } as React.CSSProperties}>
+                  <AppSidebar />
+                  <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
+                    <DashboardNavbar />
+                    <div className="flex-1 overflow-hidden h-full">
+                      {children}
+                    </div>
+                  </SidebarInset>
+                </SidebarProvider>
+              </div>
+              <CustomToaster />
+            </main>
+          </VFlixUploadProvider>
+        </AddPostProvider>
+      </DataCacheProvider>
     </>
   );
 };
+
+// const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
+//   return (
+//     <>
+//       <SplashScreen />
+//       <GlobalUploadProgress />
+//       <main className="relative font-albert-sans min-h-screen">
+//         <SidebarProvider>
+//           <AppSidebar />
+//           <SidebarInset className="bg-background flex flex-col relative w-full p-0 m-0 min-h-screen h-full">
+//             <DashboardNavbar />
+//             <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 md:px-8">
+//               <div className="relative w-full h-full">{children}</div>
+//             </div>
+//             {/* <div className="flex-1 w-full relative">{children}</div> */}
+//           </SidebarInset>
+//         </SidebarProvider>
+//         <CustomToaster />
+//       </main>
+//     </>
+//   );
+// };
 
 export default DashboardLayout;

@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
             timezone: getTimeZone(),
             audience: "web",
           });
-          console.log("Credential Request: ", requestBody);
+          // console.log("Credential Request: ", requestBody);
 
           const authResponse = await fetch(`${API_BASE_URL}/auth/login`, {
             method: "POST",
@@ -63,11 +63,11 @@ export const authOptions: NextAuthOptions = {
             body: requestBody,
           });
 
-          console.log("Credential Response Status: ", authResponse.status);
-          console.log(
-            "Credential Response Headers: ",
-            Object.fromEntries(authResponse.headers.entries())
-          );
+          // console.log("Credential Response Status: ", authResponse.status);
+          // console.log(
+          //   "Credential Response Headers: ",
+          //   Object.fromEntries(authResponse.headers.entries())
+          // );
 
           const contentType = authResponse.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
@@ -99,18 +99,18 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log("SignIn callback invoked: ", user, account, profile);
+      // console.log("SignIn callback invoked: ", user, account, profile);
       if (account?.provider === "google" && profile) {
-        console.log("Google sign-in detected");
+        // console.log("Google sign-in detected");
         if (!profile) {
-          console.log("No profile information from Google OAuth");
+          // console.log("No profile information from Google OAuth");
           return false;
         }
-        console.log("Google profile:", profile);
-        console.log("Google provider_token (ID token):", account.id_token);
+        // console.log("Google profile:", profile);
+        // console.log("Google provider_token (ID token):", account.id_token);
 
         try {
-          console.log(`[GoogleSignIn] Attempting to register/login with backend at ${API_BASE_URL}/auth/social-account`);
+          // console.log(`[GoogleSignIn] Attempting to register/login with backend at ${API_BASE_URL}/auth/social-account`);
 
           const payload = {
             audience: "web",
@@ -130,53 +130,53 @@ export const authOptions: NextAuthOptions = {
             body: JSON.stringify(payload),
           });
 
-          console.log(`[GoogleSignIn] Backend response status: ${res.status}`);
+          // console.log(`[GoogleSignIn] Backend response status: ${res.status}`);
 
           const textData = await res.text();
-          console.log(`[GoogleSignIn] Backend response body (text): ${textData.substring(0, 500)}`); // Log first 500 chars
+          // console.log(`[GoogleSignIn] Backend response body (text): ${textData.substring(0, 500)}`); // Log first 500 chars
 
           let data;
           try {
             data = JSON.parse(textData);
           } catch (e) {
-            console.error("[GoogleSignIn] Failed to parse backend response as JSON");
+            // console.error("[GoogleSignIn] Failed to parse backend response as JSON");
             return false;
           }
 
           if (!res.ok || !data.status) {
-            console.error(
-              "[GoogleSignIn] Social account registration/login failed:",
-              data.message || "Unknown error"
-            );
+            // console.error(
+            //   "[GoogleSignIn] Social account registration/login failed:",
+            //   data.message || "Unknown error"
+            // );
             
             return false;
           }
 
           if (data.data) {
             (user as any).backendData = data.data;
-            console.log("[GoogleSignIn] Social account data attached to user object.");
+            // console.log("[GoogleSignIn] Social account data attached to user object.");
           }
 
-          console.log("[GoogleSignIn] Social login approved");
+          // console.log("[GoogleSignIn] Social login approved");
 
           return true;
         } catch (error) {
-          console.error("[GoogleSignIn] Error in social account signIn callback:", error);
+          // console.error("[GoogleSignIn] Error in social account signIn callback:", error);
           return false;
         }
       }
 
-      console.log("Non-Google provider, allow sign in");
+      // console.log("Non-Google provider, allow sign in");
 
       return true;
     },
 
     async jwt({ token, user, account }) {
-      console.log("JWT Callback Debug");
-      console.log("Provider:", account?.provider);
-      console.log("Token:", token);
-      console.log("User:", user);
-      console.log("Account:", account);
+      // console.log("JWT Callback Debug");
+      // console.log("Provider:", account?.provider);
+      // console.log("Token:", token);
+      // console.log("User:", user);
+      // console.log("Account:", account);
 
       if (user) {
         if ((user as any)?.backendData) {
@@ -229,7 +229,7 @@ export const authOptions: NextAuthOptions = {
         ...cleanToken
       } = token;
 
-      console.log("Final token (cleaned):", cleanToken);
+      // console.log("Final token (cleaned):", cleanToken);
 
       return cleanToken;
     },

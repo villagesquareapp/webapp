@@ -73,9 +73,9 @@ const SocialPostDetails = ({
     <div className="flex flex-col gap-y-2">
       <PostHeader post={post} />
 
-      <div className="flex flex-col gap-y-4">
+      <div className="flex flex-col">
         {/* Post text with highlighted hashtags */}
-        <PostText text={post?.caption} />
+        <PostText text={post?.caption} mentions={post?.mentions} />
         {!!post?.media?.length && (
           <div className="p-4 w-full">
             <Carousel
@@ -129,7 +129,7 @@ const SocialPostDetails = ({
             </Carousel>
           </div>
         )}
-        <span className="flex flex-row items-center gap-x-1 px-4 -mt-4">
+        <span className="flex flex-row items-center gap-x-1 px-4 mt-4">
           {post?.address && (
             <>
               <span className="text-xs text-muted-foreground">
@@ -154,7 +154,7 @@ const SocialPostDetails = ({
         user={user}
         onOpenReplyModal={onOpenReplyModal}
       />
-      <Separator className="my-2 opacity-40" />
+      {/* <Separator className="mt-2 mb-2 opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" /> */}
     </div>
   );
 };

@@ -13,9 +13,13 @@ import {
   MapPin,
   Smile,
   X,
+  Users,
+  Lock,
 } from "lucide-react";
+import { TbPhoto, TbPlus } from "react-icons/tb";
+import { IoVideocamOutline, IoLocationSharp, IoClose } from "react-icons/io5";
+import { FaAngleRight } from "react-icons/fa6";
 import { useState, useMemo, useRef, useCallback } from "react";
-import { IoVideocamOutline } from "react-icons/io5";
 import { toast } from "sonner";
 // import { createPost } from "api/post";
 // import { usePostUploader } from "src/hooks/usePostUploader";
@@ -25,6 +29,10 @@ import { Label } from "@radix-ui/react-label";
 import { LiaGlobeAmericasSolid } from "react-icons/lia";
 import { IoIosArrowDown } from "react-icons/io";
 import { Dispatch, SetStateAction } from "react";
+import { VscMention } from "react-icons/vsc";
+import { FiHash } from "react-icons/fi";
+import MentionsModal from "../Reusable/MentionsModal";
+import HashtagsModal from "../Reusable/HashtagsModal";
 
 interface ReplyModalProps {
   post: IPost;
@@ -72,6 +80,22 @@ const ReplyModal = ({
   const [isAudienceDialogOpen, setIsAudienceDialogOpen] =
     useState<boolean>(false);
 
+  // Auto-trigger Modal States
+  const [isMentionsOpen, setIsMentionsOpen] = useState(false);
+  const [isHashtagsOpen, setIsHashtagsOpen] = useState(false);
+
+  const handleSelectMention = (username: string) => {
+    const currentCaption = newComment;
+    const nextCaption = currentCaption ? `${currentCaption} @${username}` : `@${username}`;
+    setNewComment(nextCaption);
+  };
+
+  const handleSelectHashtag = (hashtag: string) => {
+    const currentCaption = newComment;
+    const nextCaption = currentCaption ? `${currentCaption} #${hashtag}` : `#${hashtag}`;
+    setNewComment(nextCaption);
+  };
+
   const [items, setItems] = useState<DraftItem[]>([
     {
       id: String(Date.now()),
@@ -80,7 +104,7 @@ const ReplyModal = ({
       address: "",
       latitude: "",
       longitude: "",
-      privacy: "everyone",
+      privacy: "everyone" as PrivacyType,
     },
   ]);
 
@@ -106,7 +130,7 @@ const ReplyModal = ({
       address: null,
       latitude: null,
       longitude: null,
-      privacy: "everyone",
+      privacy: items[0].privacy,
       status: "active",
       views_count: "0",
       shares_count: "0",
@@ -121,22 +145,29 @@ const ReplyModal = ({
       is_saved: false,
       is_liked: false,
       is_thread_continuation: false,
-      media: selectedFile ? [{
-        // Temporary media object for optimistic UI
-        uuid: `temp-media-${Date.now()}`,
-        post_id: tempUuid,
-        media_type: selectedFile.type.startsWith('video') ? 'video' : 'image',
-        media_url: mediaPreviewUrl || "",
-        transcoded_media_url: mediaPreviewUrl || "",
-        media_thumbnail: "",
-        media_filename: selectedFile.name,
-        media_size: selectedFile.size.toString(),
-        media_duration: 0,
-        is_transcode_complete: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        deleted_at: null
-      }] : [],
+      media: selectedFile
+        ? [
+          {
+            // Temporary media object for optimistic UI
+            uuid: `temp-media-${Date.now()}`,
+            post_id: tempUuid,
+            media_type: selectedFile.type.startsWith("video")
+              ? "video"
+              : "image",
+            media_url: mediaPreviewUrl || "",
+            transcoded_media_url: mediaPreviewUrl || "",
+            media_thumbnail: "",
+            thumbnail: "",
+            media_filename: selectedFile.name,
+            media_size: selectedFile.size.toString(),
+            media_duration: 0,
+            is_transcode_complete: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+        ]
+        : [],
 
       user: {
         uuid: user.uuid,
@@ -147,8 +178,7 @@ const ReplyModal = ({
         verified_status: user.verified_status ?? 0,
         checkmark_verification_status:
           user.checkmark_verification_status ?? false,
-        premium_verification_status:
-          user.premium_verification_status ?? false,
+        premium_verification_status: user.premium_verification_status ?? false,
         online: user.online ?? false,
       },
     };
@@ -157,24 +187,10 @@ const ReplyModal = ({
       onReplySuccess(newReply);
     }
 
-    // Also update local list in parent if handled there (onReplySuccess usually handles it)
-    // But we also have setPosts passed in
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.uuid === post.uuid
-          ? {
-            ...p,
-            replies_count: (Number(p.replies_count) + 1).toString(),
-          }
-          : p
-      )
-    );
-
     // Reset Form
     setNewComment("");
     setSelectedFile(null);
     setMediaPreviewUrl(null);
-
 
     // 3. Background Process
     (async () => {
@@ -193,27 +209,26 @@ const ReplyModal = ({
           address: null,
           latitude: null,
           longitude: null,
-          privacy: "everyone",
+          privacy: items[0].privacy,
         };
 
         await createPostFunc([replyPayload]);
         toast.success("Reply posted successfully");
 
-        // Re-fetch or confirm? 
-        // Optimistic update should be fine. 
-        // In a real app we might replace the temp ID with real ID if we stored it, 
+        // Re-fetch or confirm?
+        // Optimistic update should be fine.
+        // In a real app we might replace the temp ID with real ID if we stored it,
         // but for now we rely on SWR or eventual refresh.
-
       } catch (error) {
         console.error("Reply creation failed", error);
-        // Revert changes? 
+        // Revert changes?
         // Since we don't have a direct "remove" callback easily accessible without props drilling or context,
-        // we rely on the error toast. The user will see the error. 
+        // we rely on the error toast. The user will see the error.
         // Ideally we should remove the optimistic post.
         // For now, users will refresh if they see it failed.
         // toast.error("Failed to post reply"); // createPostFunc context already sets error state/toast? No, context sets status='error'.
-        // Context doesn't toast error message automatically? It renders Global Progress Bar in Error state. 
-        // Behavior: Progress bar turns red "Uploading Failed". User clicks "Retry". 
+        // Context doesn't toast error message automatically? It renders Global Progress Bar in Error state.
+        // Behavior: Progress bar turns red "Uploading Failed". User clicks "Retry".
         // This is perfect.
       }
     })();
@@ -238,8 +253,8 @@ const ReplyModal = ({
   const handleAudienceChange = (value: string) => {
     setItems((prev) =>
       prev.map((item, index) =>
-        index === 0 ? { ...item, privacy: value as PrivacyType } : item
-      )
+        index === 0 ? { ...item, privacy: value as PrivacyType } : item,
+      ),
     );
     setIsAudienceDialogOpen(false);
   };
@@ -257,10 +272,42 @@ const ReplyModal = ({
         textarea.focus();
         textarea.setSelectionRange(
           cursorPosition + emoji.length,
-          cursorPosition + emoji.length
+          cursorPosition + emoji.length,
         );
       }, 0);
     }
+  };
+
+  const handleTagPeopleClick = () => {
+    setNewComment((prev) => {
+      const updated = prev + (prev && !prev.endsWith(" ") ? " @" : "@");
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const len = updated.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return updated;
+    });
+    // Trigger inline mention dropdown by simulating state
+    setIsMentionsOpen(true);
+  };
+
+  const handleHashtagsClick = () => {
+    setNewComment((prev) => {
+      const updated = prev + (prev && !prev.endsWith(" ") ? " #" : "#");
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const len = updated.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return updated;
+    });
+    // Trigger inline hashtag dropdown by simulating state
+    setIsHashtagsOpen(true);
   };
 
   const getReplyContext = () => {
@@ -284,7 +331,7 @@ const ReplyModal = ({
       // text: `Replying to @${post?.user?.username}`,
       text: (
         <>
-          Replying to {" "}
+          Replying to{" "}
           <span className="text-blue-500">@{post.user.username}</span>
         </>
       ),
@@ -298,1092 +345,427 @@ const ReplyModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl md:max-w-2xl bg-background p-0 rounded-2xl border-gray-800 flex flex-col max-h-[90vh] overflow-hidden">
-        <DialogHeader className="p-4 relative">
-          <DialogTitle className="text-center text-white text-lg font-semibold"></DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          <p className="text-sm text-gray-400 py-4 italic">
-            {/* Replying to{" "}
-            <span className="font-semibold text text-[#094DB5]">
-              @{post?.user?.username}
-            </span> */}
-            {replyContext.text}
+      <DialogContent className="flex flex-col !max-w-[600px] w-full p-0 rounded-[32px] overflow-hidden border border-border bg-background shadow-2xl !top-[10%] !translate-y-0 [&>button:last-child]:hidden max-h-[85vh]">
+        <div className="flex flex-col h-full p-4 pb-2">
+          {/* Header: Replying to */}
+          <p className="text-[15px] italic text-[#8E8E93] pb-4">
+            Replying to{" "}
+            <span className="text-[#1D4ED8] italic">
+              @{replyContext.user?.username}
+            </span>
           </p>
           {post && (
-            <div className="flex flex-col gap-3 mb-4 border-b border-gray-800 pb-4">
-              <div className="flex gap-3">
-                <CustomAvatar
-                  src={replyContext.user?.profile_picture || ""}
-                  name={replyContext.user?.name || ""}
-                  className="size-10 border-foreground border-[1.5px]"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-white">
-                      {replyContext.user?.name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      @{replyContext.user?.username} ·{" "}
-                      {replyToComment?.formatted_time ||
-                        post.formatted_time ||
-                        "just now"}
-                    </span>
-                  </div>
-                  <div className="flex items-start justify-between gap-2 mt-2">
-                    <p className="flex-1 text-sm text-gray-200">
-                      {replyContext.content}
-                    </p>
-                    {replyContext.media?.[0] && (
-                      <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden relative">
-                        {replyContext.media[0].media_type === "image" ? (
-                          <img
-                            src={replyContext.media[0].media_url}
-                            alt={replyContext.media[0].media_filename}
-                            className="w-full h-full object-cover"
+            <div className="border border-border rounded-[24px] p-5 mb-5 bg-transparent flex justify-between items-start gap-1">
+              <div>
+                <div className="flex gap-4">
+                  <CustomAvatar
+                    src={replyContext.user?.profile_picture || ""}
+                    name={replyContext.user?.name || ""}
+                    className="size-12 border-none rounded-full"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-[15px] text-foreground">
+                        {replyContext.user?.name}
+                      </span>
+                      {!!replyContext.user?.verified_status && (
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M10.5213 2.62368C11.3147 1.75287 12.6853 1.75287 13.4787 2.62368L14.4989 3.74339C14.8298 4.10657 15.3097 4.30533 15.8117 4.28747L17.3577 4.23246C18.5595 4.1897 19.5898 5.15545 19.6416 6.35651L19.7081 7.90225C19.7297 8.40366 19.9818 8.86801 20.3981 9.1462L21.6798 10.0028C22.6763 10.6687 22.9573 11.9904 22.3013 13.0044L21.457 14.3092C21.1832 14.7317 21.1212 15.2536 21.2872 15.7275L21.7981 17.1866C22.1953 18.3207 21.5714 19.5541 20.42 19.9575L18.9392 20.4764C18.4588 20.6447 18.0673 21.0029 17.867 21.4587L17.2505 22.8624C16.7712 23.9535 15.4802 24.4308 14.4101 23.9114L13.0336 23.2433C12.5869 23.0264 12.0632 23.0264 11.6164 23.2433L10.2399 23.9114C9.16979 24.4308 7.87883 23.9535 7.39951 22.8624L6.78301 21.4587C6.58266 21.0029 6.19121 20.6447 5.71078 20.4764L4.23 19.9575C3.07857 19.5541 2.4547 18.3207 2.85194 17.1866L3.36279 15.7275C3.52882 15.2536 3.46679 14.7317 3.19302 14.3092L2.34868 13.0044C1.6927 11.9904 1.97371 10.6687 2.97022 10.0028L4.25192 9.1462C4.66816 8.86801 4.92027 8.40366 4.9419 7.90225L5.00844 6.35651C5.06019 5.15545 6.09054 4.1897 7.29235 4.23246L8.83827 4.28747C9.34027 4.30533 9.82019 4.10657 10.1511 3.74339L11.2213 2.62368H10.5213V2.62368ZM15.8071 9.39088L10.5401 14.6579L8.19293 12.3107L7.01442 13.4893L10.5401 17.0149L16.9856 10.5694L15.8071 9.39088Z"
+                            fill="#1D4ED8"
                           />
-                        ) : (
-                          <>
-                            <img
-                              src={replyContext.media[0].media_thumbnail}
-                              alt={replyContext.media[0].media_filename}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                              <IoVideocamOutline className="text-white text-3xl" />
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
+                        </svg>
+                      )}
+                      <span className="text-[14px] text-[#8E8E93] leading-none ml-1">
+                        •
+                      </span>
+                      <span className="text-[14px] text-[#8E8E93]">
+                        {replyToComment?.formatted_time ||
+                          post.formatted_time ||
+                          "just now"}
+                      </span>
+                    </div>
+                    <div className="text-[15px] text-[#8E8E93] mt-0.5">
+                      @{replyContext.user?.username}
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-start justify-between gap-6 mt-4">
+                  <p className="flex-1 text-[16px] text-foreground leading-relaxed whitespace-pre-wrap">
+                    {replyContext.content?.split(" ").map((word, i) =>
+                      word.startsWith("#") || word.startsWith("@") ? (
+                        <span key={i} className="text-[#1D4ED8]">
+                          {word}{" "}
+                        </span>
+                      ) : (
+                        word + " "
+                      ),
+                    )}
+                  </p>
+                </div>
               </div>
+
+              {replyContext.media?.[0] && (
+                <div className="shrink-0 w-[125px] h-[125px] rounded-24 relative border border-border">
+                  {replyContext.media[0].media_type === "image" ? (
+                    <img
+                      src={replyContext.media[0].media_url}
+                      alt={replyContext.media[0].media_filename}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src={replyContext.media[0].media_thumbnail}
+                        alt={replyContext.media[0].media_filename}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <IoVideocamOutline className="text-white text-3xl" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          <div className="flex gap-3">
-            <CustomAvatar
-              src={user?.profile_picture || ""}
-              name={user?.name || ""}
-              className="size-10 border-foreground border-[1.5px]"
-            />
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-white">
-                  {user?.name}
-                </span>
-                <span className="text-xs text-gray-400">@{user?.username}</span>
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              <div className="flex gap-4">
+                <CustomAvatar
+                  src={user?.profile_picture || ""}
+                  name={user?.name || ""}
+                  className="size-12 border-none"
+                />
+                <div className="flex-1 flex flex-col">
+                  <div className="flex flex-col leading-tight pt-1 gap-1">
+                    <span className="font-bold text-[13px] text-foreground">
+                      {user?.name}
+                    </span>
+                    <span className="text-[12px] text-[#8E8E93]">
+                      @{user?.username}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <textarea
+              {/* <textarea
                 ref={textareaRef}
-                className="w-full bg-transparent resize-none text-white text-base placeholder-gray-500 focus:outline-none h-24 mt-2"
-                placeholder="Add a reply..."
+                className="w-full bg-transparent resize-none text-white text-[15px] font-normal placeholder-[#48484A] focus:outline-none min-h-[120px] mt-2"
+                placeholder="Reply to post"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 maxLength={500}
-              />
+              /> */}
+              <div className="relative w-full min-h-[80px] mt-4">
+                {/* Highlight Overlay */}
+                <div
+                  className="absolute inset-x-0 top-0 pointer-events-none text-[15px] font-normal whitespace-pre-wrap break-words p-0 m-0 z-0 text-foreground"
+                  aria-hidden="true"
+                >
+                  {!newComment ? (
+                    <span className="text-[#48484A]">Reply to post</span>
+                  ) : (
+                    newComment.split(/(\s+)/).map((part, i) => {
+                      if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
+                        return <span key={i} className="text-blue-500 font-medium">{part}</span>;
+                      }
+                      return <span key={i} className="text-foreground">{part}</span>;
+                    })
+                  )}
+                  {/* trailing newline fix for accurate height matching */}
+                  {newComment.endsWith('\n') && <br />}
+                </div>
+
+                {/* Actual Input */}
+                <textarea
+                  ref={textareaRef}
+                  value={newComment}
+                  onChange={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+
+                    const val = e.target.value;
+                    const lastChar = val.slice(-1);
+
+                    // Auto trigger modals
+                    if (lastChar === "@") {
+                      setIsMentionsOpen(true);
+                      setNewComment(val.slice(0, -1));
+                      return;
+                    } else if (lastChar === "#") {
+                      setIsHashtagsOpen(true);
+                      setNewComment(val.slice(0, -1));
+                      return;
+                    }
+
+                    setNewComment(val);
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  className="relative w-full h-full min-h-[80px] resize-none bg-transparent text-[15px] font-normal text-transparent caret-foreground outline-none border-none ring-0 focus:ring-0 p-0 m-0 z-10 overflow-hidden"
+                  maxLength={500}
+                  spellCheck={false}
+                />
+              </div>
+            </div>
+            {mediaPreviewUrl && selectedFile && (
+              <div className="relative w-[125px] h-[125px] rounded-24 overflow-hidden bg-black/40 group border-2 mt-6">
+                {selectedFile.type.startsWith("image/") ? (
+                  <img
+                    src={mediaPreviewUrl}
+                    alt="Media preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <video
+                    src={mediaPreviewUrl}
+                    controls
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <button
+                  onClick={handleRemoveMedia}
+                  className="absolute top-2 right-2 bg-transparent border-2 border-red-600 rounded-full p-1 shadow-lg transition-colors z-10"
+                >
+                  <IoClose size={16} className="text-red-600" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Toolbar */}
+          {/* <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-6">
+              <button className="text-[#8E8E93] hover:text-white transition-colors">
+                <Smile size={24} strokeWidth={1.5} />
+              </button>
+              <label
+                className={`transition-colors ${selectedFile ? "cursor-not-allowed opacity-30 text-gray-600" : "cursor-pointer text-[#8E8E93] hover:text-white"}`}
+              >
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  disabled={!!selectedFile}
+                />
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </label>
+              <button className="text-[#8E8E93] hover:text-white transition-colors">
+                <IoLocationSharp size={24} />
+              </button>
+            </div>
+            <span className="text-[15px] text-[#48484A] font-medium">
+              {charCount}/500
+            </span>
+          </div> */}
+          <div className="flex items-center gap-3 pt-1">
+            <label className={`transition-colors ${selectedFile ? "cursor-not-allowed opacity-30 text-gray-500" : "cursor-pointer text-[#8E8E93] hover:text-foreground"}`}>
+              <input type="file" accept="image/*,video/*" className="hidden" ref={fileInputRef} onChange={handleFileChange} disabled={!!selectedFile} />
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              {/* <TbPhoto size={20} /> */}
+            </label>
+            {/* Location */}
+            {/* <div className="cursor-pointer text-[#8E8E93] hover:text-white transition-colors">
+              <IoLocationSharp size={20} />
+            </div> */}
+            <div className="cursor-pointer text-[#8E8E93] hover:text-foreground transition-colors" onClick={handleTagPeopleClick}>
+              <VscMention size={20} />
+            </div>
+            <div
+              className="cursor-pointer text-[#8E8E93] hover:text-foreground transition-colors"
+              onClick={handleHashtagsClick}
+            >
+              <FiHash size={20} />
             </div>
           </div>
         </div>
 
-        <div className="p-4 flex flex-col gap-3">
-          <div className="flex justify-between items-center mb-2 pl-10">
-            <div className="flex justify-between items-center text-gray-400">
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*,video/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="hover:text-white transition"
-                >
-                  <ImageIcon size={20} />
-                </button>
-                <button className="hover:text-white transition">
-                  <MapPin size={20} />
-                </button>
-              </div>
+        {/* Footer actions */}
+        <div className="p-6 pb-8 flex items-center justify-between border-t border-border">
+          <button
+            onClick={() => setIsAudienceDialogOpen(true)}
+            className="flex items-center gap-3 text-white/90 font-bold px-0 py-2 rounded-2xl transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <Users size={22} className="stroke-[2.5]" />
+              <span className="text-[16px] capitalize">
+                {items[0].privacy === "only_me" ? "Only Me" : items[0].privacy}
+              </span>
+              <FaAngleRight
+                size={16}
+                className={
+                  isAudienceDialogOpen
+                    ? "rotate-180 transition-transform opacity-60"
+                    : "transition-transform opacity-60"
+                }
+              />
             </div>
-            <span
-              className={`text-sm ${charCount > 500 ? "text-red-500" : "text-gray-400"
-                }`}
-            >
-              {charCount}/500
-            </span>
-          </div>
-          {mediaPreviewUrl && selectedFile && (
-            <div className="relative w-40 h-40 rounded-lg overflow-hidden mt-4">
-              {selectedFile.type.startsWith("image/") ? (
-                <img
-                  src={mediaPreviewUrl}
-                  alt="Media preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <video
-                  src={mediaPreviewUrl}
-                  controls
-                  className="w-full h-full object-cover"
-                />
-              )}
-              <button
-                onClick={handleRemoveMedia}
-                className="absolute top-2 right-2 bg-gray-800/50 hover:bg-gray-800 p-1 rounded-full text-white transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <div className="flex gap-16">
-              <button
-                onClick={() => handleEmojiClick("👍")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                👍
-              </button>
-              <button
-                onClick={() => handleEmojiClick("❤️")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                ❤️
-              </button>
-              <button
-                onClick={() => handleEmojiClick("👏")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                👏
-              </button>
-              <button
-                onClick={() => handleEmojiClick("😊")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                😊
-              </button>
-              <button
-                onClick={() => handleEmojiClick("😐")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                😐
-              </button>
-              <button
-                onClick={() => handleEmojiClick("🤩")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                🤩
-              </button>
-              <button
-                onClick={() => handleEmojiClick("😢")}
-                className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-              >
-                😢
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-background border-b border-white/6 px-4 py-4">
-            <div className="gap-y-1 flex flex-col">
-              <div
-                onClick={() => setIsAudienceDialogOpen(!isAudienceDialogOpen)}
-                className="flex flex-row justify-between cursor-pointer"
-              >
-                <div className="flex flex-row gap-x-2 items-center">
-                  <div className="bg-accent p-1.5 text-sm rounded-sm w-fit h-fit">
-                    <LiaGlobeAmericasSolid className="size-5" />
-                  </div>
-                  <p className="">Audience</p>
-                </div>
-                <div className="flex items-center gap-x-2">
-                  <span className="text-sm text-muted-foreground capitalize">
-                    {items[0].privacy}
-                  </span>
-                  <IoIosArrowDown
-                    className={`size-5 duration-500 transition-transform ${isAudienceDialogOpen ? "-rotate-180 " : ""
-                      }`}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {isAudienceDialogOpen && (
-            <RadioGroup
-              value={
-                items[0].privacy === "everyone"
-                  ? "default"
-                  : items[0].privacy === "followers"
-                    ? "comfortable"
-                    : "private"
-              }
-              onValueChange={handleAudienceChange}
-              className="flex flex-col gap-y-4 mt-1 ml-10"
-            >
-              <div
-                className="flex justify-between w-full cursor-pointer"
-                onClick={() => handleAudienceChange("everyone")}
-              >
-                <div className="flex flex-col gap-y-1 w-full">
-                  <div className="flex flex-row gap-x-2 items-center justify-between">
-                    <p className="font-semibold">Everyone</p>
-                    <div>
-                      <RadioGroupItem
-                        className="size-5"
-                        value="default"
-                        id="r1"
-                      />
-                      <Label htmlFor="r1" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-light">
-                    Choosing 'Everyone' makes your posts visible to all.
-                  </p>
-                </div>
-              </div>
-              <div
-                className="flex justify-between w-full cursor-pointer"
-                onClick={() => handleAudienceChange("followers")}
-              >
-                <div className="flex flex-col gap-y-1 w-full">
-                  <div className="flex flex-row gap-x-2 items-end justify-between">
-                    <p className="font-semibold">Friends/Followers</p>
-                    <div>
-                      <RadioGroupItem
-                        className="size-5"
-                        value="comfortable"
-                        id="r2"
-                      />
-                      <Label htmlFor="r2" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-light">
-                    Choosing 'Friends/Followers' limits your posts to your
-                    friends or followers.{" "}
-                  </p>
-                </div>
-              </div>
-            </RadioGroup>
-          )}
+          </button>
 
           <button
             onClick={createReplyFunc}
             disabled={isReplyButtonDisabled || isLoading}
-            className={`w-full py-3 rounded-full font-semibold text-white transition-colors duration-200 ${isReplyButtonDisabled || isLoading
-              ? "bg-blue-800 cursor-not-allowed opacity-50"
-              : "bg-blue-600 hover:bg-blue-700"
+            className={`px-12 h-[56px] rounded-full font-bold text-[17px] text-white transition-all shadow-xl shadow-blue-900/10 ${isReplyButtonDisabled || isLoading
+              ? "bg-[#094DB5BF] cursor-not-allowed opacity-50"
+              : "bg-[#102A51] hover:bg-[#153a70]"
               }`}
           >
-            {isLoading ? "Posting..." : "Post Reply"}
+            {isLoading ? "Posting..." : "Reply"}
           </button>
         </div>
+
+        {/* New Audience Selection Overlay */}
+        {isAudienceDialogOpen && (
+          <div className="absolute inset-0 bg-background z-[60] flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
+            <div className="flex items-center justify-between px-8 py-4 border-b border-border">
+              <div className="w-8" /> {/* Spacer */}
+              <h3 className="text-[18px] font-bold text-white">Audience</h3>
+              <button
+                onClick={() => setIsAudienceDialogOpen(false)}
+                className="p-1 hover:bg-white/5 rounded-full transition-colors"
+              >
+                <IoClose className="text-white size-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+              <RadioGroup
+                value={items[0].privacy}
+                onValueChange={handleAudienceChange}
+                className="space-y-4"
+              >
+                {/* Everyone */}
+                <div
+                  className="flex items-center justify-between cursor-pointer group p-4 rounded-2xl hover:bg-white/5 transition-all"
+                  onClick={() => handleAudienceChange("everyone")}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-xl bg-white/5 flex items-center justify-center text-white">
+                      <LiaGlobeAmericasSolid size={24} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white text-[17px]">
+                        Everyone
+                      </span>
+                      <span className="text-[14px] text-[#8E8E93] font-medium leading-tight">
+                        Choosing 'Everyone' makes your <br /> posts visible to
+                        all.
+                      </span>
+                    </div>
+                  </div>
+                  <RadioGroupItem
+                    value="everyone"
+                    id="everyone"
+                    className="size-6 rounded-full border-2 border-[#3A3A3C] data-[state=checked]:border-[#1D4ED8] data-[state=checked]:bg-[#1D4ED8] relative flex items-center justify-center after:content-[''] after:block after:size-2.5 after:rounded-full after:bg-white after:opacity-0 data-[state=checked]:after:opacity-100 transition-all"
+                  />
+                </div>
+
+                {/* Friends / Followers */}
+                <div
+                  className="flex items-center justify-between cursor-pointer group p-4 rounded-2xl hover:bg-white/5 transition-all"
+                  onClick={() => handleAudienceChange("followers")}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-xl bg-white/5 flex items-center justify-center text-white">
+                      <Users size={24} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white text-[17px]">
+                        Friends / Followers
+                      </span>
+                      <span className="text-[14px] text-[#8E8E93] font-medium leading-tight">
+                        Choosing this option limits your <br /> posts to your
+                        friends or followers.
+                      </span>
+                    </div>
+                  </div>
+                  <RadioGroupItem
+                    value="followers"
+                    id="followers"
+                    className="size-6 rounded-full border-2 border-[#3A3A3C] data-[state=checked]:border-[#1D4ED8] data-[state=checked]:bg-[#1D4ED8] relative flex items-center justify-center after:content-[''] after:block after:size-2.5 after:rounded-full after:bg-white after:opacity-0 data-[state=checked]:after:opacity-100 transition-all"
+                  />
+                </div>
+
+                {/* Only Me */}
+                <div
+                  className="flex items-center justify-between cursor-pointer group p-4 rounded-2xl hover:bg-white/5 transition-all"
+                  onClick={() => handleAudienceChange("only_me")}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-xl bg-white/5 flex items-center justify-center text-white">
+                      <Lock size={22} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white text-[17px]">
+                        Only Me
+                      </span>
+                      <span className="text-[14px] text-[#8E8E93] font-medium leading-tight">
+                        Only you can see this post
+                      </span>
+                    </div>
+                  </div>
+                  <RadioGroupItem
+                    value="only_me"
+                    id="only_me"
+                    className="size-6 rounded-full border-2 border-[#3A3A3C] data-[state=checked]:border-[#1D4ED8] data-[state=checked]:bg-[#1D4ED8] relative flex items-center justify-center after:content-[''] after:block after:size-2.5 after:rounded-full after:bg-white after:opacity-0 data-[state=checked]:after:opacity-100 transition-all"
+                  />
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+        )}
+
+        {/* Action Modals */}
+        <MentionsModal
+          open={isMentionsOpen}
+          onClose={() => setIsMentionsOpen(false)}
+          onSelectUser={handleSelectMention}
+        />
+        <HashtagsModal
+          open={isHashtagsOpen}
+          onClose={() => setIsHashtagsOpen(false)}
+          onSelectHashtag={handleSelectHashtag}
+        />
       </DialogContent>
     </Dialog>
   );
 };
 
 export default ReplyModal;
-
-// "use client";
-
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-// } from "components/ui/dialog";
-// import CustomAvatar from "components/ui/custom/custom-avatar";
-// import {
-//   SendHorizonal,
-//   Image as ImageIcon,
-//   MapPin,
-//   Smile,
-//   X,
-// } from "lucide-react";
-// import { useState, useMemo, useRef, useCallback } from "react";
-// import { IoVideocamOutline } from "react-icons/io5";
-// import { toast } from "sonner";
-// import { createPost } from "api/post";
-
-// // Import the custom hook
-// import { usePostUploader } from "src/hooks/usePostUploader";
-// import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
-// import { Label } from "@radix-ui/react-label";
-// import { LiaGlobeAmericasSolid } from "react-icons/lia";
-// import { IoIosArrowDown } from "react-icons/io";
-
-// interface ReplyModalProps {
-//   isOpen: boolean;
-//   onClose: (open: boolean) => void;
-//   replyingTo: IPost | IPostComment | null;
-//   newComment: string;
-//   setNewComment: (comment: string) => void;
-//   user: IUser;
-//   onPostReply: (mediaFile: File | null) => void;
-//     onPostReplySuccess: () => void;
-//   //   postCommentLoading: boolean;
-// }
-
-// interface DraftItem {
-//   id: string;
-//   caption: string;
-//   media: File[];
-//   address: string;
-//   latitude: string;
-//   longitude: string;
-//   privacy: PrivacyType;
-// }
-
-// const ReplyModal = ({
-//   isOpen,
-//   onClose,
-//   replyingTo,
-//   newComment,
-//   setNewComment,
-//   user,
-//   onPostReply,
-//   onPostReplySuccess,
-// }: ReplyModalProps) => {
-//   const charCount = newComment.length;
-//   const isReplyButtonDisabled = useMemo(() => {
-//     return !newComment.trim() || charCount > 500;
-//   }, [newComment, charCount]);
-
-//   const textareaRef = useRef<HTMLTextAreaElement>(null);
-//   const fileInputRef = useRef<HTMLInputElement>(null);
-
-//   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-//   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
-//   const [isAudienceDialogOpen, setIsAudienceDialogOpen] =
-//     useState<boolean>(false);
-
-//   const [items, setItems] = useState<DraftItem[]>([
-//     {
-//       id: String(Date.now()),
-//       caption: "",
-//       media: [],
-//       address: "",
-//       latitude: "",
-//       longitude: "",
-//       privacy: "everyone",
-//     },
-//   ]);
-
-//   // Use the new hook to manage post upload logic
-//   const { isPosting, uploadProgress, uploadFileAndGetInfo } = usePostUploader();
-
-//   const createReplyFunc = async () => {
-//     try {
-//       let uploadedFiles: { key: string; mime_type: string }[] = [];
-//       if (selectedFile) {
-//         const fileId = `${replyingTo?.uuid}-${Date.now()}`;
-//         // Use the hook's function to handle the upload
-//         const fileInfo = await uploadFileAndGetInfo(selectedFile, fileId);
-//         uploadedFiles.push(fileInfo);
-//       }
-
-//       const replyPayload = {
-//         media: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-//         caption: newComment,
-//         parent_post_id: replyingTo?.uuid,
-//         address: null,
-//         latitude: null,
-//         longitude: null,
-//         privacy: "everyone",
-//       };
-
-//       const result = await createPost({ posts: [replyPayload] });
-
-//       if (result?.status && result?.data) {
-//         toast.success("Reply created successfully");
-//         onPostReplySuccess();
-//       } else {
-//         toast.error(result?.message || "Failed to create reply");
-//       }
-//     } catch (error) {
-//       toast.error("Failed to create reply");
-//       console.error("Reply creation error:", error);
-//     }
-//   };
-
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = e.target.files?.[0] || null;
-//     if (file) {
-//       setSelectedFile(file);
-//       setMediaPreviewUrl(URL.createObjectURL(file));
-//     }
-//   };
-
-//   const handleRemoveMedia = () => {
-//     setSelectedFile(null);
-//     setMediaPreviewUrl(null);
-//     if (fileInputRef.current) {
-//       fileInputRef.current.value = "";
-//     }
-//   };
-
-//   const handleAudienceChange = (value: string) => {
-//     setItems((prev) =>
-//       prev.map((item, index) =>
-//         index === 0 ? { ...item, privacy: value as PrivacyType } : item
-//       )
-//     );
-//     setIsAudienceDialogOpen(false);
-//   };
-
-//   const handleEmojiClick = (emoji: string) => {
-//     const textarea = textareaRef.current;
-//     if (textarea) {
-//       const cursorPosition = textarea.selectionStart;
-//       const newText =
-//         newComment.substring(0, cursorPosition) +
-//         emoji +
-//         newComment.substring(cursorPosition);
-//       setNewComment(newText);
-//       setTimeout(() => {
-//         textarea.focus();
-//         textarea.setSelectionRange(
-//           cursorPosition + emoji.length,
-//           cursorPosition + emoji.length
-//         );
-//       }, 0);
-//     }
-//   };
-
-//   return (
-//     <Dialog open={isOpen} onOpenChange={onClose}>
-//       <DialogContent className="sm:max-w-xl md:max-w-2xl bg-background p-0 rounded-2xl border-gray-800 flex flex-col max-h-[90vh] overflow-hidden">
-//         <DialogHeader className="p-4 relative">
-//           <DialogTitle className="text-center text-white text-lg font-semibold">
-//           </DialogTitle>
-//         </DialogHeader>
-
-//         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-//           <p className="text-sm text-gray-400 py-4 italic">
-//             Replying to{" "}
-//             <span className="font-semibold text text-[#094DB5]">
-//               @{replyingTo?.user?.username}
-//             </span>
-//           </p>
-//           {replyingTo && (
-//             <div className="flex flex-col gap-3 mb-4 border-b border-gray-800 pb-4">
-//               <div className="flex gap-3">
-//                 <CustomAvatar
-//                   src={replyingTo?.user?.profile_picture || ""}
-//                   name={replyingTo?.user?.name || ""}
-//                   className="size-10 border-foreground border-[1.5px]"
-//                 />
-//                 <div className="flex-1">
-//                   <div className="flex items-center gap-2">
-//                     <span className="font-semibold text-sm text-white">
-//                       {replyingTo?.user?.name}
-//                     </span>
-//                     <span className="text-xs text-gray-400">
-//                       @{replyingTo?.user?.username} ·{" "}
-//                       {replyingTo?.formatted_time || "just now"}
-//                     </span>
-//                   </div>
-//                   <div className="flex items-start justify-between gap-2 mt-2">
-//                     <p className="flex-1 text-sm text-gray-200">
-//                       {replyingTo.caption}
-//                     </p>
-//                     {replyingTo?.media?.[0] && (
-//                       <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden relative">
-//                         {replyingTo.media[0].media_type === "image" ? (
-//                           <img
-//                             src={replyingTo.media[0].media_url}
-//                             alt={replyingTo.media[0].media_filename}
-//                             className="w-full h-full object-cover"
-//                           />
-//                         ) : (
-//                           <>
-//                             <img
-//                               src={replyingTo.media[0].media_thumbnail}
-//                               alt={replyingTo.media[0].media_filename}
-//                               className="w-full h-full object-cover"
-//                             />
-//                             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-//                               <IoVideocamOutline className="text-white text-3xl" />
-//                             </div>
-//                           </>
-//                         )}
-//                       </div>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           )}
-
-//           <div className="flex gap-3">
-//             <CustomAvatar
-//               src={user?.profile_picture || ""}
-//               name={user?.name || ""}
-//               className="size-10 border-foreground border-[1.5px]"
-//             />
-//             <div className="flex-1 flex flex-col">
-//               <div className="flex items-center gap-2">
-//                 <span className="font-semibold text-sm text-white">
-//                   {user?.name}
-//                 </span>
-//                 <span className="text-xs text-gray-400">@{user?.username}</span>
-//               </div>
-//               <textarea
-//                 ref={textareaRef}
-//                 className="w-full bg-transparent resize-none text-white text-base placeholder-gray-500 focus:outline-none h-24 mt-2"
-//                 placeholder="Add a reply..."
-//                 value={newComment}
-//                 onChange={(e) => setNewComment(e.target.value)}
-//                 maxLength={500}
-//               />
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="p-4 flex flex-col gap-3">
-//           <div className="flex justify-between items-center mb-2 pl-10">
-//             <div className="flex justify-between items-center text-gray-400">
-//               <div className="flex items-center gap-4">
-//                 <input
-//                   type="file"
-//                   ref={fileInputRef}
-//                   onChange={handleFileChange}
-//                   accept="image/*,video/*"
-//                   className="hidden"
-//                 />
-//                 <button
-//                   onClick={() => fileInputRef.current?.click()}
-//                   className="hover:text-white transition"
-//                 >
-//                   <ImageIcon size={20} />
-//                 </button>
-//                 <button className="hover:text-white transition">
-//                   <MapPin size={20} />
-//                 </button>
-//               </div>
-//             </div>
-//             <span
-//               className={`text-sm ${
-//                 charCount > 500 ? "text-red-500" : "text-gray-400"
-//               }`}
-//             >
-//               {charCount}/500
-//             </span>
-//           </div>
-//           {mediaPreviewUrl && selectedFile && (
-//             <div className="relative w-40 h-40 rounded-lg overflow-hidden mt-4">
-//               {selectedFile.type.startsWith("image/") ? (
-//                 <img
-//                   src={mediaPreviewUrl}
-//                   alt="Media preview"
-//                   className="w-full h-full object-cover"
-//                 />
-//               ) : (
-//                 <video
-//                   src={mediaPreviewUrl}
-//                   controls
-//                   className="w-full h-full object-cover"
-//                 />
-//               )}
-//               <button
-//                 onClick={handleRemoveMedia}
-//                 className="absolute top-2 right-2 bg-gray-800/50 hover:bg-gray-800 p-1 rounded-full text-white transition-colors"
-//               >
-//                 <X size={16} />
-//               </button>
-//             </div>
-//           )}
-//           <div className="flex items-center justify-between">
-//             <div className="flex gap-16">
-//               <button
-//                 onClick={() => handleEmojiClick("👍")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 👍
-//               </button>
-//               <button
-//                 onClick={() => handleEmojiClick("❤️")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 ❤️
-//               </button>
-//               <button
-//                 onClick={() => handleEmojiClick("👏")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 👏
-//               </button>
-//               <button
-//                 onClick={() => handleEmojiClick("😊")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 😊
-//               </button>
-//               <button
-//                 onClick={() => handleEmojiClick("😐")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 😐
-//               </button>
-//               <button
-//                 onClick={() => handleEmojiClick("🤩")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 🤩
-//               </button>
-//               <button
-//                 onClick={() => handleEmojiClick("😢")}
-//                 className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//               >
-//                 😢
-//               </button>
-//             </div>
-//           </div>
-
-//           <div className="bg-background border-b border-white/6 px-4 py-4">
-//             <div className="gap-y-1 flex flex-col">
-//               <div
-//                 onClick={() => setIsAudienceDialogOpen(!isAudienceDialogOpen)}
-//                 className="flex flex-row justify-between cursor-pointer"
-//               >
-//                 <div className="flex flex-row gap-x-2 items-center">
-//                   <div className="bg-accent p-1.5 text-sm rounded-sm w-fit h-fit">
-//                     <LiaGlobeAmericasSolid className="size-5" />
-//                   </div>
-//                   <p className="">Audience</p>
-//                 </div>
-//                 <div className="flex items-center gap-x-2">
-//                   <span className="text-sm text-muted-foreground capitalize">
-//                     {items[0].privacy}
-//                   </span>
-//                   <IoIosArrowDown
-//                     className={`size-5 duration-500 transition-transform ${
-//                       isAudienceDialogOpen ? "-rotate-180 " : ""
-//                     }`}
-//                   />
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-
-//           {isAudienceDialogOpen && (
-//             <RadioGroup
-//               value={
-//                 items[0].privacy === "everyone"
-//                   ? "default"
-//                   : items[0].privacy === "followers"
-//                   ? "comfortable"
-//                   : "private"
-//               }
-//               onValueChange={handleAudienceChange}
-//               className="flex flex-col gap-y-4 mt-1 ml-10"
-//             >
-//               <div
-//                 className="flex justify-between w-full cursor-pointer"
-//                 onClick={() => handleAudienceChange("everyone")}
-//               >
-//                 <div className="flex flex-col gap-y-1 w-full">
-//                   <div className="flex flex-row gap-x-2 items-center justify-between">
-//                     <p className="font-semibold">Everyone</p>
-//                     <div>
-//                       <RadioGroupItem
-//                         className="size-5"
-//                         value="default"
-//                         id="r1"
-//                       />
-//                       <Label htmlFor="r1" />
-//                     </div>
-//                   </div>
-//                   <p className="text-sm font-light">
-//                     Choosing 'Everyone' makes your posts visible to all.
-//                   </p>
-//                 </div>
-//               </div>
-//               <div
-//                 className="flex justify-between w-full cursor-pointer"
-//                 onClick={() => handleAudienceChange("followers")}
-//               >
-//                 <div className="flex flex-col gap-y-1 w-full">
-//                   <div className="flex flex-row gap-x-2 items-end justify-between">
-//                     <p className="font-semibold">Friends/Followers</p>
-//                     <div>
-//                       <RadioGroupItem
-//                         className="size-5"
-//                         value="comfortable"
-//                         id="r2"
-//                       />
-//                       <Label htmlFor="r2" />
-//                     </div>
-//                   </div>
-//                   <p className="text-sm font-light">
-//                     Choosing 'Friends/Followers' limits your posts to your
-//                     friends or followers.{" "}
-//                   </p>
-//                 </div>
-//               </div>
-//             </RadioGroup>
-//           )}
-
-//           <button
-//             onClick={createReplyFunc}
-//             disabled={isReplyButtonDisabled || isPosting}
-//             className={`w-full py-3 rounded-full font-semibold text-white transition-colors duration-200 ${
-//               isReplyButtonDisabled || isPosting
-//                 ? "bg-blue-800 cursor-not-allowed opacity-50"
-//                 : "bg-blue-600 hover:bg-blue-700"
-//             }`}
-//           >
-//             {isPosting ? "Posting..." : "Post Reply"}
-//           </button>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// };
-
-// export default ReplyModal;
-
-// "use client";
-
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-// } from "components/ui/dialog";
-// import CustomAvatar from "components/ui/custom/custom-avatar";
-// import {
-//   SendHorizonal,
-//   Image as ImageIcon,
-//   MapPin,
-//   Smile,
-//   X,
-// } from "lucide-react"; // Import new icons
-// import { useState, useMemo, useRef } from "react"; // Import useState and useMemo
-// import { IoVideocamOutline } from "react-icons/io5";
-
-// interface ReplyModalProps {
-//   isOpen: boolean;
-//   onClose: (open: boolean) => void;
-//   replyingTo: IPost | IPostComment | null;
-//   newComment: string;
-//   setNewComment: (comment: string) => void;
-//   user: IUser; // The current logged-in user
-//   onPostReply: () => void;
-//   //   postCommentLoading: boolean; // Added for loading state
-// }
-
-// const MAX_COMMENT_LENGTH = 500;
-// const emojiList = ["👍", "❤️", "👏", "😊", "😐", "🤩", "😢"];
-
-// const ReplyToPostModal = ({
-//   isOpen,
-//   onClose,
-//   replyingTo,
-//   newComment,
-//   setNewComment,
-//   user,
-//   onPostReply,
-// }: //   postCommentLoading,
-// ReplyModalProps) => {
-//   const charCount = newComment.length;
-//   const isReplyButtonDisabled = useMemo(() => {
-//     return !newComment.trim() || charCount > MAX_COMMENT_LENGTH;
-//   }, [newComment, charCount]);
-
-//   // Use a ref to get a reference to the textarea element
-//   const textareaRef = useRef<HTMLTextAreaElement>(null);
-//   // Ref for the file input element
-//   const fileInputRef = useRef<HTMLInputElement>(null);
-
-//   // State for media selection and preview
-//   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-//   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
-//   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
-
-//   const handleEmojiClick = (emoji: string) => {
-//     const textarea = textareaRef.current;
-//     if (textarea) {
-//       // Get the cursor position
-//       const cursorPosition = textarea.selectionStart;
-
-//       // Create the new comment string by inserting the emoji
-//       const newText =
-//         newComment.substring(0, cursorPosition) +
-//         emoji +
-//         newComment.substring(cursorPosition);
-//       setNewComment(newText);
-
-//       // Focus the textarea and set the new cursor position
-//       // We use a small timeout to ensure the DOM has updated
-//       setTimeout(() => {
-//         textarea.focus();
-//         textarea.setSelectionRange(
-//           cursorPosition + emoji.length,
-//           cursorPosition + emoji.length
-//         );
-//       }, 0);
-//     }
-//   };
-
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = e.target.files?.[0] || null;
-//     if (file) {
-//       setSelectedFile(file);
-//       setMediaPreviewUrl(URL.createObjectURL(file));
-//     }
-//   };
-
-//   const handleRemoveMedia = () => {
-//     setSelectedFile(null);
-//     setMediaPreviewUrl(null);
-//     if (fileInputRef.current) {
-//       fileInputRef.current.value = "";
-//     }
-//   };
-
-//   return (
-//     <Dialog open={isOpen} onOpenChange={onClose}>
-//       <DialogContent className="sm:max-w-xl md:max-w-2xl bg-background p-0 rounded-2xl border-gray-800 flex flex-col max-h-[90vh] overflow-hidden">
-//         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-//           <p className="text-sm text-gray-400 py-4 mt-5 italic">
-//             Replying to{" "}
-//             <span className="font-semibold text text-[#094DB5]">
-//               @{replyingTo?.user?.username}
-//             </span>
-//           </p>
-//           {/* Original Post/Comment being replied to */}
-//           {replyingTo && (
-//             <div className="flex gap-3 mb-4 border-b border-gray-800 pb-4">
-//               <CustomAvatar
-//                 src={replyingTo?.user?.profile_picture || ""}
-//                 name={replyingTo?.user?.name || ""}
-//                 className="size-10 border-foreground border-[1.5px]"
-//               />
-//               <div className="flex-1">
-//                 <div className="flex items-center gap-2">
-//                   <span className="font-semibold text-sm text-white">
-//                     {replyingTo?.user?.name}
-//                   </span>
-//                   {/* Add verified badge if applicable */}
-//                   {/* {replyingTo?.user?.is_verified && <CheckCircle className="w-4 h-4 text-blue-500" />} */}
-//                   <span className="text-xs text-gray-400">
-//                     · {replyingTo?.formatted_time}
-//                   </span>
-//                 </div>
-//                 {/* Content of the post */}
-//                 <div className="flex items-start justify-between gap-2 mt-2">
-//                   {/* Caption */}
-//                   <p className="flex-1 text-sm text-gray-200">
-//                     {replyingTo.caption}
-//                   </p>
-
-//                   {/* Media (Showing only the first item) */}
-//                   {replyingTo?.media?.[0] && (
-//                     <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden relative">
-//                       {replyingTo.media[0].media_type === "image" ? (
-//                         <img
-//                           src={replyingTo.media[0].media_url}
-//                           alt={replyingTo.media[0].media_filename}
-//                           className="w-full h-full object-cover"
-//                         />
-//                       ) : (
-//                         <>
-//                           <img
-//                             src={replyingTo.media[0].media_thumbnail}
-//                             alt={replyingTo.media[0].media_filename}
-//                             className="w-full h-full object-cover"
-//                           />
-//                           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-//                             <IoVideocamOutline className="text-white text-3xl" />
-//                           </div>
-//                         </>
-//                       )}
-//                     </div>
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Current User's Reply Input Area */}
-//           <div className="flex gap-3">
-//             <CustomAvatar
-//               src={user?.profile_picture || ""}
-//               name={user?.name || ""}
-//               className="size-10 border-foreground border-[1.5px]"
-//             />
-//             <div className="flex-1 flex flex-col">
-//               <div className="flex items-center gap-2">
-//                 <span className="font-semibold text-sm text-white">
-//                   {user?.name}
-//                 </span>
-//                 <span className="text-xs text-gray-400">@{user?.username}</span>
-//               </div>
-//               <textarea
-//                 ref={textareaRef}
-//                 className="w-full bg-transparent resize-none text-white text-sm placeholder-gray-500 focus:outline-none h-24 mt-2"
-//                 placeholder="Add a reply..."
-//                 value={newComment}
-//                 onChange={(e) => setNewComment(e.target.value)}
-//                 maxLength={MAX_COMMENT_LENGTH}
-//               />
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Action Buttons and Audience Selector */}
-//         <div className="p-4 flex flex-col gap-3">
-//           <div className="flex justify-between items-center text-gray-400">
-//             <div className="flex items-center gap-4">
-//               {/* This is the hidden file input */}
-//               <input
-//                 type="file"
-//                 ref={fileInputRef}
-//                 onChange={handleFileChange}
-//                 accept="image/*,video/*"
-//                 className="hidden"
-//               />
-//               {/* This button triggers the file input */}
-//               <button
-//                 onClick={() => fileInputRef.current?.click()}
-//                 className="hover:text-white transition"
-//               >
-//                 <ImageIcon size={20} />
-//               </button>
-//               <button className="hover:text-white transition">
-//                 <MapPin size={20} />
-//               </button>
-//             </div>
-//             <span
-//               className={`text-sm ${
-//                 charCount > MAX_COMMENT_LENGTH
-//                   ? "text-red-500"
-//                   : "text-gray-400"
-//               }`}
-//             >
-//               {charCount}/{MAX_COMMENT_LENGTH}
-//             </span>
-//           </div>
-
-//           {/* Media Preview Section */}
-//           {mediaPreviewUrl && selectedFile && (
-//             <div className="relative w-40 h-40 rounded-lg overflow-hidden mt-4">
-//               {selectedFile.type.startsWith("image/") ? (
-//                 <img
-//                   src={mediaPreviewUrl}
-//                   alt="Media preview"
-//                   className="w-full h-full object-cover"
-//                 />
-//               ) : (
-//                 <video
-//                   src={mediaPreviewUrl}
-//                   className="w-full h-full object-cover"
-//                 />
-//               )}
-//               <button
-//                 onClick={handleRemoveMedia}
-//                 className="absolute top-2 right-2 bg-gray-800/50 hover:bg-gray-800 p-1 rounded-full text-white transition-colors"
-//               >
-//                 <X size={16} />
-//               </button>
-//             </div>
-//           )}
-//           {/* <div className="flex items-center justify-between">
-//             <div className="flex gap-6 text-gray-400">
-//               <button className="hover:text-white transition">
-//                 <ImageIcon size={20} />
-//               </button>
-//               <button className="hover:text-white transition">
-//                 <MapPin size={20} />
-//               </button>
-//             </div>
-//             <span
-//               className={`text-sm ${
-//                 charCount > MAX_COMMENT_LENGTH
-//                   ? "text-red-500"
-//                   : "text-gray-400"
-//               }`}
-//             >
-//               {charCount}/{MAX_COMMENT_LENGTH}
-//             </span>
-//           </div> */}
-
-//           <div className="flex items-center justify-between">
-//             {/* The emoji buttons */}
-//             <div className="flex gap-16">
-//               {emojiList.map((emoji) => (
-//                 <button
-//                   key={emoji}
-//                   onClick={() => handleEmojiClick(emoji)}
-//                   className="text-lg hover:bg-gray-800 p-2 rounded-md transition-colors duration-200"
-//                 >
-//                   {emoji}
-//                 </button>
-//               ))}
-//             </div>
-//           </div>
-
-//           <div className="flex items-center justify-between text-gray-400 text-sm">
-//             <div className="flex items-center gap-2">
-//               {/* Audience Icon */}
-//               <svg
-//                 xmlns="http://www.w3.org/2000/svg"
-//                 width="20"
-//                 height="20"
-//                 viewBox="0 0 24 24"
-//                 fill="none"
-//                 stroke="currentColor"
-//                 strokeWidth="2"
-//                 strokeLinecap="round"
-//                 strokeLinejoin="round"
-//                 className="lucide lucide-users"
-//               >
-//                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-//                 <circle cx="9" cy="7" r="4" />
-//                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-//                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-//               </svg>
-//               Audience
-//             </div>
-//             <button className="flex items-center gap-1 text-blue-400 font-semibold">
-//               Everyone
-//               <svg
-//                 xmlns="http://www.w3.org/2000/svg"
-//                 width="16"
-//                 height="16"
-//                 viewBox="0 0 24 24"
-//                 fill="none"
-//                 stroke="currentColor"
-//                 strokeWidth="2"
-//                 strokeLinecap="round"
-//                 strokeLinejoin="round"
-//                 className="lucide lucide-chevron-right"
-//               >
-//                 <path d="m9 18 6-6-6-6" />
-//               </svg>
-//             </button>
-//           </div>
-
-//           <button
-//             onClick={onPostReply}
-//             disabled={isReplyButtonDisabled}
-//             className={`w-full py-3 rounded-full font-semibold text-white transition-colors duration-200 ${
-//               isReplyButtonDisabled
-//                 ? "bg-blue-800 cursor-not-allowed opacity-50"
-//                 : "bg-blue-600 hover:bg-blue-700"
-//             }`}
-//           >
-//             {"Post Reply"}
-//           </button>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// };
-
-// export default ReplyToPostModal;

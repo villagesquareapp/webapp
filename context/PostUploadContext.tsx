@@ -30,6 +30,7 @@ interface PostUploadContextType {
     uploadProgress: Record<string, UploadProgress>;
     uploadFileAndGetInfo: (file: File, fileId: string) => Promise<{ key: string; mime_type: string }>;
     createPostFunc: (payloadPosts: any[]) => Promise<any>;
+    startBackgroundUpload: (fn: () => Promise<void>) => void;
     retryPost: () => void;
     cancelUpload: () => void;
     overallProgress: number;
@@ -258,7 +259,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                     throw new Error("Chunked upload failed");
                 }
                 return {
-                    key: completeResponse.data.Key,
+                    key: completeResponse.data.Key || completeResponse.data.key || completeResponse.data.url || completeResponse.data.Location,
                     mime_type: file.type,
                 };
             }
@@ -305,6 +306,21 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
         []
     );
 
+    const startBackgroundUpload = useCallback((fn: () => Promise<void>) => {
+        setStatus("uploading");
+        fn()
+            .then(() => {
+                setStatus("success");
+                setTimeout(() => {
+                    setUploadProgress({});
+                    setStatus("idle");
+                }, 2000);
+            })
+            .catch(() => {
+                setStatus("error");
+            });
+    }, []);
+
     const retryPost = useCallback(() => {
         if (lastPostPayload) {
             createPostFunc(lastPostPayload).catch(err => {
@@ -320,6 +336,7 @@ export const PostUploadProvider = ({ children }: { children: React.ReactNode }) 
                 uploadProgress,
                 uploadFileAndGetInfo,
                 createPostFunc,
+                startBackgroundUpload,
                 retryPost,
                 cancelUpload,
                 overallProgress

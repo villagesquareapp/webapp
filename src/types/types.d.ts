@@ -15,7 +15,7 @@ interface INewComment {
   parent_id?: string;
 }
 
-type PrivacyType = "everyone" | "followers" | "private";
+type PrivacyType = "everyone" | "followers" | "only_me" | "private" | string;
 
 interface IFileUploadCompleteBodyPart {
   partNumber: string;
@@ -122,13 +122,32 @@ interface IUser {
     is_self: boolean;
     is_following: boolean;
     is_followed_by: boolean;
-  }
+  };
   token: string;
   access_token?: string;
   refresh_token?: string;
   provider?: string;
   provider_id?: string;
   provider_token?: string;
+}
+
+interface IUserProfileRelationship {
+  is_self: boolean;
+  is_following: boolean;
+  is_followed_by: boolean;
+  is_blocking: boolean;
+  is_blocked_by: boolean;
+}
+
+interface IUserProfileResponse extends IUser {
+  followers: number;
+  following: number;
+  posts: number;
+  total_likes: number;
+  is_following: boolean;
+  is_blocked: boolean;
+  date_joined: string;
+  relationship: IUserProfileRelationship;
 }
 
 interface IRegisterResponse extends IUser {}
@@ -188,8 +207,7 @@ interface IFeaturedLivestream {
   };
 }
 
-interface IFeaturedLivestreamResponse
-  extends IPaginatedResponse<IFeaturedLivestream> {}
+interface IFeaturedLivestreamResponse extends IPaginatedResponse<IFeaturedLivestream> {}
 
 interface IStartLivestream {
   title: string;
@@ -229,8 +247,7 @@ interface IStartLivestreamData {
   deleted_at: string | null;
 }
 
-interface IStreamLivestreamResponse
-  extends IPaginatedResponse<IStartLivestreamData> {}
+interface IStreamLivestreamResponse extends IPaginatedResponse<IStartLivestreamData> {}
 
 interface ILivestreamDetails {
   uuid: string;
@@ -330,49 +347,66 @@ interface IVflix {
   uuid: string;
   user_id: string;
   caption: string;
-  parent_post_id: null;
-  root_post_id: string;
-  quote_post_id: null;
-  thread_id: number;
-  address: string;
-  latitude: number;
-  longitude: number;
+  parent_post_id?: null | string;
+  root_post_id?: string;
+  quote_post_id?: null | string;
+  thread_id?: number;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   privacy: string;
-  status: string;
+  status?: string;
+  content_type?: string;
+  audio?: any;
   views_count: string;
   shares_count: string;
   likes_count: string;
-  impressions: string;
-  unique_views: string;
-  clicks: number;
-  engagements: number;
-  additional_metadata: null;
+  impressions?: string;
+  unique_views?: string;
+  clicks?: number;
+  engagements?: number;
+  additional_metadata?: null | any;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   user: IPostUser;
-  media: IPostMedia;
-  replies_count: string | undefined;
+  media: IPostMedia | IPostMedia[];
+  replies_count?: string;
   comments_count: string | number;
+  gifts_count?: string;
+  language?: string | null;
+  culture_tag?: string | null;
+  series_id?: string | null;
+  episode_number?: string | null;
   formatted_date: string;
   is_liked: boolean;
   is_followed: boolean;
+  is_followed_by?: boolean;
   is_giftable: boolean;
+  _source?: string;
+  allow_comments?: boolean;
+  mentions?: IMention[];
 }
 
 interface IPostMedia {
   uuid: string;
-  post_id: string;
-  media_filename: string;
+  post_id?: string;
+  media_filename?: string;
   media_url: string;
   transcoded_media_url: string;
   media_type: "image" | "video";
-  media_size: string;
-  media_thumbnail: string;
+  media_size?: string;
+  thumbnail: string;
+  media_thumbnail?: string;
   is_transcode_complete: boolean;
-  media_duration: number | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
+  duration?: number | null;
+  media_duration?: number | null;
+  width?: number | null;
+  height?: number | null;
+  aspect_ratio?: number | null;
+  position?: number;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }
 
 interface IPostUser {
@@ -385,12 +419,22 @@ interface IPostUser {
   checkmark_verification_status: boolean;
   premium_verification_status: boolean;
   online: boolean;
+  verification_badge?: string;
+}
+
+interface IMention {
+  username: string;
+  uuid: string;
 }
 
 interface IPost {
   uuid: string;
   user_id: string;
   caption: string;
+  parent_post_id: string | null;
+  root_post_id: string;
+  quote_post_id: string | null;
+  thread_id: string | null;
   address: string | null;
   latitude: string | null;
   longitude: string | null;
@@ -400,14 +444,19 @@ interface IPost {
   shares_count: string;
   likes_count: string;
   replies_count: string | number;
+  impressions: string;
   additional_metadata: any;
   created_at: Date;
   updated_at: Date;
+  deleted_at: Date | null;
   user: IPostUser;
   media: IPostMedia[];
+  thumbnail?: string;
+  is_thread_continuation?: boolean;
   formatted_time: string;
   is_saved: boolean;
   is_liked: boolean;
+  mentions?: IMention[];
 }
 
 interface IPaginatedResponse<T> {
@@ -451,7 +500,7 @@ interface IPostComment {
   formatted_time: string;
   is_saved: boolean;
   is_liked: boolean;
-  is_thread_continuation: boolean;
+  is_thread_continuation?: boolean;
 }
 
 interface IGetVflixComments {
@@ -521,8 +570,7 @@ interface INewVflixCommentResponse {
   reply_count: number;
 }
 
-interface IGetVflixCommentResponse
-  extends IPaginatedResponse<IGetVflixComments> {}
+interface IGetVflixCommentResponse extends IPaginatedResponse<IGetVflixComments> {}
 
 interface INewPostResponse extends IPost {}
 

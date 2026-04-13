@@ -1,11 +1,26 @@
+"use client";
+
 import Image from "next/image";
+import { useSidebar } from "components/ui/sidebar";
+import { useTheme } from "next-themes";
+import Link from "next/link";
 
 const VsCustomLogo = () => {
+  const { state } = useSidebar();
+  const { resolvedTheme } = useTheme();
+  const isCollapsed = state === "collapsed";
+
+  const logoSrc = resolvedTheme === "light" ? "/images/VillageSquare-ash.png" : "/images/VillageSquare.png";
+
   return (
-    <div className="flex items-center gap-x-2 justify-center">
-      <Image src="/images/vs_logo.png" alt="logo" width={32} height={32} />
+    <div className={`flex items-center gap-x-2 justify-start ml-5`}>
+      <Link href="/home">
+        <img src="/images/vs_logo.png" alt="logo" width={32} height={32} className="shrink-0" />
+      </Link>
       {/* <p className="!font-[Ogonek Unicase] text-2xl">VillageSquare</p> */}
-      <Image src="/images/VillageSquare.png" alt="VS-Logo" width={250} height={150} className="hidden md:block" />
+      {!isCollapsed && (
+        <img key={logoSrc} src={logoSrc} alt="VS-Logo" className="hidden md:block w-[210px] h-auto z-[1000] shrink-0 object-contain" />
+      )}
     </div>
   );
 };

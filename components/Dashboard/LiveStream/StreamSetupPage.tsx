@@ -43,7 +43,7 @@ const StreamSetupPage = ({
       setPendingLivestreamData(JSON.parse(storedData));
     } else {
       // No pending data, redirect back
-      router.push("/dashboard/live-streams");
+      router.push("/live-streams");
     }
   }, [router]);
 
@@ -180,7 +180,7 @@ const StreamSetupPage = ({
 
         // Redirect to the actual stream page
         // toast.success("Redirecting to live stream...");
-        router.push(`/dashboard/live-streams/${response.data.uuid}`);
+        router.push(`/live-streams/${response.data.uuid}`);
       } else {
         toast.error(response.message || "Failed to start livestream");
       }

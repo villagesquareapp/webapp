@@ -1,9 +1,8 @@
 "use client";
 
-import {
-  getPostComments,
-} from "app/api/post";
+import { getPostComments } from "app/api/post";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Separator } from "components/ui/separator";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
 import NotFoundResult from "../Reusable/NotFoundResult";
@@ -14,10 +13,14 @@ import PostDetails from "./PostDetails";
 import ReplyToPostModal from "./ReplyToPostModal";
 import PostSkeleton from "./PostSkeleton";
 import ProgressBar from "./ProgressBar";
+import { Button } from "components/ui/button";
+import { useDataCache } from "context/DataCacheContext";
 
 type TabType = "explore" | "connections";
 
 const SocialPost = ({ user }: { user: IUser }) => {
+  const { getCachedData, setCachedData, isCacheValid } = useDataCache();
+
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isPostLoading, setIsPostLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
@@ -28,18 +31,53 @@ const SocialPost = ({ user }: { user: IUser }) => {
   const [currentVideoPlaying, setCurrentVideoPlaying] = useState<string>("");
   const [isPlayingVideo, setIsPlayingVideo] = useState<boolean>(false);
 
-  const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
-
   const [isReplyModalOpen, setIsReplyModalOpen] = useState<boolean>(false);
   const [postForReplyModal, setPostForReplyModal] = useState<IPost | null>(
-    null
+    null,
   );
   const [replyToReply, setReplyToReply] = useState<IPostComment | null>(null);
+  const [newReply, setNewReply] = useState<IPostComment | null>(null);
 
   const [replies, setReplies] = useState<IPostComment[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
 
   const scrollRef = useRef(0);
+
+  // Restore scroll position when returning from post details
+  useEffect(() => {
+    const saved = sessionStorage.getItem("social-scroll-pos");
+    if (saved) {
+      const scrollContainer = document.getElementById("social-main-scroll");
+      if (scrollContainer) {
+        // Use requestAnimationFrame to wait for the DOM to be ready
+        requestAnimationFrame(() => {
+          scrollContainer.scrollTop = Number(saved);
+          sessionStorage.removeItem("social-scroll-pos");
+        });
+      }
+    }
+  }, []);
+
+  // Check cache on mount
+  useEffect(() => {
+    const cacheKey = `social-posts-${activeTab}`;
+    const cachedPosts = getCachedData<IPost[]>(cacheKey);
+
+    if (cachedPosts && isCacheValid(cacheKey, 5)) {
+      // Use cached data if it's less than 5 minutes old
+      setPosts(cachedPosts);
+      setIsPostLoading(false);
+
+      // Also restore page count so infinite scroll continues from right page
+      const cachedPage = getCachedData<number>(`social-page-${activeTab}`);
+      if (cachedPage) {
+        setPage(cachedPage);
+      }
+    } else {
+      // Fetch fresh data if cache is invalid or doesn't exist
+      fetchPosts(1, activeTab);
+    }
+  }, [activeTab]);
 
   const likeUnlikePost = useCallback(async (postId: string) => {
     setPosts((prev) =>
@@ -52,13 +90,11 @@ const SocialPost = ({ user }: { user: IUser }) => {
               : (Number(post.likes_count) + 1).toString(),
             is_liked: !post.is_liked,
           }
-          : post
-      )
+          : post,
+      ),
     );
 
     try {
-      // const formData = new FormData();
-      // const result = await likeOrUnlikePost(postId, formData);
       const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
       const result = await res.json();
 
@@ -73,8 +109,8 @@ const SocialPost = ({ user }: { user: IUser }) => {
                   : (Number(post.likes_count) - 1).toString(),
                 is_liked: !post.is_liked,
               }
-              : post
-          )
+              : post,
+          ),
         );
         toast.error(result?.message || "Failed to update like");
       }
@@ -89,16 +125,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
                 : (Number(post.likes_count) - 1).toString(),
               is_liked: !post.is_liked,
             }
-            : post
-        )
+            : post,
+        ),
       );
       console.error("Error liking post:", error);
     }
   }, []);
 
-  const saveUnsavePost = async (postId: string) => {
-    // const formData = new FormData();
-    // const result = await saveOrUnsavePost(postId, formData);
+  const saveUnsavePost = useCallback(async (postId: string) => {
     try {
       const res = await fetch(`/api/posts/${postId}/save`, { method: "POST" });
       const result = await res.json();
@@ -106,8 +140,10 @@ const SocialPost = ({ user }: { user: IUser }) => {
       if (result?.status) {
         setPosts((prev) =>
           prev.map((post) =>
-            post.uuid === postId ? { ...post, is_saved: !post?.is_saved } : post
-          )
+            post.uuid === postId
+              ? { ...post, is_saved: !post?.is_saved }
+              : post,
+          ),
         );
       } else {
         toast.error(result?.message || "Failed to save post");
@@ -116,7 +152,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       console.error("Error saving post", e);
       toast.error("Failed to save post");
     }
-  };
+  }, []);
 
   const fetchPosts = async (pageNumber: number, tab: TabType = activeTab) => {
     try {
@@ -164,9 +200,20 @@ const SocialPost = ({ user }: { user: IUser }) => {
       if (Array.isArray(newPosts)) {
         if (pageNumber === 1) {
           setPosts(newPosts);
+          // Cache the first page of posts
+          const cacheKey = `social-posts-${tab}`;
+          setCachedData(cacheKey, newPosts);
         } else {
-          setPosts((prev) => [...prev, ...newPosts]);
+          setPosts((prev) => {
+            const updated = [...prev, ...newPosts];
+            // Cache ALL loaded posts so scroll restoration works
+            const cacheKey = `social-posts-${tab}`;
+            setCachedData(cacheKey, updated);
+            return updated;
+          });
         }
+        // Cache current page number
+        setCachedData(`social-page-${tab}`, pageNumber);
 
         const totalPosts = postsData?.total || 0;
         const currentTotal =
@@ -185,8 +232,55 @@ const SocialPost = ({ user }: { user: IUser }) => {
   };
 
   useEffect(() => {
-    fetchPosts(page, activeTab);
-  }, [page, activeTab]);
+    // Only fetch if we don't have cached data or if we're loading more pages
+    if (page > 1) {
+      fetchPosts(page, activeTab);
+    }
+  }, [page]);
+
+  // Scroll Restoration
+  const { getScrollPosition, setScrollPosition } = useDataCache();
+  const hasRestoredScrollRef = useRef(false);
+
+  // Continuously save scroll position via scroll listener
+  useEffect(() => {
+    const scrollContainer = document.getElementById("social-main-scroll");
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setScrollPosition(`social-scroll-${activeTab}`, scrollContainer.scrollTop);
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, [activeTab, setScrollPosition]);
+
+  // Restore scroll when posts are loaded from cache
+  useEffect(() => {
+    if (!isPostLoading && posts.length > 0 && !hasRestoredScrollRef.current) {
+      const scrollContainer = document.getElementById("social-main-scroll");
+      if (scrollContainer) {
+        const savedPos = getScrollPosition(`social-scroll-${activeTab}`);
+        if (savedPos > 0) {
+          // Use requestAnimationFrame to ensure DOM has rendered
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              scrollContainer.scrollTo({ top: savedPos, behavior: "instant" });
+              hasRestoredScrollRef.current = true;
+            }, 50);
+          });
+        } else {
+          hasRestoredScrollRef.current = true;
+        }
+      }
+    }
+  }, [isPostLoading, posts.length, activeTab, getScrollPosition]);
+
+  useEffect(() => {
+    hasRestoredScrollRef.current = false; // Reset when tab changes
+  }, [activeTab]);
 
   const observerTarget = useRef(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -194,9 +288,6 @@ const SocialPost = ({ user }: { user: IUser }) => {
   useEffect(() => {
     if (observerRef.current) {
       observerRef.current.disconnect();
-    }
-
-    if (!selectedPost) {
     }
 
     const observer = new IntersectionObserver(
@@ -214,7 +305,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
         root: null,
         rootMargin: "100px",
         threshold: 0.1,
-      }
+      },
     );
     observerRef.current = observer;
 
@@ -226,7 +317,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       observer.disconnect();
       observerRef.current = null;
     };
-  }, [hasMore, isPostLoading, loadingMorePost, selectedPost]);
+  }, [hasMore, isPostLoading, loadingMorePost]);
 
   const videoElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const visibilityMapRef = useRef<Map<string, number>>(new Map());
@@ -264,7 +355,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           }
         }
       },
-      { threshold: thresholds }
+      { threshold: thresholds },
     );
 
     return () => {
@@ -288,21 +379,27 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, []);
 
   const handleOpenPost = (post: IPost) => {
-    setIsPlayingVideo(false);
-    setCurrentVideoPlaying("");
-    scrollRef.current = window.scrollY;
-    setSelectedPost(post);
-    setPostForReplyModal(null);
-    setIsReplyModalOpen(false);
-    setReplyToReply(null);
+    // Navigate via router instead of state (handled in EachSocialPost/RightSidebar)
+    // Legacy state logic removed
   };
 
+  useEffect(() => {
+    // Custom event listener removed as we navigate to standalone page
+  }, []);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchPosts(1, activeTab);
+    };
+
+    window.addEventListener("refreshSocialPosts", handleRefresh);
+    return () => {
+      window.removeEventListener("refreshSocialPosts", handleRefresh);
+    };
+  }, [activeTab]);
+
   const handleBack = () => {
-    setSelectedPost(null);
-    setReplyToReply(null);
-    setTimeout(() => {
-      window.scrollTo(0, scrollRef.current);
-    }, 0);
+    // Navigation back handled by browser history
   };
 
   const handleOpenReplyModal = (post: IPost, replyToComment?: IPostComment) => {
@@ -329,129 +426,102 @@ const SocialPost = ({ user }: { user: IUser }) => {
             replies_count: (Number(p.replies_count) + 1).toString(),
             replies: p.caption ? [...p.caption, newReply] : [newReply],
           }
-          : p
-      )
+          : p,
+      ),
     );
-    if (selectedPost && selectedPost.uuid === postForReplyModal?.uuid) {
-      setSelectedPost(prev => prev ? {
-        ...prev,
-        replies_count: (Number(prev.replies_count) + 1).toString(),
-      } : null);
-    }
+    setNewReply(newReply); // Pass to PostDetails
     handleCloseReplyModal();
   };
 
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
     setPage(1);
     setPosts([]);
     setHasMore(true);
-  };
+  }, []);
 
   return (
     <>
-    {/* <ProgressBar progress={50} /> */}
-      {selectedPost ? (
-        <PostDetails
-          post={selectedPost}
-          user={user}
-          setPosts={setPosts}
-          onBack={handleBack}
-          likeUnlikePost={likeUnlikePost}
-          saveOrUnsavePost={saveUnsavePost}
-          currentVideoPlaying={currentVideoPlaying}
-          setCurrentVideoPlaying={setCurrentVideoPlaying}
-          isPlayingVideo={isPlayingVideo}
-          setIsPlayingVideo={setIsPlayingVideo}
-          onOpenReplyModal={handleOpenReplyModal}
-          onReplySuccess={handleReplySuccess}
-        />
-      ) : (
-        <>
-          <AddPost
-            user={user}
-            onRefreshPosts={() => fetchPosts(1, activeTab)}
-          />
+      {/* <ProgressBar progress={50} /> */}
+      <div className="flex flex-col gap-y-2 w-full">
+        {/* Header with tabs - Responsive */}
+        <div className="flex justify-between items-center z-40 sticky -top-4 py-3 bg-background">
+          <div className="flex bg-transparent gap-x-3 w-fit">
+            {/* Explore Button */}
+            <button
+              onClick={() => handleTabChange("explore")}
+              className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "explore"
+                ? "border-[#31373f] dark:border-transparent bg-[#31373f] text-white dark:bg-foreground dark:text-background"
+                : "border-gray-200 dark:border-border bg-transparent text-muted-foreground hover:text-[#31373f] dark:hover:text-[#31373f]"
+                }`}
+            >
+              Explore
+            </button>
 
-          <div className="flex flex-col gap-y-2">
-            {/* Header with tabs - Responsive */}
-            <div className="border-b-[1.5px] flex justify-between sticky top-16 -mt-4 bg-background z-10 md:static md:top-0">
-              <div className="flex flex-row w-full md:w-auto">
-                <button
-                  onClick={() => handleTabChange("explore")}
-                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "explore"
-                    ? "text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  Explore
-                </button>
-                <button
-                  onClick={() => handleTabChange("connections")}
-                  className={`flex-1 md:flex-none px-6 py-3 text-sm font-medium transition-colors ${activeTab === "connections"
-                    ? "text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  Connections
-                </button>
-              </div>
-              <div className="hidden md:flex items-center">
-                <SocialPostFilterDialog />
-              </div>
-            </div>
+            {/* Connections Button */}
+            <button
+              onClick={() => handleTabChange("connections")}
+              className={`px-8 py-2 text-sm font-normal rounded-xl border transition-all duration-300 ${activeTab === "connections"
+                ? "border-[#31373f] dark:border-transparent bg-[#31373f] text-white dark:bg-foreground dark:text-background"
+                : "border-gray-200 dark:border-border bg-transparent text-muted-foreground hover:text-[#31373f] dark:hover:text-[#31373f]"
+                }`}
+            >
+              Connections
+            </button>
+          </div>
+        </div>
 
-            {isPostLoading && (
-              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <PostSkeleton key={index} />
-                ))}
-              </div>
-            )}
+        {/* Top divider line pulled fully to the edges over the main column padding */}
+        <Separator className="hidden md:block opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none mb-0" />
 
-            {!isPostLoading && posts?.length > 0 && (
-              <div className="border-0 md:border md:rounded-xl flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
-                {posts.map((post) => (
-                  <EachSocialPost
-                    key={post.uuid}
-                    user={user}
-                    setPosts={setPosts}
-                    likeUnlikePost={likeUnlikePost}
-                    saveUnsavePost={saveUnsavePost}
-                    post={post}
-                    currentVideoPlaying={currentVideoPlaying}
-                    setCurrentVideoPlaying={setCurrentVideoPlaying}
-                    isPlayingVideo={isPlayingVideo}
-                    setIsPlayingVideo={setIsPlayingVideo}
-                    onOpenPostDetails={() => handleOpenPost(post)}
-                    onOpenReplyModal={() => handleOpenReplyModal(post)}
-                  />
-                ))}
+        {isPostLoading && (
+          <div className="flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <PostSkeleton key={index} />
+            ))}
+          </div>
+        )}
 
-                <div ref={observerTarget} style={{ height: "10px" }} />
-                {loadingMorePost && (
-                  <div className="py-4 text-center">
-                    <LoadingSpinner />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!isPostLoading && posts?.length === 0 && (
-              <NotFoundResult
-                content={<span>No posts available at the moment.</span>}
+        {!isPostLoading && posts?.length > 0 && (
+          <div className="flex flex-col gap-y-0 md:gap-y-4 py-0 md:py-4">
+            {posts.map((post) => (
+              <EachSocialPost
+                key={post.uuid}
+                user={user}
+                setPosts={setPosts}
+                likeUnlikePost={likeUnlikePost}
+                saveUnsavePost={saveUnsavePost}
+                post={post}
+                currentVideoPlaying={currentVideoPlaying}
+                setCurrentVideoPlaying={setCurrentVideoPlaying}
+                isPlayingVideo={isPlayingVideo}
+                setIsPlayingVideo={setIsPlayingVideo}
+                onOpenPostDetails={() => handleOpenPost(post)}
+                onOpenReplyModal={() => handleOpenReplyModal(post)}
               />
-            )}
+            ))}
 
-            {!isPostLoading && !hasMore && posts?.length > 0 && (
-              <div className="text-center py-4 text-muted-foreground">
-                No more posts to load
+            <div ref={observerTarget} style={{ height: "10px" }} />
+            {loadingMorePost && (
+              <div className="py-4 text-center">
+                <LoadingSpinner />
               </div>
             )}
           </div>
-        </>
-      )}
+        )}
 
+        {!isPostLoading && posts?.length === 0 && (
+          <NotFoundResult
+            content={<span>No posts available at the moment.</span>}
+          />
+        )}
+
+        {!isPostLoading && !hasMore && posts?.length > 0 && (
+          <div className="text-center py-4 text-muted-foreground">
+            No more posts to load
+          </div>
+        )}
+      </div>
       {isReplyModalOpen && postForReplyModal && (
         <ReplyToPostModal
           open={isReplyModalOpen}
@@ -461,7 +531,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           setPosts={setPosts}
           replyToComment={replyToReply}
           onReplySuccess={handleReplySuccess}
-          isInPostDetails={!!selectedPost}
+          isInPostDetails={false}
         />
       )}
     </>

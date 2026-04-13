@@ -167,7 +167,7 @@ export function Register({ className, ...props }: RegisterProps) {
   //   try {
   //     const result = await signIn("google", {
   //       redirect: false,
-  //       callbackUrl: "/dashboard/social",
+  //       callbackUrl: "/home",
   //     });
   //     if (result?.error) {
   //       toast.error(result.error);
@@ -185,7 +185,7 @@ export function Register({ className, ...props }: RegisterProps) {
       setIsGoogleAuthLoading(true);
   
       const result = await signIn("google", {
-        callbackUrl: "/dashboard/social", 
+        callbackUrl: "/home", 
         redirect: false,
       });
   
@@ -216,7 +216,7 @@ export function Register({ className, ...props }: RegisterProps) {
         if (!response?.status) throw new Error(response?.message);
 
         toast.success('Login successful!');
-        router.replace('/dashboard/social');
+        router.replace('/home');
       } catch (err: any) {
         toast.error(err.message || 'Social login failed');
         router.replace('/auth/login');

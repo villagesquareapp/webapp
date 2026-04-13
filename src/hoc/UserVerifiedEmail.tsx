@@ -8,7 +8,7 @@ export function UserVerifiedEmail<P extends object>(WrappedComponent: ComponentT
     const session = await getServerSession(authOptions);
 
     if (session?.user?.verified_status) {
-      redirect("/dashboard/social");
+      redirect("/home");
     }
 
     return <WrappedComponent {...props} />;

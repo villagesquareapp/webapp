@@ -6,7 +6,10 @@ import SocialPostDetails from "./SocialPostDetails";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useCallback, useEffect, useState } from "react";
 import { likeOrUnlikePost, saveOrUnsavePost } from "api/post";
-import { getPostCommentsClient, likeOrUnlikePostClient } from "app/api/post.client";
+import {
+  getPostCommentsClient,
+  likeOrUnlikePostClient,
+} from "app/api/post.client";
 import Image from "next/image";
 import PostVideo from "./PostVideo";
 import {
@@ -26,6 +29,9 @@ import PostHeader from "./PostHeader";
 import { HiMiniCheckBadge } from "react-icons/hi2";
 import ReplyToPostModal from "./ReplyToPostModal";
 import { BsDot } from "react-icons/bs";
+import { PostText } from "./PostText";
+import { Separator } from "components/ui/separator";
+import { useRouter } from "next/navigation";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -38,7 +44,7 @@ interface PostDetailsProps {
   isPlayingVideo: boolean;
   setIsPlayingVideo: (playing: boolean) => void;
   initialMediaIndex?: number;
-  onOpenReplyModal: (post: IPost, replyToComment?: IPostComment) => void;
+  onOpenReplyModal: (post: IPost | IPostComment, replyToComment?: IPostComment) => void;
   onReplySuccess: (newReply: IPostComment) => void;
   newReply?: IPostComment | null;
   // isReplyModalOpen: boolean;
@@ -61,6 +67,8 @@ const PostDetails = ({
   onReplySuccess,
   newReply,
 }: PostDetailsProps) => {
+  const router = useRouter();
+
   const {
     replyingTo,
     setReplyingTo,
@@ -101,9 +109,9 @@ const PostDetails = ({
   };
 
   const handleLocalReplySuccess = (newReply: IPostComment) => {
-    setReplies(prev => [newReply, ...prev]);
+    setReplies((prev) => [newReply, ...prev]);
 
-    setLocalPost(prev => ({
+    setLocalPost((prev) => ({
       ...prev,
       replies_count: (Number(prev.replies_count) + 1).toString(),
     }));
@@ -147,8 +155,6 @@ const PostDetails = ({
     handleFetchReplies(1);
   }, [post.uuid, post.replies_count]);
 
-
-
   const handleLikeReply = useCallback(async (replyId: string) => {
     setReplies((prev) =>
       prev.map((reply) =>
@@ -160,12 +166,11 @@ const PostDetails = ({
               : (Number(reply.likes_count) + 1).toString(),
             is_liked: !reply.is_liked,
           }
-          : reply
-      )
+          : reply,
+      ),
     );
 
     try {
-
       if (!user?.token) return;
       const result = await likeOrUnlikePostClient(replyId, user.token);
 
@@ -180,8 +185,8 @@ const PostDetails = ({
                   : (Number(reply.likes_count) - 1).toString(),
                 is_liked: !reply.is_liked,
               }
-              : reply
-          )
+              : reply,
+          ),
         );
         toast.error(result?.message || "Failed to update like");
       }
@@ -197,8 +202,8 @@ const PostDetails = ({
                 : (Number(reply.likes_count) - 1).toString(),
               is_liked: !reply.is_liked,
             }
-            : reply
-        )
+            : reply,
+        ),
       );
       console.error("Error liking reply:", error);
     }
@@ -222,17 +227,19 @@ const PostDetails = ({
     <div className="flex flex-col w-full max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2 py-2">
-        <button
-          onClick={onBack}
-          className="p-2 rounded-full hover:bg-gray-800 transition"
-        >
-          <ArrowLeft className="w-5 h-5 text-white" />
+        <button onClick={onBack} className="">
+          <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
-        <h2 className="text-lg font-semibold text-center">Post Details</h2>
+        <h2 className="text-lg font-semibold text-center md:pl-3">
+          Post Details
+        </h2>
       </div>
 
+      {/* Top Border above Social Post Details */}
+      <Separator className="opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+
       {/* Main Post (Fixed) */}
-      <div className="border border-gray-800 rounded-md">
+      <div className="">
         <div className="pt-2">
           <SocialPostDetails
             post={localPost}
@@ -248,8 +255,10 @@ const PostDetails = ({
           />
         </div>
 
+        <Separator className="opacity-80 md:mt-4 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+
         {/* Reply box */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
+        <div className="flex items-center gap-3 py-3">
           <CustomAvatar
             src={user?.profile_picture || ""}
             name={post?.user?.name || ""}
@@ -258,52 +267,58 @@ const PostDetails = ({
           <div className="flex-1">
             <button
               onClick={() => onOpenReplyModal(post)}
-              className="w-full text-left text-sm italic text-gray-400 bg-gray-900 rounded-full px-4 py-2"
+              className="w-full text-left text-sm text-gray-400 bg-transparent rounded-full"
             >
               Reply to post
             </button>
           </div>
         </div>
+        <Separator className="opacity-80 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
         {/* Comments */}
         {isLoadingReplies ? (
           <LoadingSpinner />
         ) : replies.length > 0 ? (
-          <div className="flex flex-col divide-y divide-gray-800">
-            {replies.map((reply) => {
+          <div className="flex flex-col">
+            {/* <Separator className="opacity-40 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" /> */}
+
+            {replies.map((reply, index) => {
               return (
-                <div key={reply.uuid} className="flex gap-3 p-4">
-                  <CustomAvatar
-                    src={reply.user?.profile_picture || ""}
-                    name={reply.user?.name || ""}
-                    className="size-8 border-foreground border-[1.5px]"
-                  />
-                  <div className="flex-1">
-                    <div className="flex flex-col">
-                      <div className="flex flex-row items-center max-w-80">
-                        <span className="font-semibold text-sm text-white">
-                          {reply.user?.name}
-                        </span>
-                        {!!reply?.user?.verified_status && (
-                          <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
-                        )}
-                        <span>
-                          <BsDot />
-                        </span>
-                        <p className="text-xs text-muted-foreground">
-                          {reply.formatted_time}{" "}
-                        </p>
+                <div className="">
+                  <div key={reply.uuid} className="flex gap-3 pt-3">
+                    <CustomAvatar
+                      src={reply.user?.profile_picture || ""}
+                      name={reply.user?.name || ""}
+                      className="size-8 border-foreground border-[1.5px]"
+                    />
+                    <div className="flex-1">
+                      <div className="flex flex-col">
+                        <div className="flex flex-row items-center max-w-80">
+                          <span
+                            className="font-semibold text-sm text-foreground cursor-pointer hover:underline"
+                            onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}`)}
+                          >
+                            {reply.user?.name}
+                          </span>
+                          {!!reply?.user?.verified_status && (
+                            <HiMiniCheckBadge className="size-4 text-green-600 ml-1" />
+                          )}
+                          <span>
+                            <BsDot />
+                          </span>
+                          <p className="text-xs text-muted-foreground">
+                            {reply.formatted_time}{" "}
+                          </p>
+                        </div>
+                        <div
+                          className="text-xs text-gray-400 cursor-pointer hover:underline w-fit"
+                          onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}`)}
+                        >
+                          @{reply.user?.username}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-400">
-                        @{reply.user?.username}
-                      </div>
-                    </div>
-                    {/* <PostHeader post={reply} /> */}
+                      {/* <PostHeader post={reply} /> */}
 
-                    <p className="text-sm text-gray-200 mt-2">
-                      {reply.caption}
-                    </p>
-
-                    {reply.media?.length > 0 && (
+                      {/* {reply.media?.length > 0 && (
                       <div className="mt-2">
                         <Carousel
                           onSelect={(api) => {
@@ -366,19 +381,30 @@ const PostDetails = ({
                           <CarouselNext />
                         </Carousel>
                       </div>
-                    )}
-
-                    <ReplyPostActionButtons
-                      setPosts={setPosts}
-                      likeUnlikePost={handleLikeReply}
-                      saveUnsavePost={saveOrUnsavePost}
-                      reply={reply}
-                      onOpenReplyModal={() => onOpenReplyModal(reply)}
-                    />
+                    )} */}
+                    </div>
                   </div>
+                  {/* <p className="text-sm text-gray-200 -mt-2 px-4">{reply.caption}</p> */}
+                  <div className="my-3">
+                    <PostText text={reply?.caption} />
+                  </div>
+                  <ReplyPostActionButtons
+                    setPosts={setPosts}
+                    likeUnlikePost={handleLikeReply}
+                    saveUnsavePost={saveOrUnsavePost}
+                    reply={reply}
+                    onOpenReplyModal={() => onOpenReplyModal(reply)}
+                  />
+                  {/* Internal divider for all replies except the bottom one which is handled outside */}
+                  {index < replies.length - 1 && (
+                    <Separator className="mt-2 mb-2 opacity-80 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
+                  )}
                 </div>
               );
             })}
+
+            {/* Bottom Border under last reply */}
+            <Separator className="mt-2 opacity-80 -ml-4 lg:-ml-6 w-[calc(100%+32px)] lg:w-[calc(100%+48px)] max-w-none" />
           </div>
         ) : (
           <div className="py-6">

@@ -12,7 +12,7 @@ export const getNotifications = async (page: number) => {
     })
 
     const response = await apiGet<INotificationsResponse>(
-        `notifications?${params.toString()}`,
+        `app/notifications?${params.toString()}`,
         token
     );
     return response;
@@ -24,7 +24,7 @@ export const readAllNotifications = async () => {
     const token = await getToken()
 
     const response = await apiPost(
-        `/notifications/read-all`,
+        `app/notifications/read-all`,
         {},
         token
     );

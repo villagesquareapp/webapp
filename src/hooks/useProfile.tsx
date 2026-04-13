@@ -1,0 +1,45 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { getProfile } from "api/user";
+import { toast } from "sonner";
+
+export const useProfile = (userIdOrUsername: string) => {
+    const [profile, setProfile] = useState<IUserProfileResponse | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchProfile = useCallback(async () => {
+        if (!userIdOrUsername) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getProfile(userIdOrUsername);
+            if (response?.status && response.data) {
+                setProfile(response.data);
+            } else {
+                const errorMsg = response?.message || "Failed to fetch profile";
+                setError(errorMsg);
+                toast.error(errorMsg);
+            }
+        } catch (err: any) {
+            console.error("Error fetching user profile:", err);
+            const errorMsg = err.message || "An error occurred while fetching the profile";
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setLoading(false);
+        }
+    }, [userIdOrUsername]);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
+
+    return {
+        profile,
+        loading,
+        error,
+        refetch: fetchProfile,
+    };
+};

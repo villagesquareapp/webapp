@@ -212,6 +212,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover";
 import { Separator } from "components/ui/separator";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { getNotifications, readAllNotifications } from "api/notification";
+import { useRouter } from "next/navigation";
+
+const LAST_READ_KEY = "notifications_last_read_at";
 
 const Notification = () => {
   const [open, setOpen] = useState(false);
@@ -220,10 +223,14 @@ const Notification = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const router = useRouter();
 
   // Mark notifications as read when opened
   useEffect(() => {
     if (open) {
+      setUnreadCount(0);
+      localStorage.setItem(LAST_READ_KEY, new Date().toISOString());
       readAllNotifications().catch((error) => {
         console.error("Error marking notifications as read:", error);
       });
@@ -241,6 +248,27 @@ const Notification = () => {
         setNotifications((prev) =>
           pageNumber === 1 ? newNotifications : [...prev, ...newNotifications]
         );
+
+        if (pageNumber === 1 && !open) {
+          // If the API returns an explicit unread_count, use it
+          const apiUnread = (response.data as any).unread_count;
+          if (apiUnread != null) {
+            setUnreadCount(apiUnread);
+          } else {
+            // Fall back: count notifications newer than last read timestamp
+            const lastReadAt = localStorage.getItem(LAST_READ_KEY);
+            if (!lastReadAt) {
+              setUnreadCount(newNotifications.length);
+            } else {
+              const lastReadTime = new Date(lastReadAt).getTime();
+              const unread = newNotifications.filter((n) => {
+                const notifTime = n.time ? new Date(n.time).getTime() : 0;
+                return notifTime > lastReadTime;
+              }).length;
+              setUnreadCount(unread);
+            }
+          }
+        }
 
         const totalNotifications = response.data.total || 0;
         const currentTotal = (pageNumber - 1) * 15 + newNotifications.length;
@@ -286,19 +314,11 @@ const Notification = () => {
   const groupedNotifications = useMemo(() => {
     const groups: Record<string, INotifications[]> = {};
 
-    notifications
-      .filter(
-        (n) =>
-          n.subject?.name ||
-          n.description ||
-          n.object?.title ||
-          n.notification_type
-      ) // Skip empty ones
-      .forEach((notif) => {
-        const dateKey = notif.date || "Unknown Date";
-        if (!groups[dateKey]) groups[dateKey] = [];
-        groups[dateKey].push(notif);
-      });
+    notifications.forEach((notif) => {
+      const dateKey = notif.date || "Unknown Date";
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(notif);
+    });
 
     return groups;
   }, [notifications]);
@@ -306,26 +326,30 @@ const Notification = () => {
   const notificationsCount = notifications.length;
 
   const formatDateLabel = (date: string) => {
-    if (!date) return "";
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    const notifDate = new Date(date).toDateString();
+    if (!date || date === "Unknown Date") return "Earlier";
+    try {
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      const notifDate = new Date(date).toDateString();
 
-    if (notifDate === today) return "Today";
-    if (notifDate === yesterday) return "Yesterday";
-    return date;
+      if (notifDate === today) return "Today";
+      if (notifDate === yesterday) return "Yesterday";
+      return date;
+    } catch (e) {
+      return date;
+    }
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger>
         <div className="relative">
-          {notificationsCount > 0 && (
-            <div className="bg-red-500 text-xs h-5 w-5 absolute -top-1 right-0 rounded-full flex items-center justify-center text-white">
-              {notificationsCount}
+          {unreadCount > 0 && (
+            <div className="bg-blue-500 text-xs h-4 w-[18px] absolute -top-1 right-0 rounded-full flex items-center justify-center text-white">
+              {unreadCount > 99 ? '99+' : unreadCount}
             </div>
           )}
-          <FaBell className="text-foreground size-7 cursor-pointer" />
+          <FaBell className="text-[#31373f] dark:text-foreground size-7 cursor-pointer" />
         </div>
       </PopoverTrigger>
 
@@ -349,64 +373,82 @@ const Notification = () => {
           {Object.entries(groupedNotifications).map(([date, notifs]) => (
             <div key={date}>
               {/* Date heading */}
-              <div className="px-4 py-2 bg-muted/10">
+              <div className="px-4 py-2 bg-background">
                 <p className="text-sm font-medium text-muted-foreground">
                   {formatDateLabel(date)}
                 </p>
               </div>
 
               {/* Notification items */}
-              {notifs.map((notification, index) => (
-                <div key={index}>
-                  <div className="px-4 py-2 hover:bg-muted/50 transition">
-                    <div className="flex flex-row items-center gap-x-3">
-                      {notification.subject?.icon ? (
-                        <CustomAvatar
-                          src={notification.subject.icon}
-                          name={notification.subject.name}
-                          className="size-9"
-                        />
-                      ) : (
-                        <CustomAvatar
-                          src="https://cdn-assets.villagesquare.io/profile_pictures/default_user.png"
-                          name={notification.subject?.name || "?"}
-                          className="size-9"
-                        />
-                      )}
+              {notifs.map((notification, index) => {
+                const handleNotificationClick = () => {
+                  setOpen(false);
+                  if (notification.service_id) {
+                    router.push(`/posts/${notification.service_id}`);
+                  }
+                };
 
-                      <div className="flex-1">
-                        <div className="text-sm leading-tight">
-                          {notification.subject?.name && (
-                            <span className="font-medium">
-                              {notification.subject.name}{" "}
-                            </span>
-                          )}
-                          {notification.notification_type === 'post_reply' ? <span className="text-muted-foreground">
-                            {notification.description || "There's a reply on your post."}
-                          </span> : <span className="text-muted-foreground">
-                            {notification.description}
-                          </span>}
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {notification.time_ago} ago
-                        </span>
-                      </div>
-
-                      {notification.object?.thumbnail && (
-                        <div className="size-12 relative rounded-md overflow-hidden">
-                          <Image
-                            src={notification.object.thumbnail}
-                            alt="notification thumbnail"
-                            fill
-                            className="object-cover"
+                return (
+                  <div key={index}>
+                    <div
+                      className="px-4 py-2 bg-background hover:bg-background/50 transition cursor-pointer"
+                      onClick={handleNotificationClick}
+                    >
+                      <div className="flex flex-row items-center gap-x-3">
+                        {notification.subject?.icon ? (
+                          <CustomAvatar
+                            src={notification.subject.icon}
+                            name={notification.subject.name}
+                            className="size-9"
                           />
+                        ) : (
+                          <CustomAvatar
+                            src="https://cdn-assets.villagesquare.io/profile_pictures/default_user.png"
+                            name={notification.subject?.name || "?"}
+                            className="size-9"
+                          />
+                        )}
+
+                        <div className="flex-1">
+                          <div className="text-sm leading-tight">
+                            {notification.subject?.name ? (
+                              <span className="font-medium">
+                                {notification.subject.name}{" "}
+                              </span>
+                            ) : (
+                              <span className="font-medium">Someone </span>
+                            )}
+                            {notification.notification_type === 'post_reply' ? (
+                              <span className="text-muted-foreground">
+                                {notification.description || "replied to your post."}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                {notification.description || "interacted with your post."}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {notification.time_ago || "Just now"} ago
+                          </span>
                         </div>
-                      )}
+
+                        {notification.object?.thumbnail && (
+                          <div className="size-12 relative rounded-md overflow-hidden">
+                            <Image
+                              src={notification.object.thumbnail}
+                              alt="notification thumbnail"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <Separator className="w-full" />
                   </div>
-                  <Separator className="w-full" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))}
 

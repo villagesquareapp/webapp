@@ -1,6 +1,7 @@
 "use client";
 
 import CustomAvatar from "components/ui/custom/custom-avatar";
+import Link from "next/link";
 import VsCustomLogo from "components/ui/custom/vs-custom-logo";
 import { useState } from "react";
 import { IoClose, IoSearch } from "react-icons/io5";
@@ -11,33 +12,46 @@ import { PopoverContent } from "@radix-ui/react-popover";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "components/ui/button";
 import { SidebarTrigger } from "components/ui/sidebar";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
 
 const DashboardNavbar = () => {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const user = session?.user;
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   function getInitials(name: string) {
     return name
       .split(" ")
       .filter(Boolean)
-      .map(word => word[0]?.toUpperCase())
+      .map((word) => word[0]?.toUpperCase())
       .slice(0, 2)
-      .join("")
+      .join("");
   }
 
   return (
-    <div className="flex fixed w-full h-16 z-50 border-b bg-background items-center">
-      <div className="w-auto flex items-center pl-2 md:pl-8 md:w-[280px] gap-x-2">
-        <div className="md:hidden">
+    <div className="relative flex h-16 z-50 bg-background items-center justify-center top-0 shrink-0 after:fixed after:top-16 after:left-0 after:right-0 after:border-b after:border-border pointer-events-none after:pointer-events-none">
+      <div className="flex w-full items-center h-full pointer-events-auto">
+        <div className="md:hidden mr-4 shrink-0 pl-4">
           <SidebarTrigger />
         </div>
-        <VsCustomLogo />
-      </div>
-      <div className="flex-1 flex items-center justify-center relative px-2 md:px-0">
-        <div className="w-full max-w-[800px] flex items-center justify-center">
-          <div className="w-full md:w-[500px] lg:w-[700px] mx-auto relative">
+
+        {/* Center Search Bar */}
+        <div
+          className={
+            pathname === "/vflix" || pathname.startsWith("/vflix/")
+              ? "flex-1 max-w-[35rem] lg:ml-[17rem] lg:mr-[4rem] mx-4"
+              : pathname.startsWith("/settings")
+                ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
+                : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
+          }
+        >
+          <div className="relative w-full">
+            <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
             <input
               type="search"
               placeholder="Search"
@@ -49,10 +63,9 @@ const DashboardNavbar = () => {
                   setIsSearchFocused(false);
                 }
               }}
-              className="bg-accent h-10 w-full placeholder:text-foreground pl-4 pr-12 font-medium rounded-lg !outline-none !border-none !ring-0 text-sm"
+              className="bg-[#1717191A] dark:bg-[#232325] h-10 w-full placeholder:text-muted-foreground pl-12 pr-4 font-medium rounded-full !outline-none !border-none !ring-0 text-sm text-foreground"
             />
-            <IoSearch className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-foreground pointer-events-none" />
-            {searchValue.length > 0 && isSearchFocused && (
+            {/* {searchValue.length > 0 && isSearchFocused && (
               <div className="search-results absolute left-0 top-[52px] w-full bg-background rounded-lg border shadow-lg z-50">
                 <div className="w-full h-fit relative p-4" tabIndex={-1}>
                   <div className="flex justify-between">
@@ -62,7 +75,7 @@ const DashboardNavbar = () => {
                     </div>
                   </div>
                   <div className="flex flex-col gap-y-2 mt-4">
-                    {[1, 2, 3, 4, 5].map((_, index) => (
+                    {[1, 2, 3].map((_, index) => (
                       <div
                         key={index}
                         className="w-full text-muted-foreground flex items-center justify-between hover:bg-accent/50 py-2 rounded-md cursor-pointer"
@@ -77,26 +90,95 @@ const DashboardNavbar = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
+        {/* Right hand side Navbar */}
+        <div
+          className={
+            pathname === "/vflix" || pathname.startsWith("/vflix/")
+              ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-[4rem]"
+              : pathname.startsWith("/settings")
+                ? "flex-1 flex items-center justify-end gap-x-4 pr-[4.5rem] lg:pr-[5rem]"
+                : "flex items-center justify-end px-4 lg:pl-6 lg:pr-12 lg:w-[24rem] lg:shrink-0"
+          }
+        >
+          <div className={
+            pathname === "/vflix" || pathname.startsWith("/vflix/") || pathname.startsWith("/settings")
+              ? "contents"
+              : "flex-1 flex items-center justify-end gap-x-4"
+          }>
+            {/* Theme Toggle */}
+            <button
+              className="text-muted-foreground hover:text-foreground hidden sm:block transition-colors"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "light" ? (
+                <Moon className="size-6" />
+              ) : (
+                <Sun className="size-[22px]" />
+              )}
+            </button>
 
-        <div className="absolute right-0 top-0 h-full w-auto flex items-center justify-end gap-x-2 md:gap-x-4 pr-2 md:pr-8">
-          <Notification />
-          <Popover>
-            <PopoverTrigger>
-              <CustomAvatar
-                src={user?.profile_picture || ""}
-                name={getInitials(user?.name || "")}
-                className="size-9 md:size-11 border-foreground border-2"
-              />
-            </PopoverTrigger>
-            <PopoverContent>
-              <Button variant="outline" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
-                Logout
-              </Button>
-            </PopoverContent>
-          </Popover>
+            <div className="relative">
+              <Notification />
+            </div>
+
+            {/* Wallet Icon */}
+            {/* <button className="text-muted-foreground hover:text-foreground hidden sm:block">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+              </svg>
+            </button> */}
+
+            {/* Profile */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="flex items-center gap-x-2 cursor-pointer">
+                  <CustomAvatar
+                    src={user?.profile_picture || ""}
+                    name={getInitials(user?.name || "")}
+                    className="size-8 md:size-9"
+                  />
+                  <div className="hidden lg:flex flex-col items-start">
+                    <span className="text-sm font-bold uppercase">
+                      {user?.name.split(" ")[0]}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      @{user?.username || ""}
+                    </span>
+                  </div>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-48 p-3 rounded-xl shadow-md border bg-background z-50"
+                align="end"
+              >
+                <div className="flex flex-col gap-2">
+                  <Link href={`/u/${user?.username || ""}`}>
+                    <Button
+                      variant="ghost"
+                      className="w-full text-foreground justify-start h-10 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition"
+                    >
+                      View Profile
+                    </Button>
+                  </Link>
+
+                  <div className="border-t my-1" />
+
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-10 px-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition"
+                    onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                  >
+                    Logout
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
     </div>

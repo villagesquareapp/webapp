@@ -6,7 +6,7 @@ export const VflixText = ({ text }: { text: string }) => {
 
   if (!text) return null;
 
-  const MAX_LENGTH = 150; // VFlix usually has shorter visible area
+  const MAX_LENGTH = 50; // VFlix usually has shorter visible area
   const needsTruncation = text.length > MAX_LENGTH;
 
   const displayText = isExpanded || !needsTruncation ? text : text.slice(0, MAX_LENGTH) + "...";

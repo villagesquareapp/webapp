@@ -2,11 +2,20 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  
+  // Performance optimizations
+  reactStrictMode: true,
+  // swcMinify: true,
+  
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
 
   experimental: {
     serverActions: {
       bodySizeLimit: '100mb'
     },
+    optimizePackageImports: ['lucide-react', 'react-icons'],
   },
   /*env: {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

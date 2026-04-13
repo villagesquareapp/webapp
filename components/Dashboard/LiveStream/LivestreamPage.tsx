@@ -154,7 +154,7 @@ const LivestreamPage = () => {
                     <div className="grid lg:grid-cols-4 gap-4">
                       {featuredLivestream.map((stream) => (
                         <Link
-                          href={`/dashboard/live-streams/${stream.uuid}`}
+                          href={`/live-streams/${stream.uuid}`}
                           key={stream.uuid}
                           className="block transition-transform hover:scale-[1.02]"
                         >
@@ -201,7 +201,7 @@ const LivestreamPage = () => {
                   <div className="grid lg:grid-cols-4 gap-4">
                     {liveStreams.map((stream) => (
                       <Link
-                        href={`/dashboard/live-streams/${stream.uuid}`}
+                        href={`/live-streams/${stream.uuid}`}
                         key={stream.uuid}
                         className="block transition-transform hover:scale-[1.02]"
                       >

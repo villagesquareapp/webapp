@@ -21,13 +21,13 @@ const ReplyPostActionButtons = ({
   disableCommentButton?: boolean;
   likeUnlikePost: (postId: string) => void;
   saveUnsavePost: (postId: string) => void;
-  reply: IPost;
+  reply: IPostComment;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   user?: IUser;
   onOpenReplyModal: () => void;
 }) => {
   return (
-    <div className="flex flex-row justify-between items-center mt-2">
+    <div className="flex flex-row justify-between items-center mt-2 pb-2">
       <div className="flex flex-row gap-x-5 items-center">
         <div className="flex flex-row gap-x-1 items-center">
           <PiHeartFill
@@ -59,8 +59,8 @@ const ReplyPostActionButtons = ({
         </div>
       </div>
       <div className="flex items-center gap-x-1">
-        <p className="text-sm text-gray-400">{reply?.views_count}</p>
         <BiBarChart className="size-6 text-gray-500" />
+        <p className="text-sm text-gray-400">{reply?.views_count}</p>
       </div>
     </div>
   );

@@ -1,0 +1,177 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent } from "components/ui/dialog";
+import { IoClose, IoSearch } from "react-icons/io5";
+import { useDebounce } from "src/hooks/use-debounce";
+
+interface HashtagData {
+    uuid: string;
+    canonical_form: string;
+    display_form: string;
+    usage_count: string;
+}
+
+interface HashtagsModalProps {
+    open: boolean;
+    onClose: () => void;
+    onSelectHashtag?: (hashtag: string) => void;
+}
+
+// Dummy trending hashtags for when search is empty (as requested)
+const DUMMY_TRENDING_HASHTAGS: HashtagData[] = [];
+
+const formatUsageCount = (countStr: string) => {
+    const count = parseInt(countStr, 10);
+    if (isNaN(count)) return "0 posts";
+
+    if (count >= 1000000) {
+        return `${(count / 1000000).toFixed(1).replace(/\.0$/, "")}M posts`;
+    }
+    if (count >= 1000) {
+        return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}K posts`;
+    }
+    return `${count} posts`;
+};
+
+const HashtagsModal = ({ open, onClose, onSelectHashtag }: HashtagsModalProps) => {
+    const [searchValue, setSearchValue] = useState("#");
+    const debouncedSearch = useDebounce(searchValue, 300);
+    const [results, setResults] = useState<HashtagData[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const searchTerm = debouncedSearch.startsWith("#") ? debouncedSearch.slice(1) : debouncedSearch;
+
+        let isCurrent = true;
+
+        const fetchHashtags = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(
+                    `/api/hashtags?q=${encodeURIComponent(searchTerm)}`,
+                );
+                const data = await res.json();
+                if (!isCurrent) return;
+                if (data?.status && data?.data) {
+                    setResults(data.data);
+                } else {
+                    setResults([]);
+                }
+            } catch (error) {
+                if (!isCurrent) return;
+                console.error("Failed to fetch hashtags", error);
+                setResults([]);
+            } finally {
+                if (isCurrent) setLoading(false);
+            }
+        };
+
+        fetchHashtags();
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [debouncedSearch]);
+
+    const handleSelect = (hashtag: string) => {
+        if (onSelectHashtag) {
+            onSelectHashtag(hashtag);
+        }
+        onClose();
+        setSearchValue("#"); // Reset search on close
+    };
+
+    // Reset search when modal opens/closes
+    useEffect(() => {
+        if (!open) {
+            setSearchValue("#");
+            setResults([]);
+        }
+    }, [open]);
+
+    return (
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent className="!max-w-[420px] w-full p-0 rounded-[20px] overflow-hidden border border-border bg-background shadow-2xl [&>button:last-child]:hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                    <h2 className="text-[15px] text-foreground">
+                        <span className="font-bold">Hashtags</span>{" "}
+                        <span className="text-muted-foreground font-normal">(Add hashtags to post)</span>
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="p-1 hover:bg-accent rounded-full transition-colors"
+                    >
+                        <IoClose className="text-muted-foreground size-4" />
+                    </button>
+                </div>
+
+                {/* Search Input */}
+                <div className="px-5 pb-3">
+                    <div className="relative">
+                        <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-muted-foreground pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="search hashtags"
+                            value={searchValue}
+                            onChange={(e) => {
+                                let val = e.target.value;
+                                if (!val.startsWith("#")) {
+                                    val = "#" + val.replace(/#/g, ""); // Ensure single # prefix
+                                }
+                                setSearchValue(val);
+                            }}
+                            className="w-full bg-accent h-[42px] pl-[42px] pr-4 text-[14px] text-foreground placeholder:text-muted-foreground rounded-full outline-none border border-border focus:border-ring transition-colors"
+                        />
+                    </div>
+                    {/* Subtle loading bar below the input */}
+                    <div className="h-[2px] mt-1.5 rounded-full overflow-hidden">
+                        {loading && (
+                            <div className="h-full bg-blue-500/60 animate-pulse rounded-full" />
+                        )}
+                    </div>
+                </div>
+
+                {/* Results List */}
+                <div className="px-3 pb-4 max-h-[380px] overflow-y-auto no-scrollbar">
+                    {/* Only show full "Searching..." when results list is empty */}
+                    {loading && results.length === 0 && (
+                        <div className="py-6 text-center text-sm text-muted-foreground">
+                            Searching...
+                        </div>
+                    )}
+
+                    {!loading && results.length === 0 && (debouncedSearch.startsWith("#") ? debouncedSearch.length > 1 : debouncedSearch.trim()) && (
+                        <div className="py-6 text-center text-sm text-muted-foreground">
+                            No hashtags found.
+                        </div>
+                    )}
+
+                    {!loading && (!debouncedSearch || debouncedSearch === "#") && (
+                        <div className="py-6 text-center text-[13px] text-muted-foreground">
+                            Type a hashtag to search...
+                        </div>
+                    )}
+                    {results.length > 0 &&
+                        results.map((tag) => (
+                            <button
+                                key={tag.uuid}
+                                onClick={() => handleSelect(tag.display_form)}
+                                className="w-full flex flex-col px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"
+                            >
+                                <span className="text-[14px] font-bold text-foreground line-clamp-1 mb-0.5">
+                                    #{tag.display_form}
+                                </span>
+                                <span className="text-[13px] text-white/50">
+                                    {formatUsageCount(tag.usage_count)}
+                                </span>
+                            </button>
+                        ))}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+export default HashtagsModal;
