@@ -18,7 +18,7 @@ interface DataCacheContextType {
 
 const DataCacheContext = createContext<DataCacheContextType | undefined>(undefined);
 
-const DEFAULT_CACHE_DURATION = 5;
+const DEFAULT_CACHE_DURATION = 10;
 
 // Module-level stores — survive React remounts and navigation
 const dataCache = new Map<string, CacheEntry<any>>();
