@@ -6,12 +6,14 @@ import { Skeleton } from "components/ui/skeleton";
 import { toast } from "sonner";
 import { Play } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useDataCache } from "context/DataCacheContext";
 
 interface ProfileVflixProps {
     userId: string;
 }
 
 const ProfileVflix = ({ userId }: ProfileVflixProps) => {
+    const { getCachedData, setCachedData, isCacheValid } = useDataCache();
     const [videos, setVideos] = useState<IVflix[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -23,6 +25,17 @@ const ProfileVflix = ({ userId }: ProfileVflixProps) => {
 
     const fetchVflix = useCallback(async (pageNumber: number) => {
         if (!userId) return;
+
+        const cacheKey = `profile-vflix-${userId}`;
+        if (pageNumber === 1) {
+            const cached = getCachedData<IVflix[]>(cacheKey);
+            if (cached && isCacheValid(cacheKey, 5)) {
+                setVideos(cached);
+                setLoading(false);
+                setHasMore(false);
+                return;
+            }
+        }
 
         try {
             if (pageNumber === 1) {
@@ -40,6 +53,7 @@ const ProfileVflix = ({ userId }: ProfileVflixProps) => {
 
                 if (pageNumber === 1) {
                     setVideos(fetchedVideos);
+                    setCachedData(`profile-vflix-${userId}`, fetchedVideos);
                 } else {
                     setVideos((prev) => [...prev, ...fetchedVideos]);
                 }

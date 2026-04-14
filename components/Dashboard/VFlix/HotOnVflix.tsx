@@ -6,6 +6,7 @@ import { Heart } from "lucide-react";
 import { IoStatsChart } from "react-icons/io5";
 import { PiHeartFill } from "react-icons/pi";
 import { useRouter } from "next/navigation";
+import { useDataCache } from "context/DataCacheContext";
 
 interface HotOnVflixProps {
   onVideoSelect: (video: IVflix) => void;
@@ -13,22 +14,30 @@ interface HotOnVflixProps {
 
 const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
   const router = useRouter();
+  const { getCachedData, setCachedData, isCacheValid } = useDataCache();
   const [hotVideos, setHotVideos] = useState<IVflix[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cacheKey = "hot-on-vflix";
+    const cached = getCachedData<IVflix[]>(cacheKey);
+    if (cached && isCacheValid(cacheKey)) {
+      setHotVideos(cached);
+      setLoading(false);
+      return;
+    }
+
     const fetchHotVideos = async () => {
       try {
         setLoading(true);
         const res = await fetch("/api/vflix?mode=hot");
         const response = await res.json();
         if (response?.status) {
-          // The endpoint might return the array directly or in a paginated structure
           const data = Array.isArray(response.data) ? response.data : response.data?.data || [];
           const slicedVideos = data.slice(0, 5);
           setHotVideos(slicedVideos);
+          setCachedData(cacheKey, slicedVideos);
 
-          // Track impressions for the displayed hot videos
           if (slicedVideos.length > 0) {
             const videoIds = slicedVideos.map((v: IVflix) => v.uuid);
             fetch("/api/vflix/hot/impression", {

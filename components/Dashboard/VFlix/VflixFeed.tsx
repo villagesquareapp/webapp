@@ -31,18 +31,21 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activePostSource, setActivePostSource] = useState<string | undefined>(undefined);
 
+  // Save current index when it changes
+  useEffect(() => {
+    setCachedData(`vflix-index-${activeTab}`, currentIndex);
+  }, [currentIndex, activeTab]);
+
   // Jump to selected video when triggered from HotOnVflix
   useEffect(() => {
     if (selectedVideo) {
       const existingIndex = videos.findIndex(v => v.uuid === selectedVideo.uuid);
       if (existingIndex !== -1) {
-        // Video already in feed, jump to it
         if (existingIndex !== currentIndex) {
           setDirection(existingIndex > currentIndex ? 1 : -1);
           setCurrentIndex(existingIndex);
         }
       } else {
-        // Video not in feed, prepend it and jump to index 0
         const updated = [selectedVideo, ...videos];
         setVideos(updated);
         onVideosLoaded?.(updated);
@@ -58,12 +61,15 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
     const cachedVideos = getCachedData<IVflix[]>(cacheKey);
 
     if (cachedVideos && isCacheValid(cacheKey, 5)) {
-      // Use cached data if it's less than 5 minutes old
       setVideos(cachedVideos);
       onVideosLoaded?.(cachedVideos);
       setLoading(false);
+      // Restore the last viewed index
+      const savedIndex = getCachedData<number>(`vflix-index-${activeTab}`);
+      if (savedIndex && savedIndex > 0 && savedIndex < cachedVideos.length) {
+        setCurrentIndex(savedIndex);
+      }
     } else {
-      // Fetch fresh data if cache is invalid or doesn't exist
       fetchVflixVideos();
     }
   }, [activeTab]);

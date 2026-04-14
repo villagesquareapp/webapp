@@ -81,6 +81,12 @@ const DeactivateAccountContent = () => {
             {/* Step 2: Deactivate Password */}
             {step === "deactivate_password" && (
                 <>
+                    <button
+                        onClick={() => setStep("selection")}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+                    >
+                        ← Back
+                    </button>
                     <h2 className="text-[22px] text-foreground font-semibold mb-1">Confirm your password</h2>
                     <p className="text-muted-foreground text-[15px] mb-8 leading-relaxed pr-8">
                         To complete your deactivation request, enter the password linked to
@@ -118,6 +124,12 @@ const DeactivateAccountContent = () => {
             {/* Step 3: Delete Warning */}
             {step === "delete_warning" && (
                 <>
+                    <button
+                        onClick={() => setStep("selection")}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+                    >
+                        ← Back
+                    </button>
                     <h2 className="text-[22px] font-semibold mb-6 text-foreground">Delete account?</h2>
 
                     <div className="mb-6">
@@ -162,6 +174,12 @@ const DeactivateAccountContent = () => {
             {/* Step 4: Delete Password Confirmation */}
             {step === "delete_password" && (
                 <>
+                    <button
+                        onClick={() => setStep("delete_warning")}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+                    >
+                        ← Back
+                    </button>
                     <h2 className="text-[22px] font-semibold mb-6 text-foreground">Confirm account deletion</h2>
 
                     <p className="text-muted-foreground text-[15px] mb-10">

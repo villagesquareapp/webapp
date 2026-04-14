@@ -4,12 +4,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import LikedPostCard from "./LikedPostCard";
 import { Skeleton } from "components/ui/skeleton";
 import { toast } from "sonner";
+import { useDataCache } from "context/DataCacheContext";
 
 interface ProfileLikedPostsProps {
     userId: string;
 }
 
 const ProfileLikedPosts = ({ userId }: ProfileLikedPostsProps) => {
+    const { getCachedData, setCachedData, isCacheValid } = useDataCache();
     const [posts, setPosts] = useState<IPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -23,6 +25,17 @@ const ProfileLikedPosts = ({ userId }: ProfileLikedPostsProps) => {
     const fetchLikedPosts = useCallback(
         async (pageNumber: number) => {
             if (!userId) return;
+
+            const cacheKey = `profile-liked-${userId}`;
+            if (pageNumber === 1) {
+                const cached = getCachedData<IPost[]>(cacheKey);
+                if (cached && isCacheValid(cacheKey, 5)) {
+                    setPosts(cached);
+                    setLoading(false);
+                    setHasMore(false);
+                    return;
+                }
+            }
 
             try {
                 if (pageNumber === 1) {
@@ -40,6 +53,7 @@ const ProfileLikedPosts = ({ userId }: ProfileLikedPostsProps) => {
 
                     if (pageNumber === 1) {
                         setPosts(fetchedPosts);
+                        setCachedData(`profile-liked-${userId}`, fetchedPosts);
                     } else {
                         setPosts((prev) => [...prev, ...fetchedPosts]);
                     }
