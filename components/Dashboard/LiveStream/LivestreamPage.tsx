@@ -10,6 +10,7 @@ import NotFoundResult from "../Reusable/NotFoundResult";
 import { getFeaturedLivestreams } from "api/livestreams";
 import { toast } from "sonner";
 import LoadingSpinner from "../Reusable/LoadingSpinner";
+import { useDataCache } from "context/DataCacheContext";
 
 const LIVE_STREAM_FILTERS = [
   "Popular",
@@ -54,16 +55,11 @@ const LiveStreamHeader = ({
 );
 
 const LivestreamPage = () => {
-  const [liveStreams, setLiveStreams] = useState<IFeaturedLivestream[] | null>(
-    null
-  );
-  const [featuredLivestream, setFeaturedLivestream] = useState<
-    IFeaturedLivestream[]
-  >([]);
+  const { getCachedData, setCachedData, isCacheValid } = useDataCache();
+  const [liveStreams, setLiveStreams] = useState<IFeaturedLivestream[] | null>(null);
+  const [featuredLivestream, setFeaturedLivestream] = useState<IFeaturedLivestream[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [currentTab, setCurrentTab] = useState<"Explore" | "Connections">(
-    "Explore"
-  );
+  const [currentTab, setCurrentTab] = useState<"Explore" | "Connections">("Explore");
   const [selectedFilter, setSelectedFilter] = useState(LIVE_STREAM_FILTERS);
 
   useEffect(() => {
@@ -74,15 +70,26 @@ const LivestreamPage = () => {
       return;
     }
 
+    const cacheKey = "livestreams-explore";
+    const cached = getCachedData<{ featured: IFeaturedLivestream[]; streams: IFeaturedLivestream[] }>(cacheKey);
+    if (cached && isCacheValid(cacheKey, 5)) {
+      setFeaturedLivestream(cached.featured);
+      setLiveStreams(cached.streams);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchLivestreams = async () => {
       setIsLoading(true);
       try {
-        const page = 1;
-        const response = await getFeaturedLivestreams(page);
+        const response = await getFeaturedLivestreams(1);
         if (response.status && response.data) {
           const allStreams = response.data.data as IFeaturedLivestream[];
-          setFeaturedLivestream(allStreams.slice(0, 4));
-          setLiveStreams(allStreams.slice(4));
+          const featured = allStreams.slice(0, 4);
+          const streams = allStreams.slice(4);
+          setFeaturedLivestream(featured);
+          setLiveStreams(streams);
+          setCachedData(cacheKey, { featured, streams });
         } else {
           toast.error(response.message || "Failed to fetch livestreams.");
         }

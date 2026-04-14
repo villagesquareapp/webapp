@@ -111,7 +111,7 @@ export function AppSidebar() {
   React.useEffect(() => {
     if (pathname.includes("/vflix")) {
       setOpen(false);
-    } else if (pathname.includes("/home")) {
+    } else {
       setOpen(true);
     }
   }, [pathname, setOpen]);

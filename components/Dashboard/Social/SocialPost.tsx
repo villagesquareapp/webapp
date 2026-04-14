@@ -257,23 +257,28 @@ const SocialPost = ({ user }: { user: IUser }) => {
     };
   }, [activeTab, setScrollPosition]);
 
+  // Reset on unmount so restore fires again next time we come back
+  useEffect(() => {
+    return () => {
+      hasRestoredScrollRef.current = false;
+    };
+  }, []);
+
   // Restore scroll when posts are loaded from cache
   useEffect(() => {
     if (!isPostLoading && posts.length > 0 && !hasRestoredScrollRef.current) {
-      const scrollContainer = document.getElementById("social-main-scroll");
-      if (scrollContainer) {
-        const savedPos = getScrollPosition(`social-scroll-${activeTab}`);
-        if (savedPos > 0) {
-          // Use requestAnimationFrame to ensure DOM has rendered
+      hasRestoredScrollRef.current = true;
+      const savedPos = getScrollPosition(`social-scroll-${activeTab}`);
+      if (savedPos > 0) {
+        // Double rAF ensures the list has fully painted before scrolling
+        requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            setTimeout(() => {
-              scrollContainer.scrollTo({ top: savedPos, behavior: "instant" });
-              hasRestoredScrollRef.current = true;
-            }, 50);
+            const scrollContainer = document.getElementById("social-main-scroll");
+            if (scrollContainer) {
+              scrollContainer.scrollTop = savedPos;
+            }
           });
-        } else {
-          hasRestoredScrollRef.current = true;
-        }
+        });
       }
     }
   }, [isPostLoading, posts.length, activeTab, getScrollPosition]);

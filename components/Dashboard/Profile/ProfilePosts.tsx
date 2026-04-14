@@ -4,12 +4,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import EachSocialPost from "components/Dashboard/Social/EachSocialPost";
 import { Skeleton } from "components/ui/skeleton";
 import { toast } from "sonner";
+import { useDataCache } from "context/DataCacheContext";
 
 interface ProfilePostsProps {
     userId: string;
 }
 
 const ProfilePosts = ({ userId }: ProfilePostsProps) => {
+    const { getCachedData, setCachedData, isCacheValid } = useDataCache();
     const [posts, setPosts] = useState<IPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -22,6 +24,17 @@ const ProfilePosts = ({ userId }: ProfilePostsProps) => {
 
     const fetchPosts = useCallback(async (pageNumber: number) => {
         if (!userId) return;
+
+        const cacheKey = `profile-posts-${userId}`;
+        if (pageNumber === 1) {
+            const cached = getCachedData<IPost[]>(cacheKey);
+            if (cached && isCacheValid(cacheKey, 5)) {
+                setPosts(cached);
+                setLoading(false);
+                setHasMore(false); // don't trigger more fetches from cache
+                return;
+            }
+        }
 
         try {
             if (pageNumber === 1) {
@@ -39,6 +52,7 @@ const ProfilePosts = ({ userId }: ProfilePostsProps) => {
 
                 if (pageNumber === 1) {
                     setPosts(fetchedPosts);
+                    setCachedData(`profile-posts-${userId}`, fetchedPosts);
                 } else {
                     setPosts((prev) => [...prev, ...fetchedPosts]);
                 }
