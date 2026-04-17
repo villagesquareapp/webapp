@@ -1,6 +1,5 @@
 // components/Dashboard/VFlix/VflixComments.tsx
 
-import { getVflixComments, createVflixComment, likeOrUnlikeVflixComment, getVflixReplies } from "api/vflix";
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useCallback, useEffect, useState } from "react";
 import { IoClose, IoChatbubbleEllipses } from "react-icons/io5";
@@ -48,7 +47,10 @@ export default function VflixComments({
     async function fetchComments() {
       try {
         setLoading(true);
-        const response = await getVflixComments(postId ? postId : "", 1, source);
+        const params = new URLSearchParams({ page: "1" });
+        if (source) params.set("source", source);
+        const res = await fetch(`/api/vflix/${postId}/comments?${params}`);
+        const response = await res.json();
         setComments(response.data?.data || []);
       } catch (error) {
         console.error("Failed to fetch comments:", error);
@@ -68,10 +70,17 @@ export default function VflixComments({
 
     setIsSubmitting(true);
     try {
-      const response = await createVflixComment(postId, {
-        comment: commentContent,
-        parent_id: replyingTo ? replyingTo.id : undefined,
-      }, source);
+      const params = new URLSearchParams();
+      if (source) params.set("source", source);
+      const res = await fetch(`/api/vflix/${postId}/comments?${params}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          comment: commentContent,
+          parent_id: replyingTo ? replyingTo.id : undefined,
+        }),
+      });
+      const response = await res.json();
 
       if (response?.status && response.data) {
         toast.success(replyingTo ? "Reply added successfully!" : "Comment added successfully!");
@@ -99,7 +108,7 @@ export default function VflixComments({
           setComments((prev) =>
             prev.map((comment) =>
               comment.uuid === replyingTo.id
-                ? { ...comment, reply_count: Number(comment.reply_count) + 1 }
+                ? { ...comment, replies_count: Number(comment.replies_count) + 1 }
                 : comment
             )
           );
@@ -139,8 +148,10 @@ export default function VflixComments({
     );
 
     try {
-      const formData = new FormData();
-      const result = await likeOrUnlikeVflixComment(postId, commentId, formData, source);
+      const params = new URLSearchParams();
+      if (source) params.set("source", source);
+      const res = await fetch(`/api/vflix/comments/${commentId}/like?${params}`, { method: "POST" });
+      const result = await res.json();
 
       if (!result?.status) {
         setComments((prev) =>
@@ -193,7 +204,10 @@ export default function VflixComments({
     if (!repliesCache[commentId]) {
       setLoadingReplies((prev) => ({ ...prev, [commentId]: true }));
       try {
-        const res = await getVflixReplies(postId, commentId, 1, source);
+        const params = new URLSearchParams({ postId: postId!, page: "1" });
+        if (source) params.set("source", source);
+        const fetchRes = await fetch(`/api/vflix/comments/${commentId}/replies?${params}`);
+        const res = await fetchRes.json();
         if (res.status && res.data) {
           setRepliesCache((prev) => ({
             ...prev,
@@ -288,12 +302,12 @@ export default function VflixComments({
                       <p className="text-sm text-foreground py-1">
                         {comment.comment}
                       </p>
-                      {/* <button
+                      <button
                         className="text-gray-400 text-sm shrink-0 cursor-pointer hover:text-white font-medium ml-2"
                         onClick={() => handleReplyClick(comment.uuid, comment?.user?.name)}
                       >
                         Reply
-                      </button> */}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -306,26 +320,26 @@ export default function VflixComments({
                     />
                     <p className="text-sm">{comment?.likes_count}</p>
                   </div>
-                  {/* <div
+                  <div
                     className="flex flex-row gap-x-1 items-center"
-                    onClick={() => comment.reply_count > 0 && toggleReplies(comment.uuid)}
+                    onClick={() => comment.replies_count > 0 && toggleReplies(comment.uuid)}
                   >
                     <IoChatbubbleEllipses
-                      className={`size-4 ${comment.reply_count > 0 ? "cursor-pointer text-gray-400 hover:text-blue-500" : "text-gray-600"} transition-colors`}
+                      className={`size-4 ${comment.replies_count > 0 ? "cursor-pointer text-gray-400 hover:text-blue-500" : "text-gray-600"} transition-colors`}
                     />
-                    <p className="text-sm">{comment.reply_count}</p>
-                  </div> */}
+                    <p className="text-sm">{comment.replies_count}</p>
+                  </div>
                 </div>
 
                 {/* --- Nested Replies Section --- */}
-                {comment.reply_count > 0 && (
+                {comment.replies_count > 0 && (
                   <div className="pl-10 mt-1">
-                    {/* <button
+                    <button
                       className="text-xs font-semibold text-gray-400 hover:text-white transition-colors"
                       onClick={() => toggleReplies(comment.uuid)}
                     >
-                      {expandedReplies[comment.uuid] ? "Hide replies" : `View ${comment.reply_count} replies`}
-                    </button> */}
+                      {expandedReplies[comment.uuid] ? "Hide replies" : `View replies`}
+                    </button>
 
                     {expandedReplies[comment.uuid] && (
                       <div className="mt-3 flex flex-col gap-4">
