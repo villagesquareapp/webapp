@@ -33,7 +33,7 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
 
     try {
       const endpoint = wasFollowing
-        ? `/api/users/${profile.uuid}/unfollow`
+        ? `/api/users/${profile.uuid}/follow`
         : `/api/users/${profile.uuid}/follow`;
 
       const res = await fetch(endpoint, { method: "POST" });
@@ -51,10 +51,6 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
     }
   };
 
-  // Button label logic:
-  // - Following them → "Following"
-  // - They follow me but I don't follow back → "Follow Back"
-  // - Neither → "Follow"
   const buttonLabel = isFollowing
     ? "Following"
     : isFollowedBy
