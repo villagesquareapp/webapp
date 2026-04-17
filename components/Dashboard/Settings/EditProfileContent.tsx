@@ -5,7 +5,6 @@ import { Camera, MapPin, CalendarDays, ChevronRight, ChevronDown, Check, Loader2
 import CustomAvatar from "components/ui/custom/custom-avatar";
 import { useSession } from "next-auth/react";
 import { useProfile } from "src/hooks/useProfile";
-import { updateProfile } from "app/api/user";
 import LocationPicker from "components/Dashboard/Social/LocationPicker";
 
 const MONTHS = [
@@ -138,14 +137,17 @@ const EditProfileContent = () => {
                 formData.append("profile_picture", profilePictureFile);
             }
 
-            const response = await updateProfile(formData);
+            const response = await fetch("/api/users/profile/update", {
+                method: "PUT",
+                body: formData,
+            });
+            const result = await response.json();
 
-            if (response?.status === true) {
+            if (result?.status === true) {
                 setShowSuccess(true);
-                // Auto-dismiss success after 2.5 seconds
                 setTimeout(() => setShowSuccess(false), 2500);
             } else {
-                setErrorMessage(response?.message || "Something went wrong. Please try again.");
+                setErrorMessage(result?.message || "Something went wrong. Please try again.");
             }
         } catch (error) {
             setErrorMessage("An unexpected error occurred. Please try again.");

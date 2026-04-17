@@ -505,7 +505,7 @@ interface IPostComment {
 
 interface IGetVflixComments {
   uuid: string;
-  post_id: string;
+  vflix_id: string;
   user_id: string;
   likes_count: string;
   comment: string;
@@ -515,7 +515,7 @@ interface IGetVflixComments {
   user: IPostUser;
   is_liked: boolean;
   formatted_time: string;
-  reply_count: number;
+  replies_count: number;
 }
 
 interface INewVflixComment {
