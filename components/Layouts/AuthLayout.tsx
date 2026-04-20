@@ -80,8 +80,8 @@ export default function AuthLayout({
           </div>
         </div>
 
-        <div className="lg:p-8 w-full flex items-center justify-center">
-          <div className="flex w-full flex-col justify-center space-y-4 lg:w-[450px] sm:w-[350px] px-6 sm:px-0 mx-auto max-w-sm sm:max-w-md lg:max-w-none">
+        <div className="lg:p-8 w-full">
+          <div className="flex w-full flex-col justify-center space-y-4 lg:w-[450px] sm:w-[350px] px-8 sm:px-0">
             <div className="flex items-center justify-center mb-4 lg:hidden">
               {/* <img
                 src="/images/vs_logo.png"
