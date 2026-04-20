@@ -6,9 +6,9 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 
 const VsCustomLogo = () => {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const { resolvedTheme } = useTheme();
-  const isCollapsed = state === "collapsed";
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   const logoSrc = resolvedTheme === "light" ? "/images/VillageSquare-ash.png" : "/images/VillageSquare.png";
 
@@ -19,7 +19,9 @@ const VsCustomLogo = () => {
       </Link>
       {/* <p className="!font-[Ogonek Unicase] text-2xl">VillageSquare</p> */}
       {!isCollapsed && (
-        <img key={logoSrc} src={logoSrc} alt="VS-Logo" className="hidden md:block w-[210px] h-auto z-[1000] shrink-0 object-contain" />
+        <Link href="/home">
+          <img key={logoSrc} src={logoSrc} alt="VS-Logo" className="w-[160px] md:w-[180px] h-auto z-[1000] shrink-0 object-contain" />
+        </Link>
       )}
     </div>
   );
