@@ -106,7 +106,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { openAddPost } = useAddPost();
   const { openVFlixUpload } = useVFlixUpload();
-  const { setOpen, state } = useSidebar();
+  const { setOpen, state, isMobile, setOpenMobile } = useSidebar();
 
   React.useEffect(() => {
     if (pathname.includes("/vflix")) {
@@ -116,7 +116,7 @@ export function AppSidebar() {
     }
   }, [pathname, setOpen]);
 
-  const isCollapsed = state === "collapsed";
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   const handleCreatePost = () => {
     if (pathname.includes("/vflix")) {
@@ -128,7 +128,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-border shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
-      <SidebarHeader className="pt-6 pb-4 border-none bg-background">
+      <SidebarHeader className="pt-6 pb-4 border-none bg-background" onClick={() => isMobile && setOpenMobile(false)}>
         <VsCustomLogo />
       </SidebarHeader>
 
@@ -149,7 +149,7 @@ export function AppSidebar() {
                         : "text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 dark:hover:text-foreground"
                         }`}
                     >
-                      <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4">
+                      <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4" onClick={() => isMobile && setOpenMobile(false)}>
                         <span className="shrink-0 flex items-center justify-center">{Icon}</span>
                         {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
                       </Link>

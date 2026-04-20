@@ -16,6 +16,8 @@ const SettingsPageClient = () => {
     const [showSignOutModal, setShowSignOutModal] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
 
+    const [mobileView, setMobileView] = useState<"menu" | "content">("menu");
+
     useEffect(() => {
         fetch("/api/users/blocked-count")
             .then((r) => r.json())
@@ -27,6 +29,7 @@ const SettingsPageClient = () => {
             .catch(() => {});
     }, []);
 
+    // ... menuSections object from original ...
     const menuSections = [
         {
             title: "ACCOUNT",
@@ -65,97 +68,112 @@ const SettingsPageClient = () => {
 
     return (
         <>
-            <div className="flex w-full h-[calc(100vh-80px)] overflow-hidden text-white pt-2 bg-background">
-                {/* Left Sidebar */}
-                <div className="w-[320px] lg:w-[500px] h-full overflow-y-auto border-r border-border flex flex-col pr-4 pl-2 pb-10">
+            <div className="flex w-full h-[calc(100vh-80px)] overflow-hidden text-foreground pt-2 bg-background md:justify-center">
+                <div className="flex w-full max-w-7xl h-full">
+                    {/* Left Sidebar */}
+                    <div className={`w-full md:w-[320px] lg:w-[400px] h-full overflow-y-auto border-r border-border flex-col pr-4 pl-4 md:pl-2 pb-10 ${mobileView === "menu" ? "flex" : "hidden md:flex"}`}>
+                        {/* Menu Sections */}
+                        {menuSections.map((section, idx) => (
+                            <div key={idx} className="mb-6">
+                                <h3 className="text-xs font-semibold text-muted-foreground my-3 uppercase tracking-wider mx-2">
+                                    {section.title}
+                                </h3>
+                                <div className="flex flex-col border border-border rounded-xl overflow-hidden">
+                                    {section.items.map((item, index) => {
+                                        const Icon = item.icon;
+                                        const isActive = activeTab === item.id;
+                                        const isExternal = 'external' in item && item.external;
 
-                    {/* Menu Sections */}
-                    {menuSections.map((section, idx) => (
-                        <div key={idx} className="mb-6">
-                            <h3 className="text-xs font-semibold text-muted-foreground my-3 uppercase tracking-wider mx-2">
-                                {section.title}
-                            </h3>
-                            <div className="flex flex-col border border-border rounded-xl overflow-hidden">
-                                {section.items.map((item, index) => {
-                                    const Icon = item.icon;
-                                    const isActive = activeTab === item.id;
-                                    const isExternal = 'external' in item && item.external;
+                                        const buttonContent = (
+                                            <>
+                                                <span className="flex items-center text-foreground font-medium">
+                                                    {item.label}
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    {'badge' in item && item.badge && (
+                                                        <span className="text-xs font-bold text-foreground pr-1.5">{item.badge}</span>
+                                                    )}
+                                                    <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                                </div>
+                                            </>
+                                        );
 
-                                    const buttonContent = (
-                                        <>
-                                            <span className="flex items-center text-foreground">
-                                                {item.label}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                {'badge' in item && item.badge && (
-                                                    <span className="text-xs font-bold text-foreground pr-1.5">{item.badge}</span>
-                                                )}
-                                                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                                            </div>
-                                        </>
-                                    );
+                                        const className = `flex items-center justify-between px-4 py-3.5 text-sm transition-colors w-full ${isActive ? "bg-[#eaeae8] dark:bg-[#31373f]" : "hover:bg-[#eaeae8] dark:hover:bg-[#31373f]/50"
+                                            }`;
 
-                                    const className = `flex items-center justify-between px-4 py-3.5 text-sm transition-colors w-full ${isActive ? "bg-[#eaeae8] dark:bg-[#31373f] font-medium" : "hover:bg-[#eaeae8] dark:hover:bg-[#31373f]/50 text-[#E0E0E0]"
-                                        }`;
+                                        if (isExternal) {
+                                            return (
+                                                <React.Fragment key={item.id}>
+                                                    <a
+                                                        href={item.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={className}
+                                                    >
+                                                        {buttonContent}
+                                                    </a>
+                                                    {index < section.items.length - 1 && (
+                                                        <div className="h-px bg-border" />
+                                                    )}
+                                                </React.Fragment>
+                                            );
+                                        }
 
-                                    if (isExternal) {
                                         return (
                                             <React.Fragment key={item.id}>
-                                                <a
-                                                    href={item.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    onClick={() => {
+                                                        if (item.id === 'signout') {
+                                                            setShowSignOutModal(true);
+                                                            return;
+                                                        }
+                                                        setActiveTab(item.id);
+                                                        setMobileView("content");
+                                                    }}
                                                     className={className}
                                                 >
                                                     {buttonContent}
-                                                </a>
+                                                </button>
                                                 {index < section.items.length - 1 && (
                                                     <div className="h-px bg-border" />
                                                 )}
                                             </React.Fragment>
                                         );
-                                    }
-
-                                    return (
-                                        <React.Fragment key={item.id}>
-                                            <button
-                                                onClick={() => {
-                                                    if (item.id === 'signout') {
-                                                        setShowSignOutModal(true);
-                                                        return;
-                                                    }
-                                                    setActiveTab(item.id)
-                                                }}
-                                                className={className}
-                                            >
-                                                {buttonContent}
-                                            </button>
-                                            {index < section.items.length - 1 && (
-                                                <div className="h-px bg-border" />
-                                            )}
-                                        </React.Fragment>
-                                    );
-                                })}
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
 
-                {/* Right Content Area */}
-                <div className="flex-1 h-full overflow-y-auto px-2 lg:px-4 py-0 pb-16">
-                    {activeTab === "edit_profile" && <EditProfileContent />}
-                    {activeTab === "verification" && <VerificationContent />}
-                    {activeTab === "rate" && <RateUsContent />}
-                    {activeTab === "change_password" && <ChangePasswordContent />}
-                    {activeTab === "blocked" && (
-                        <BlockedContent onCountChange={(count) => setBlockedCount(count)} />
-                    )}
-                    {activeTab === "deactivate" && <DeactivateAccountContent />}
-                    {activeTab !== "edit_profile" && activeTab !== "verification" && activeTab !== "rate" && activeTab !== "change_password" && activeTab !== "blocked" && activeTab !== "deactivate" && (
-                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                            {activeTab} content coming soon
+                    {/* Right Content Area */}
+                    <div className={`flex-1 h-full overflow-y-auto px-4 md:px-8 py-4 pb-16 ${mobileView === "content" ? "block" : "hidden md:block"}`}>
+                        {/* Mobile Back Button */}
+                        <div className="md:hidden mb-6">
+                            <button
+                                onClick={() => setMobileView("menu")}
+                                className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
+                                Back to Settings
+                            </button>
                         </div>
-                    )}
+
+                        <div className="max-w-2xl mx-auto md:mx-0 w-full">
+                            {activeTab === "edit_profile" && <EditProfileContent />}
+                            {activeTab === "verification" && <VerificationContent />}
+                            {activeTab === "rate" && <RateUsContent />}
+                            {activeTab === "change_password" && <ChangePasswordContent />}
+                            {activeTab === "blocked" && (
+                                <BlockedContent onCountChange={(count) => setBlockedCount(count)} />
+                            )}
+                            {activeTab === "deactivate" && <DeactivateAccountContent />}
+                            {activeTab !== "edit_profile" && activeTab !== "verification" && activeTab !== "rate" && activeTab !== "change_password" && activeTab !== "blocked" && activeTab !== "deactivate" && (
+                                <div className="flex items-center justify-center h-full text-muted-foreground pt-10">
+                                    {activeTab} content coming soon
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 

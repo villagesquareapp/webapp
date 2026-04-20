@@ -450,7 +450,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       {/* <ProgressBar progress={50} /> */}
       <div className="flex flex-col gap-y-2 w-full">
         {/* Header with tabs - Responsive */}
-        <div className="flex justify-between items-center z-40 sticky -top-4 py-3 bg-background">
+        <div className="flex justify-between items-center z-40 sticky -top-4 py-3 bg-background/80 backdrop-blur-md">
           <div className="flex bg-transparent gap-x-3 w-fit">
             {/* Explore Button */}
             <button

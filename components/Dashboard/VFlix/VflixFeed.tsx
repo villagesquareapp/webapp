@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VflixCard from "./VFlixCard";
@@ -211,6 +211,26 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
     }
   };
 
+  // Touch swipe — swipe up = next, swipe down = prev (TikTok/Reels style)
+  const touchStartY = useRef<number | null>(null);
+  const SWIPE_THRESHOLD = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const delta = touchStartY.current - e.changedTouches[0].clientY;
+    touchStartY.current = null;
+    if (Math.abs(delta) < SWIPE_THRESHOLD) return;
+    if (delta > 0) {
+      nextVideo(); // finger moved up → next video
+    } else {
+      prevVideo(); // finger moved down → previous video
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowUp") {
@@ -255,7 +275,11 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   return (
     <div className="flex items-center justify-center lg:justify-start w-full h-full relative lg:pl-[17rem]">
       <div className="relative flex items-center">
-        <div className="relative aspect-[9/16] h-[calc(100vh-180px)] md:h-[90vh] w-auto max-w-full md:max-w-[500px] rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black">
+        <div
+          className="relative aspect-[9/16] h-[calc(100vh-180px)] md:h-[90vh] w-auto max-w-full md:max-w-[500px] rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <AnimatePresence initial={false} custom={direction}>
             {videos[currentIndex] && (
               <motion.div

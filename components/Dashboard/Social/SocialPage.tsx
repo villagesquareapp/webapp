@@ -35,9 +35,12 @@ const SocialPage = React.memo(({ user }: { user: IUser }) => {
       {showDailyLoginReward && <DailyLoginReward />}
       {showHome && !showAccount && !showPostsAndHashtags && (
         <SocialMainWrapper>
-          <div className="flex flex-col gap-y-4 w-full">
+          <div className="flex flex-col gap-y-6 w-full pb-8">
+            {/* <SocialFlash />
+            <div className="hidden md:block">
+              <AddPost user={user} />
+            </div> */}
             {/* <MessageShortcut user={user} /> */}
-            {/* <SocialFlash /> */}
             <SocialPost user={user} />
           </div>
         </SocialMainWrapper>
