@@ -64,18 +64,17 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
   return (
     <div className="flex flex-col w-full pb-4 border-b border-border">
       {/* Top row: Name & Settings */}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mt-2 gap-4 md:gap-0">
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-1">
             <button
               onClick={() => router.back()}
-              className="p-1 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground"
+              className="p-1 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground md:hidden mr-1"
             >
               <ArrowLeft className="size-5" />
             </button>
-            {/* <h1 title={profile.name} className="text-xl font-bold truncate max-w-[200px]">{profile.name}</h1> */}
-            <div className="relative group max-w-[200px]">
-              <h1 className="text-xl font-bold truncate">{profile.name}</h1>
+            <div className="relative group max-w-[200px] md:max-w-[300px]">
+              <h1 className="text-xl md:text-2xl font-bold truncate">{profile.name}</h1>
 
               <div className="absolute left-0 top-full mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 pointer-events-none">
                 {profile.name}
@@ -88,18 +87,13 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
           <CustomAvatar
             src={profile.profile_picture || ""}
             name={profile.name || "?"}
-            className="size-[88px] border-[3px] border-background"
+            className="size-[72px] md:size-[88px] border-[3px] border-background mt-2 md:mt-0"
           />
         </div>
 
-        <div className="flex flex-col items-end gap-4 self-start">
-          {/* {isOwnProfile && (
-                        <button className="text-muted-foreground hover:text-foreground mb-1">
-                            <Settings className="size-5" />
-                        </button>
-                    )} */}
+        <div className="flex flex-col md:items-end gap-3 md:gap-4 md:self-start">
           <div
-            className={`flex items-center gap-4 text-sm ${isOwnProfile ? "mt-2" : "mt-8"}`}
+            className={`flex items-center gap-4 text-sm ${isOwnProfile ? "mt-2" : "mt-2 md:mt-8"}`}
           >
             <div className="flex items-center gap-1">
               <span className="font-bold">
@@ -114,19 +108,19 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
               <span className="text-muted-foreground">Following</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {isOwnProfile ? (
               <>
                 <Button
                   variant="outline"
-                  className="rounded-full h-8 px-4 text-xs font-semibold"
+                  className="rounded-full h-8 px-4 text-xs font-semibold flex-1 md:flex-none"
                   onClick={() => router.push('/settings')}
                 >
                   Edit Profile
                 </Button>
                 <Button
                   variant="outline"
-                  className="rounded-full h-8 px-4 text-xs font-semibold"
+                  className="rounded-full h-8 px-4 text-xs font-semibold flex-1 md:flex-none"
                 >
                   Referrals
                 </Button>
@@ -136,13 +130,13 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
                 <Button
                   onClick={handleFollowToggle}
                   disabled={loading}
-                  className={`rounded-full h-8 px-8 text-xs font-semibold transition-all ${buttonStyle} ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`rounded-full h-8 px-6 md:px-8 text-xs font-semibold transition-all flex-1 md:flex-none ${buttonStyle} ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {buttonLabel}
                 </Button>
                 <Button
                   variant="outline"
-                  className="rounded-full h-8 px-6 text-xs font-semibold"
+                  className="rounded-full h-8 px-4 md:px-6 text-xs font-semibold flex-1 md:flex-none"
                 >
                   Message
                 </Button>
@@ -153,10 +147,10 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
       </div>
 
       {/* Bio */}
-      <div className="flex flex-col mt-2 gap-1 text-sm">
-        <span className="text-muted-foreground">@{profile.username}</span>
-        {profile.bio && <span className="mt-1">{profile.bio}</span>}
-        <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+      <div className="flex flex-col mt-4 md:mt-2 gap-1 text-sm">
+        <span className="text-muted-foreground font-medium">@{profile.username}</span>
+        {profile.bio && <span className="mt-1 leading-relaxed">{profile.bio}</span>}
+        <div className="flex items-center gap-1.5 mt-2 md:mt-1 text-muted-foreground">
           <Calendar className="size-4" />
           <span>Joined {profile.date_joined || "recently"}</span>
         </div>
