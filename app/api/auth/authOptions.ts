@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
         "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com",
       clientSecret:
         process.env.GOOGLE_CLIENT_SECRET ??
-        "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",
+        "",
       issuer: "https://accounts.google.com",
       authorization: {
         params: {

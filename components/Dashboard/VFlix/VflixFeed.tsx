@@ -273,8 +273,8 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   };
 
   return (
-    <div className="flex items-center justify-center w-full h-full relative lg:pl-[17rem]">
-      <div className="relative flex items-center w-full lg:w-auto justify-center">
+    <div className="flex items-center justify-center lg:justify-start w-full h-full relative lg:pl-[17rem]">
+      <div className="relative flex items-center w-full lg:w-auto justify-center lg:justify-start">
         <div
           className="relative w-full lg:w-auto lg:aspect-[9/16] h-[calc(100dvh-60px)] lg:h-[90vh] lg:max-w-[500px] lg:rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black"
           onTouchStart={handleTouchStart}

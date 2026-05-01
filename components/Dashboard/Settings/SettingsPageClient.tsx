@@ -71,7 +71,7 @@ const SettingsPageClient = () => {
             <div className="flex w-full h-[calc(100vh-80px)] overflow-hidden text-foreground pt-2 bg-background md:justify-center">
                 <div className="flex w-full max-w-7xl h-full">
                     {/* Left Sidebar */}
-                    <div className={`w-full md:w-[320px] lg:w-[400px] h-full overflow-y-auto border-r border-border flex-col pr-4 pl-4 md:pl-2 pb-10 ${mobileView === "menu" ? "flex" : "hidden md:flex"}`}>
+                    <div className={`w-full md:w-[320px] lg:w-[480px] h-full overflow-y-auto border-r border-border flex-col pr-4 pl-4 md:pl-2 pb-10 ${mobileView === "menu" ? "flex" : "hidden md:flex"}`}>
                         {/* Menu Sections */}
                         {menuSections.map((section, idx) => (
                             <div key={idx} className="mb-6">
