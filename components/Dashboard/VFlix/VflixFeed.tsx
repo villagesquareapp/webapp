@@ -225,9 +225,9 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
     touchStartY.current = null;
     if (Math.abs(delta) < SWIPE_THRESHOLD) return;
     if (delta > 0) {
-      nextVideo(); // finger moved up → next video
+      nextVideo(); 
     } else {
-      prevVideo(); // finger moved down → previous video
+      prevVideo(); 
     }
   };
 
@@ -254,6 +254,24 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
   }
 
   const currentPost = videos[currentIndex];
+
+  // Extract the best video URL from a vflix item
+  const getVideoUrl = (video: IVflix): string | null => {
+    const mediaItem = Array.isArray(video?.media) ? video?.media[0] : video?.media;
+    if (!mediaItem) return null;
+    return (mediaItem.is_transcode_complete && mediaItem.transcoded_media_url)
+      ? mediaItem.transcoded_media_url
+      : mediaItem.media_url || null;
+  };
+
+  // Preload next 3 + keep prev 2 buffered — hidden video elements
+  const preloadIndices = [
+    currentIndex - 2,
+    currentIndex - 1,
+    currentIndex + 1,
+    currentIndex + 2,
+    currentIndex + 3,
+  ].filter((i) => i >= 0 && i < videos.length && i !== currentIndex);
 
   const variants = {
     enter: (direction: number) => ({
@@ -341,6 +359,24 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
         user={user}
         allowComments={videos.find((v) => v.uuid === activePostId)?.allow_comments !== false}
       />
+
+      {/* Hidden preload elements — buffer next 3 and keep prev 2 in memory */}
+      <div className="sr-only" aria-hidden="true">
+        {preloadIndices.map((i) => {
+          const url = getVideoUrl(videos[i]);
+          if (!url) return null;
+          return (
+            <video
+              key={videos[i].uuid}
+              src={url}
+              preload="auto"
+              muted
+              playsInline
+              style={{ width: 1, height: 1, position: "absolute", opacity: 0, pointerEvents: "none" }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
