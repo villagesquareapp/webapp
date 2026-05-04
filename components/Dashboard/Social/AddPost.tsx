@@ -66,6 +66,8 @@ const AddPost = ({
   useEffect(() => {
     if (isAddPostOpen) {
       setIsNewPostDialogOpen(true);
+      // Auto-focus first textarea when dialog opens
+      setTimeout(() => textareaRefs.current[0]?.focus(), 150);
     }
   }, [isAddPostOpen]);
 
@@ -73,6 +75,23 @@ const AddPost = ({
     setIsNewPostDialogOpen(open);
     if (!open) {
       closeAddPost();
+      // Clear all content when modal closes
+      setItems([{
+        id: String(Date.now()),
+        caption: "",
+        media: [],
+        address: "",
+        latitude: "",
+        longitude: "",
+        privacy: "everyone",
+      }]);
+      setActiveMentionItemIndex(null);
+      setActiveHashtagItemIndex(null);
+      setActiveLocationItemIndex(null);
+      setImageEditing(false);
+      setImagePreviewing(false);
+      setPreviewImage({ type: "new", postIndex: null, file: null });
+      setCroppedImageUrl(null);
     }
   };
 
@@ -104,6 +123,7 @@ const AddPost = ({
   });
   const [completedCrop, setCompletedCrop] = useState<any | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const textareaRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
 
   const [isAudienceDialogOpen, setIsAudienceDialogOpen] =
     useState<boolean>(false);
@@ -117,6 +137,7 @@ const AddPost = ({
       const currentCaption = items[activeMentionItemIndex].caption;
       const newCaption = currentCaption ? `${currentCaption} @${username}` : `@${username}`;
       updateItem(activeMentionItemIndex, { caption: newCaption });
+      setTimeout(() => textareaRefs.current[activeMentionItemIndex]?.focus(), 50);
     }
   };
 
@@ -125,6 +146,7 @@ const AddPost = ({
       const currentCaption = items[activeHashtagItemIndex].caption;
       const newCaption = currentCaption ? `${currentCaption} #${hashtag}` : `#${hashtag}`;
       updateItem(activeHashtagItemIndex, { caption: newCaption });
+      setTimeout(() => textareaRefs.current[activeHashtagItemIndex]?.focus(), 50);
     }
   };
 
@@ -439,7 +461,7 @@ const AddPost = ({
                         aria-hidden="true"
                       >
                         {!it.caption ? (
-                          <span className="text-muted-foreground dark:text-gray-300">What's on your mind?</span>
+                          <span className="text-muted-foreground dark:text-[#8E8E93]">What's on your mind?</span>
                         ) : (
                           it.caption.split(/(\s+)/).map((part, i) => {
                             if (/^@[\w\d_]+/.test(part) || /^#[\w\d_]+/.test(part)) {
@@ -454,6 +476,7 @@ const AddPost = ({
 
                       {/* Actual Input */}
                       <textarea
+                        ref={(el) => { textareaRefs.current[idx] = el; }}
                         value={it.caption}
                         onChange={(e) => {
                           e.target.style.height = "auto";
@@ -532,7 +555,7 @@ const AddPost = ({
                         </button> */}
 
                         {/* Media Upload */}
-                        <label className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors">
+                        <label className={`cursor-pointer transition-colors ${it.media.length > 0 ? "text-[#4A9EFF]" : "text-muted-foreground dark:text-foreground dark:text-[#8E8E93] hover:text-[#8E8E93]"}`}>
                           <input
                             type="file"
                             accept="image/*,video/*"
@@ -549,35 +572,31 @@ const AddPost = ({
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
-                            <rect
-                              x="3"
-                              y="3"
-                              width="18"
-                              height="18"
-                              rx="2"
-                              ry="2"
-                            ></rect>
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                             <circle cx="8.5" cy="8.5" r="1.5"></circle>
                             <polyline points="21 15 16 10 5 21"></polyline>
                           </svg>
-                          {/* <TbPhoto size={20} /> */}
                         </label>
 
                         {/* Location */}
                         <div
-                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors"
+                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] dark:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveLocationItemIndex(idx)}
                         >
                           <IoLocationSharp size={20} className={it.address ? "text-[#4A9EFF]" : ""} />
                         </div>
+
+                        {/* Mention */}
                         <div
-                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors"
+                          className={`cursor-pointer transition-colors ${/@[\w\d_]+/.test(it.caption) ? "text-[#4A9EFF]" : "text-muted-foreground dark:text-foreground dark:text-[#8E8E93] hover:text-[#8E8E93]"}`}
                           onClick={() => setActiveMentionItemIndex(idx)}
                         >
                           <VscMention size={20} />
                         </div>
+
+                        {/* Hashtag */}
                         <div
-                          className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] transition-colors"
+                          className={`cursor-pointer transition-colors ${/#[\w\d_]+/.test(it.caption) ? "text-[#4A9EFF]" : "text-muted-foreground dark:text-foreground dark:text-[#8E8E93] hover:text-[#8E8E93]"}`}
                           onClick={() => setActiveHashtagItemIndex(idx)}
                         >
                           <FiHash size={20} />
@@ -619,7 +638,6 @@ const AddPost = ({
                 )}
               </div>
 
-              {/* Footer: Audience and Post Actions */}
               <div className="mt-20 flex items-center justify-between">
                 <button
                   onClick={() => setIsAudienceDialogOpen(true)}
