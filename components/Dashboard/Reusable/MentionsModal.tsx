@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "components/ui/dialog";
 import { IoClose, IoSearch } from "react-icons/io5";
 import CustomAvatar from "components/ui/custom/custom-avatar";
@@ -25,6 +25,7 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
     const debouncedSearch = useDebounce(searchValue, 300);
     const [results, setResults] = useState<MentionUser[]>([]);
     const [loading, setLoading] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         // Remove the `@` prefix for the actual search term
@@ -81,6 +82,8 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
         if (!open) {
             setSearchValue("@");
             setResults([]);
+        } else {
+            setTimeout(() => inputRef.current?.focus(), 100);
         }
     }, [open]);
 
@@ -108,6 +111,7 @@ const MentionsModal = ({ open, onClose, onSelectUser }: MentionsModalProps) => {
                     <div className="relative">
                         <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-muted-foreground pointer-events-none" />
                         <input
+                            ref={inputRef}
                             type="text"
                             placeholder="username"
                             value={searchValue}
