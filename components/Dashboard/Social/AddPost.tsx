@@ -555,7 +555,7 @@ const AddPost = ({
                         </button> */}
 
                         {/* Media Upload */}
-                        <label className={`cursor-pointer transition-colors ${it.media.length > 0 ? "text-[#4A9EFF]" : "text-muted-foreground dark:text-foreground dark:text-[#8E8E93] hover:text-[#8E8E93]"}`}>
+                        <label className={`cursor-pointer transition-colors ${it.media.length > 0 ? "text-[#4A9EFF]" : "text-[#8E8E93] hover:text-[#8E8E93]"}`}>
                           <input
                             type="file"
                             accept="image/*,video/*"
@@ -583,12 +583,12 @@ const AddPost = ({
                           className="cursor-pointer text-muted-foreground dark:text-foreground hover:text-[#8E8E93] dark:text-[#8E8E93] transition-colors"
                           onClick={() => setActiveLocationItemIndex(idx)}
                         >
-                          <IoLocationSharp size={20} className={it.address ? "text-[#4A9EFF]" : ""} />
+                          <IoLocationSharp size={20} className={it.address ? "text-[#4A9EFF]" : "text-[#8E8E93]"} />
                         </div>
 
                         {/* Mention */}
                         <div
-                          className={`cursor-pointer transition-colors ${/@[\w\d_]+/.test(it.caption) ? "text-[#4A9EFF]" : "text-muted-foreground dark:text-foreground dark:text-[#8E8E93] hover:text-[#8E8E93]"}`}
+                          className={`cursor-pointer transition-colors ${/@[\w\d_]+/.test(it.caption) ? "text-[#4A9EFF]" : "text-[#8E8E93] hover:text-[#8E8E93]"}`}
                           onClick={() => setActiveMentionItemIndex(idx)}
                         >
                           <VscMention size={20} />
@@ -596,7 +596,7 @@ const AddPost = ({
 
                         {/* Hashtag */}
                         <div
-                          className={`cursor-pointer transition-colors ${/#[\w\d_]+/.test(it.caption) ? "text-[#4A9EFF]" : "text-muted-foreground dark:text-foreground dark:text-[#8E8E93] hover:text-[#8E8E93]"}`}
+                          className={`cursor-pointer transition-colors ${/#[\w\d_]+/.test(it.caption) ? "text-[#4A9EFF]" : "text-[#8E8E93] hover:text-[#8E8E93]"}`}
                           onClick={() => setActiveHashtagItemIndex(idx)}
                         >
                           <FiHash size={20} />

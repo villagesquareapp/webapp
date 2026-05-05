@@ -8,6 +8,7 @@ import RateUsContent from "./RateUsContent";
 import ChangePasswordContent from "./ChangePasswordContent";
 import BlockedContent from "./BlockedContent";
 import DeactivateAccountContent from "./DeactivateAccountContent";
+import FAQsContent from "./FAQsContent";
 import { signOut } from "next-auth/react";
 
 const SettingsPageClient = () => {
@@ -167,7 +168,8 @@ const SettingsPageClient = () => {
                                 <BlockedContent onCountChange={(count) => setBlockedCount(count)} />
                             )}
                             {activeTab === "deactivate" && <DeactivateAccountContent />}
-                            {activeTab !== "edit_profile" && activeTab !== "verification" && activeTab !== "rate" && activeTab !== "change_password" && activeTab !== "blocked" && activeTab !== "deactivate" && (
+                            {activeTab === "faqs" && <FAQsContent />}
+                            {activeTab !== "edit_profile" && activeTab !== "verification" && activeTab !== "rate" && activeTab !== "change_password" && activeTab !== "blocked" && activeTab !== "deactivate" && activeTab !== "faqs" && (
                                 <div className="flex items-center justify-center h-full text-muted-foreground pt-10">
                                     {activeTab} content coming soon
                                 </div>
