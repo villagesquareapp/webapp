@@ -52,18 +52,19 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
+   {
+    title: "Messages",
+    url: "/messages",
+    icon: <MdMailOutline className="!size-6" />,
+    activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
+  },
   {
     title: "Settings",
     url: "/settings",
     icon: <IoSettingsOutline className="!size-6" />,
     activeIcon: <IoMdSettings className="fill-background text-background !size-6" />,
   }
-  // {
-  //   title: "Messages",
-  //   url: "/dashboard/messages",
-  //   icon: <MdMailOutline className="!size-6" />,
-  //   activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
-  // },
+ 
   // {
   //   title: "Dating hub",
   //   url: "#",
@@ -109,7 +110,7 @@ export function AppSidebar() {
   const { setOpen, state, isMobile, setOpenMobile } = useSidebar();
 
   React.useEffect(() => {
-    if (pathname.includes("/vflix")) {
+    if (pathname.includes("/vflix") || pathname.includes("/messages")) {
       setOpen(false);
     } else {
       setOpen(true);
