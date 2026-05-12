@@ -45,9 +45,11 @@ const DashboardNavbar = () => {
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "flex-1 max-w-[35rem] lg:ml-[17rem] lg:mr-[4rem] mx-4"
-              : pathname.startsWith("/settings")
-                ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
-                : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
+              : pathname.startsWith("/messages")
+                ? "w-[340px] shrink-0 px-4"
+                : pathname.startsWith("/settings")
+                  ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
+                  : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
           }
         >
           <div className="relative w-full">
@@ -98,13 +100,15 @@ const DashboardNavbar = () => {
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-[4rem]"
-              : pathname.startsWith("/settings")
-                ? "flex-1 flex items-center justify-end gap-x-4 pr-[4.5rem] lg:pr-[5rem]"
-                : "flex items-center justify-end px-4 lg:pl-6 lg:pr-12 lg:w-[24rem] lg:shrink-0"
+              : pathname.startsWith("/messages")
+                ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-12"
+                : pathname.startsWith("/settings")
+                  ? "flex-1 flex items-center justify-end gap-x-4 pr-[4.5rem] lg:pr-[5rem]"
+                  : "flex items-center justify-end px-4 lg:pl-6 lg:pr-12 lg:w-[24rem] lg:shrink-0"
           }
         >
           <div className={
-            pathname === "/vflix" || pathname.startsWith("/vflix/") || pathname.startsWith("/settings")
+            pathname === "/vflix" || pathname.startsWith("/vflix/") || pathname.startsWith("/settings") || pathname.startsWith("/messages")
               ? "contents"
               : "flex-1 flex items-center justify-end gap-x-4"
           }>
