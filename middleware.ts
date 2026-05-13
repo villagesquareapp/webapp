@@ -18,6 +18,5 @@ export const config = {
     "/messages/:path*",
     "/live-streams/:path*",
     "/wallet/:path*",
-    "/posts/:path*",
   ],
 }; 

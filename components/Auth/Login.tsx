@@ -80,7 +80,16 @@ export function Login({ className, ...props }: LoginProps) {
         console.log("Got here 3");
         setIsRedirecting(true);
         toast.success("Logged in successfully");
-        router.push("/home");
+        // Redirect to saved path if coming from a public post, otherwise home
+        const savedPath = typeof window !== "undefined"
+            ? localStorage.getItem("redirectAfterLogin")
+            : null;
+        if (savedPath) {
+            localStorage.removeItem("redirectAfterLogin");
+            router.push(savedPath);
+        } else {
+            router.push("/home");
+        }
       }
     } catch (error) {
       console.log("Got here 4");
