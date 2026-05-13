@@ -2,7 +2,7 @@ import { getPostDetails } from "app/api/post";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
 import PostDetailPageClient from "./PostDetailPageClient";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export default async function PostDetailPage({
     params,
@@ -12,7 +12,10 @@ export default async function PostDetailPage({
     const { uuid } = await params;
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) return null;
+    // Unauthenticated users → send to public post page
+    if (!session?.user) {
+        redirect(`/post/${uuid}`);
+    }
 
     const response = await getPostDetails(uuid);
 

@@ -284,7 +284,7 @@ export default function ChatWindow({
       )}
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-border shrink-0">
+      <div className="px-4 py-3 border-t border-border shrink-0 flex items-center gap-3 ">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -299,7 +299,7 @@ export default function ChatWindow({
         >
           <Paperclip className="size-5" />
         </button>
-        <div className="flex items-center gap-3 bg-accent rounded-2xl px-4 py-2">
+        <div className="flex-1 flex items-center bg-accent rounded-2xl px-4 py-2">
           <textarea
             ref={inputRef}
             value={input}
@@ -307,7 +307,7 @@ export default function ChatWindow({
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             rows={1}
-            className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground outline-none border-none resize-none max-h-32 leading-relaxed"
+            className="w-full bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground outline-none border-none resize-none max-h-32 leading-relaxed"
           />
         </div>
         <button
