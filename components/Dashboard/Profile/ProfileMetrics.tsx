@@ -88,7 +88,7 @@ const ProfileMetrics = ({ profile, isOwnProfile }: ProfileMetricsProps) => {
                             <div key={user.uuid || i} className="flex items-center justify-between">
                                 <div
                                     className="flex items-center gap-3 cursor-pointer"
-                                    onClick={() => router.push(`/u/${user.username}`)}
+                                    onClick={() => router.push(`/u/${user.username}${user.uuid ? `?id=${user.uuid}` : ""}`)}
                                 >
                                     <CustomAvatar
                                         src={user.profile_picture || ""}

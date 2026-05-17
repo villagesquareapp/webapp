@@ -283,7 +283,7 @@ const PostDetails = ({
 
             {replies.map((reply, index) => {
               return (
-                <div className="">
+                <div className="" key={index}>
                   <div key={reply.uuid} className="flex gap-3 pt-3">
                     <CustomAvatar
                       src={reply.user?.profile_picture || ""}
@@ -295,7 +295,7 @@ const PostDetails = ({
                         <div className="flex flex-row items-center max-w-80">
                           <span
                             className="font-semibold text-sm text-foreground cursor-pointer hover:underline"
-                            onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}`)}
+                            onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}${reply.user?.uuid ? `?id=${reply.user.uuid}` : ""}`)}
                           >
                             {reply.user?.name}
                           </span>
@@ -311,7 +311,7 @@ const PostDetails = ({
                         </div>
                         <div
                           className="text-xs text-gray-400 cursor-pointer hover:underline w-fit"
-                          onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}`)}
+                          onClick={() => reply.user?.username && router.push(`/u/${reply.user.username}${reply.user?.uuid ? `?id=${reply.user.uuid}` : ""}`)}
                         >
                           @{reply.user?.username}
                         </div>

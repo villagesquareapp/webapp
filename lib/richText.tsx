@@ -23,7 +23,9 @@ export const parseRichText = (text: string, mentions?: IMention[]) => {
                 const mention = mentions?.find(
                     (m) => m.username.toLowerCase() === content.toLowerCase()
                 );
-                linkHref = `/u/${content}`;
+                linkHref = mention
+                    ? `/u/${content}?id=${mention.uuid}`
+                    : `/u/${content}`;
             }
 
             return (

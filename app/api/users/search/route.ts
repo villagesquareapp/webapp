@@ -5,27 +5,20 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villages
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
-) {
-    const { userId } = await params;
+export async function GET(request: NextRequest) {
+    const query = request.nextUrl.searchParams.get("query") || "";
 
     try {
         let token: string | undefined;
-        try {
-            token = await getToken() ?? undefined;
-        } catch {
-            token = undefined;
-        }
+        try { token = await getToken() ?? undefined; } catch { token = undefined; }
 
         const headers: HeadersInit = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${API_URL}/users/${userId}/profile`, {
-            headers,
-            cache: "no-store",
-        });
+        const res = await fetch(
+            `${API_URL}/users/search?query=${encodeURIComponent(query)}`,
+            { headers, cache: "no-store" }
+        );
         const data = await res.json();
         return NextResponse.json(data);
     } catch (error: any) {

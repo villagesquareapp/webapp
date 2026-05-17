@@ -53,7 +53,7 @@ const PostHeader = ({
       if (scrollContainer) {
         sessionStorage.setItem("social-scroll-pos", String(scrollContainer.scrollTop));
       }
-      router.push(`/u/${username}`);
+      router.push(`/u/${username}${post?.user?.uuid ? `?id=${post.user.uuid}` : ""}`);
     }
   };
 
