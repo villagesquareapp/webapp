@@ -284,7 +284,7 @@ const RightSidebar = () => {
               >
                 <div
                   className="flex items-center gap-x-3 cursor-pointer"
-                  onClick={() => router.push(`/u/${person.username}`)}
+                  onClick={() => router.push(`/u/${person.username}${person.uuid ? `?id=${person.uuid}` : ""}`)}
                 >
                   <CustomAvatar
                     src={person.profile_picture || ""}

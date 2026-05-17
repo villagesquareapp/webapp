@@ -16,6 +16,7 @@ import { authOptions } from "api/auth/authOptions";
 import AddPost from "components/Dashboard/Social/AddPost";
 import { VFlixUploadProvider } from "context/VFlixUploadContext";
 import VFlixUploadModal from "components/Dashboard/VFlix/VFlixUploadModal";
+import { GuestProvider } from "context/GuestContext";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -31,26 +32,29 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
       <DataCacheProvider>
         <AddPostProvider>
           <VFlixUploadProvider>
-            {session?.user && (
-              <div className="hidden">
-                <AddPost user={session.user} />
-                <VFlixUploadModal user={session.user} />
-              </div>
-            )}
-            <main className="max-w-[90rem] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
-              <div className="w-full flex h-screen">
-                <SidebarProvider style={{ "--sidebar-width": "22rem", "--sidebar-width-icon": "8.75rem" } as React.CSSProperties}>
-                  <AppSidebar />
-                  <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
-                    <DashboardNavbar />
-                    <div className="flex-1 overflow-hidden h-full">
-                      {children}
-                    </div>
-                  </SidebarInset>
-                </SidebarProvider>
-              </div>
-              <CustomToaster />
-            </main>
+            {/* GuestProvider with isGuest=false so AppSidebar's useGuest() never throws */}
+            <GuestProvider isGuest={false} currentPath="">
+              {session?.user && (
+                <div className="hidden">
+                  <AddPost user={session.user} />
+                  <VFlixUploadModal user={session.user} />
+                </div>
+              )}
+              <main className="max-w-[90rem] mx-auto relative font-albert-sans h-screen bg-background flex justify-center overflow-hidden">
+                <div className="w-full flex h-screen">
+                  <SidebarProvider style={{ "--sidebar-width": "22rem", "--sidebar-width-icon": "8.75rem" } as React.CSSProperties}>
+                    <AppSidebar />
+                    <SidebarInset className="bg-background flex flex-col relative p-0 m-0 h-screen overflow-hidden">
+                      <DashboardNavbar />
+                      <div className="flex-1 overflow-hidden h-full">
+                        {children}
+                      </div>
+                    </SidebarInset>
+                  </SidebarProvider>
+                </div>
+                <CustomToaster />
+              </main>
+            </GuestProvider>
           </VFlixUploadProvider>
         </AddPostProvider>
       </DataCacheProvider>

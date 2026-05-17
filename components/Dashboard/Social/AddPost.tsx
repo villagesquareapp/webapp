@@ -518,10 +518,20 @@ const AddPost = ({
                             : ""
                             }`}
                         >
-                          <img
-                            src={URL.createObjectURL(file)}
-                            className="w-full h-full object-cover"
-                          />
+                          {file.type.startsWith("video/") ? (
+                            <video
+                              src={URL.createObjectURL(file)}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img
+                              src={URL.createObjectURL(file)}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                           <button
                             onClick={() => handleRemovePostImage(idx, fIdx)}
                             className="absolute top-2 right-2 bg-transparent border-2 border-red-600 rounded-full p-1 shadow-lg transition-colors z-10"

@@ -15,6 +15,7 @@ import { SidebarTrigger } from "components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
+import { useGuest } from "context/GuestContext";
 
 const DashboardNavbar = () => {
   const { data: session } = useSession();
@@ -23,6 +24,10 @@ const DashboardNavbar = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { isGuest } = useGuest();
+
+  // Hide search bar for guests on vflix pages (video takes full focus)
+  const hideSearch = isGuest && pathname.startsWith("/vflix/");
 
   function getInitials(name: string) {
     return name
@@ -40,7 +45,8 @@ const DashboardNavbar = () => {
           <SidebarTrigger />
         </div>
 
-        {/* Center Search Bar */}
+        {/* Center Search Bar — hidden for guests on vflix pages */}
+        {!hideSearch && (
         <div
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
@@ -95,6 +101,7 @@ const DashboardNavbar = () => {
             )} */}
           </div>
         </div>
+        )}
         {/* Right hand side Navbar */}
         <div
           className={

@@ -7,6 +7,7 @@ import CustomAvatar from "components/ui/custom/custom-avatar";
 import { MdVerified } from "react-icons/md";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useGuest } from "context/GuestContext";
 
 interface ProfileHeaderProps {
   profile: IUserProfileResponse;
@@ -15,6 +16,7 @@ interface ProfileHeaderProps {
 
 const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
   const router = useRouter();
+  const { isGuest, openLoginModal } = useGuest();
   const [isFollowing, setIsFollowing] = useState(
     profile.relationship?.is_following ?? false,
   );
@@ -24,6 +26,7 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
   const [loading, setLoading] = useState(false);
 
   const handleFollowToggle = async () => {
+    if (isGuest) { openLoginModal(); return; }
     if (loading) return;
     setLoading(true);
 

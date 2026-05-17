@@ -5,7 +5,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villages
 
 export const dynamic = "force-dynamic";
 
-// Supports both authenticated and unauthenticated access
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -13,18 +12,14 @@ export async function GET(
     const { id } = await params;
 
     try {
-        // Try to get token — will be null/undefined if unauthenticated
+        // No auth header for guests — backend supports public access on /vflix/:uuid
         let token: string | undefined;
-        try {
-            token = await getToken() ?? undefined;
-        } catch {
-            token = undefined;
-        }
+        try { token = (await getToken()) ?? undefined; } catch { token = undefined; }
 
-        const headers: HeadersInit = { "Content-Type": "application/json" };
+        const headers: HeadersInit = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${API_URL}/posts/${id}`, {
+        const res = await fetch(`${API_URL}/vflix/${id}`, {
             headers,
             cache: "no-store",
         });
@@ -32,7 +27,7 @@ export async function GET(
         return NextResponse.json(data);
     } catch (error: any) {
         return NextResponse.json(
-            { status: false, message: error.message || "Failed to fetch post" },
+            { status: false, message: error.message || "Failed to fetch vflix" },
             { status: 500 }
         );
     }

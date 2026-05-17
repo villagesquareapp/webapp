@@ -37,6 +37,7 @@ import { Plus } from "lucide-react";
 import { useAddPost } from "context/AddPostContext";
 import { useVFlixUpload } from "context/VFlixUploadContext";
 import { useSidebar } from "components/ui/sidebar";
+import { useGuest } from "context/GuestContext";
 import React from "react";
 
 const items = [
@@ -108,6 +109,7 @@ export function AppSidebar() {
   const { openAddPost } = useAddPost();
   const { openVFlixUpload } = useVFlixUpload();
   const { setOpen, state, isMobile, setOpenMobile } = useSidebar();
+  const { isGuest, openLoginModal } = useGuest();
 
   React.useEffect(() => {
     if (pathname.includes("/vflix") || pathname.includes("/messages")) {
@@ -166,24 +168,21 @@ export function AppSidebar() {
       <SidebarFooter className="bg-background pb-8 pl-[1.375rem] pr-6">
         {isCollapsed ? (
           <Button
-            onClick={handleCreatePost}
+            onClick={isGuest ? openLoginModal : handleCreatePost}
             className="size-12 rounded-full bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
           >
-            <Plus className="size-5 text-white shrink-0" />
+            {isGuest ? (
+              <span className="text-[10px] font-bold">Login</span>
+            ) : (
+              <Plus className="size-5 text-white shrink-0" />
+            )}
           </Button>
         ) : (
-          // <Button
-          //   onClick={handleCreatePost}
-          //   className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
-          // >
-          //   New Post
-          // </Button>
-
           <Button
-            onClick={handleCreatePost}
+            onClick={isGuest ? openLoginModal : handleCreatePost}
             className="w-full h-12 rounded-full bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
           >
-            New Post
+            {isGuest ? "Login" : "New Post"}
           </Button>
         )}
       </SidebarFooter>

@@ -235,7 +235,7 @@ export default function VflixComments({
       onClick={onClose}
     >
       <div
-        className={`fixed bottom-0 right-0 h-[60%] w-full max-w-lg bg-background transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed rounded-3xl bottom-0 right-0 h-[90%] w-full max-w-lg bg-background transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
           }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -284,7 +284,7 @@ export default function VflixComments({
                     <div className="flex items-center">
                       <span
                         className="font-semibold text-base text-foreground cursor-pointer hover:underline"
-                        onClick={() => comment?.user?.username && router.push(`/u/${comment.user.username}`)}
+                        onClick={() => comment?.user?.username && router.push(`/u/${comment.user.username}${comment.user?.uuid ? `?id=${comment.user.uuid}` : ""}`)}
                       >
                         {comment?.user?.name}
                       </span>
