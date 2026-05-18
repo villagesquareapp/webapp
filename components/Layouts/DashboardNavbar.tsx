@@ -131,9 +131,9 @@ const DashboardNavbar = () => {
               )}
             </button>
 
-            <div className="relative">
+            {isGuest ? null : <div className="relative">
               <Notification />
-            </div>
+            </div>}
 
             {/* Wallet Icon */}
             {/* <button className="text-muted-foreground hover:text-foreground hidden sm:block">
