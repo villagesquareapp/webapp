@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDataCache } from "context/DataCacheContext";
+import { useGuest } from "context/GuestContext";
+import Link from "next/link";
 
 interface ProfileVflixProps {
     userId: string;
@@ -14,6 +16,7 @@ interface ProfileVflixProps {
 
 const ProfileVflix = ({ userId }: ProfileVflixProps) => {
     const { getCachedData, setCachedData, isCacheValid } = useDataCache();
+    const { isGuest } = useGuest();
     const [videos, setVideos] = useState<IVflix[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -64,12 +67,12 @@ const ProfileVflix = ({ userId }: ProfileVflixProps) => {
                         : videos.length + fetchedVideos.length;
                 setHasMore(currentTotal < total);
             } else {
-                toast.error(response?.message || "Failed to fetch VFlix");
+                if (!isGuest) toast.error(response?.message || "Failed to fetch VFlix");
                 setHasMore(false);
             }
         } catch (error) {
             console.error("Error fetching user VFlix:", error);
-            toast.error("An error occurred while fetching VFlix");
+            if (!isGuest) toast.error("An error occurred while fetching VFlix");
             setHasMore(false);
         } finally {
             setLoading(false);
@@ -135,6 +138,26 @@ const ProfileVflix = ({ userId }: ProfileVflixProps) => {
     }
 
     if (!loading && videos.length === 0) {
+        if (isGuest) {
+            return (
+                <div className="flex flex-col items-center justify-center py-16 gap-4 text-center px-4">
+                    <div className="size-14 rounded-full bg-accent flex items-center justify-center">
+                        <svg className="size-7 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="text-[15px] font-semibold text-foreground mb-1">Log in to view VFlix</p>
+                        <p className="text-[13px] text-muted-foreground max-w-[240px]">
+                            Log in to see this user's VFlix videos.
+                        </p>
+                    </div>
+                    <Link href="/auth/login" className="bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white text-[14px] font-semibold px-6 py-2.5 rounded-full transition-colors">
+                        Log in
+                    </Link>
+                </div>
+            );
+        }
         return (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <p className="text-sm">No VFlix videos yet.</p>
