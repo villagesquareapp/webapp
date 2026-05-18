@@ -144,7 +144,16 @@ const DashboardNavbar = () => {
               </svg>
             </button> */}
 
-            {/* Profile */}
+            {/* Profile — disabled for guests */}
+            {isGuest ? (
+              <div className="flex items-center gap-x-2 opacity-50 cursor-not-allowed select-none">
+                <CustomAvatar
+                  src=""
+                  name="?"
+                  className="size-8 md:size-9"
+                />
+              </div>
+            ) : (
             <Popover>
               <PopoverTrigger asChild>
                 <div className="flex items-center gap-x-2 cursor-pointer">
@@ -189,6 +198,7 @@ const DashboardNavbar = () => {
                 </div>
               </PopoverContent>
             </Popover>
+            )}
           </div>
         </div>
       </div>
