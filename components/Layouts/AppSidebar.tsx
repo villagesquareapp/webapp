@@ -152,10 +152,20 @@ export function AppSidebar() {
                         : "text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 dark:hover:text-foreground"
                         }`}
                     >
-                      <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4" onClick={() => isMobile && setOpenMobile(false)}>
-                        <span className="shrink-0 flex items-center justify-center">{Icon}</span>
-                        {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
-                      </Link>
+                      {isGuest ? (
+                        <button
+                          onClick={(e) => { e.preventDefault(); openLoginModal(); }}
+                          className="flex items-center p-3 gap-x-4 w-full"
+                        >
+                          <span className="shrink-0 flex items-center justify-center">{Icon}</span>
+                          {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
+                        </button>
+                      ) : (
+                        <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4" onClick={() => isMobile && setOpenMobile(false)}>
+                          <span className="shrink-0 flex items-center justify-center">{Icon}</span>
+                          {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
+                        </Link>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
