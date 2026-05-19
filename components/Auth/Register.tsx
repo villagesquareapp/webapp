@@ -185,7 +185,7 @@ export function Register({ className, ...props }: RegisterProps) {
       setIsGoogleAuthLoading(true);
   
       const result = await signIn("google", {
-        callbackUrl: "/home", 
+        callbackUrl: "/home",
         redirect: false,
       });
   
