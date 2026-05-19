@@ -99,4 +99,4 @@ jobs:
       - name: Apply Kubernetes deployment
         run: |
           aws eks update-kubeconfig --region af-south-1 --name kitops-eks
-          kubectl apply -f ${{ env.ENV_DIR }}/ --validate=false
+          kubectl apply -f ${{ env.ENV_DIR }}/deployment.yml --validate=false
