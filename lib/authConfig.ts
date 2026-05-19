@@ -12,9 +12,13 @@ export const getAuthSecret = () => {
 
 export const getAuthUrl = () => {
   const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
-  const resolvedUrl = process.env.NEXTAUTH_URL ?? vercelUrl ?? "http://localhost:3000";
+  const envAuthUrl = process.env.NEXTAUTH_URL?.trim();
+  const resolvedUrl =
+    envAuthUrl && envAuthUrl.length > 0
+      ? envAuthUrl
+      : vercelUrl ?? "http://localhost:3000";
 
-  if (!process.env.NEXTAUTH_URL) {
+  if (!envAuthUrl) {
     process.env.NEXTAUTH_URL = resolvedUrl;
   }
 
