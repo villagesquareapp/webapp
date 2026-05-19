@@ -6,13 +6,17 @@ import type { Metadata } from "next";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
 
-async function fetchProfile(uuid: string, token?: string): Promise<IUserProfileResponse | null> {
+/**
+ * Fetch profile by username or UUID.
+ * - No auth header for guests (backend now accepts username without auth)
+ * - Auth header for authenticated users (gets personalized data: is_following etc.)
+ */
+async function fetchProfile(usernameOrUuid: string, token?: string): Promise<IUserProfileResponse | null> {
     try {
-        // No auth header for guests — backend supports public access on this endpoint
         const headers: HeadersInit = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${API_URL}/users/${uuid}/profile`, {
+        const res = await fetch(`${API_URL}/users/${usernameOrUuid}/profile`, {
             headers,
             cache: "no-store",
         });
@@ -29,34 +33,33 @@ export async function generateMetadata({
     params: Promise<{ username: string }>;
 }): Promise<Metadata> {
     const { username } = await params;
-    return { title: `@${username} on VS` };
+    // Fetch without auth for metadata (public)
+    const profile = await fetchProfile(username);
+    if (profile) {
+        return {
+            title: `${profile.name} (@${profile.username}) on Village Square`,
+            description: profile.bio || `View ${profile.name}'s profile on Village Square.`,
+        };
+    }
+    return { title: `@${username} on Village Square` };
 }
 
 export default async function UserProfilePage({
     params,
-    searchParams,
 }: {
     params: Promise<{ username: string }>;
-    searchParams: Promise<{ id?: string }>;
 }) {
     const { username } = await params;
-    const { id: uuidFromUrl } = await searchParams;
 
     const session = await getServerSession(authOptions);
     const token = session?.user?.token;
     const isOwnProfile = session?.user?.username === username;
 
-    // Determine which UUID to use
-    const uuid = isOwnProfile
-        ? session?.user?.uuid
-        : uuidFromUrl;
-
-    if (!uuid) {
-        // No UUID available — can't fetch profile without auth search
-        return <ProfileNotFound username={username} />;
-    }
-
-    const initialProfile = await fetchProfile(uuid, token);
+    // Fetch with token if authenticated (personalized), without token if guest (public)
+    const initialProfile = await fetchProfile(
+        isOwnProfile && session?.user?.uuid ? session.user.uuid : username,
+        token
+    );
 
     if (!initialProfile) {
         return <ProfileNotFound username={username} />;
