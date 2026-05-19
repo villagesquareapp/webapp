@@ -127,6 +127,7 @@ export default function VflixCard({
   const playerRef = useRef<ReactPlayer>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [hasEnded, setHasEnded] = useState<boolean>(false);
+  const playCountRef = useRef<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [volume, setVolume] = useState<number>(1);
@@ -282,15 +283,25 @@ export default function VflixCard({
   };
 
   const handleEnded = () => {
-    setIsPlaying(false);
-    setHasEnded(true);
+    playCountRef.current += 1;
+    if (playCountRef.current < 3) {
+      // Replay — seek back to start and keep playing
+      playerRef.current?.seekTo(0);
+      setCurrentTime(0);
+      setIsPlaying(true);
+    } else {
+      // 3 plays done — show the modal
+      setIsPlaying(false);
+      setHasEnded(true);
+    }
   };
 
-  // Reset ended state when video changes
+  // Reset play count and ended state when video changes
   useEffect(() => {
     setHasEnded(false);
     setIsPlaying(true);
     setCurrentTime(0);
+    playCountRef.current = 0;
   }, [post.uuid]);
 
   useEffect(() => {
@@ -647,6 +658,7 @@ export default function VflixCard({
                     setHasEnded(false);
                     setCurrentTime(0);
                     playerRef.current?.seekTo(0);
+                    playCountRef.current = 0;
                     setIsPlaying(true);
                   }}
                   className="flex items-center gap-2 bg-white/10 border border-white/20 text-white font-medium text-sm px-6 py-3 rounded-full hover:bg-white/20 transition-colors"

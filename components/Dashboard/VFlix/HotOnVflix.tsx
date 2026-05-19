@@ -139,7 +139,7 @@ const HotOnVflix = ({ onVideoSelect }: HotOnVflixProps) => {
                         className="text-[13px] font-semibold text-white truncate cursor-pointer hover:underline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (video.user?.username) router.push(`/u/${video.user.username}`);
+                          if (video.user?.username) router.push(`/u/${video.user.username}${video.user?.uuid ? `?id=${video.user.uuid}` : ""}`);
                         }}
                       >
                         {userName}

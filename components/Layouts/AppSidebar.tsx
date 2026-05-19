@@ -37,6 +37,7 @@ import { Plus } from "lucide-react";
 import { useAddPost } from "context/AddPostContext";
 import { useVFlixUpload } from "context/VFlixUploadContext";
 import { useSidebar } from "components/ui/sidebar";
+import { useGuest } from "context/GuestContext";
 import React from "react";
 
 const items = [
@@ -52,18 +53,19 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
+   {
+    title: "Messages",
+    url: "/messages",
+    icon: <MdMailOutline className="!size-6" />,
+    activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
+  },
   {
     title: "Settings",
     url: "/settings",
     icon: <IoSettingsOutline className="!size-6" />,
     activeIcon: <IoMdSettings className="fill-background text-background !size-6" />,
   }
-  // {
-  //   title: "Messages",
-  //   url: "/dashboard/messages",
-  //   icon: <MdMailOutline className="!size-6" />,
-  //   activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
-  // },
+ 
   // {
   //   title: "Dating hub",
   //   url: "#",
@@ -106,17 +108,18 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { openAddPost } = useAddPost();
   const { openVFlixUpload } = useVFlixUpload();
-  const { setOpen, state } = useSidebar();
+  const { setOpen, state, isMobile, setOpenMobile } = useSidebar();
+  const { isGuest, openLoginModal } = useGuest();
 
   React.useEffect(() => {
-    if (pathname.includes("/vflix")) {
+    if (pathname.includes("/vflix") || pathname.includes("/messages")) {
       setOpen(false);
     } else {
       setOpen(true);
     }
   }, [pathname, setOpen]);
 
-  const isCollapsed = state === "collapsed";
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   const handleCreatePost = () => {
     if (pathname.includes("/vflix")) {
@@ -128,7 +131,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-border shadow-none bg-background pl-8" collapsible="icon" mobileVariant="sheet">
-      <SidebarHeader className="pt-6 pb-4 border-none bg-background">
+      <SidebarHeader className="pt-6 pb-4 border-none bg-background" onClick={() => isMobile && setOpenMobile(false)}>
         <VsCustomLogo />
       </SidebarHeader>
 
@@ -149,10 +152,20 @@ export function AppSidebar() {
                         : "text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 dark:hover:text-foreground"
                         }`}
                     >
-                      <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4">
-                        <span className="shrink-0 flex items-center justify-center">{Icon}</span>
-                        {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
-                      </Link>
+                      {isGuest ? (
+                        <button
+                          onClick={(e) => { e.preventDefault(); openLoginModal(); }}
+                          className="flex items-center p-3 gap-x-4 w-full"
+                        >
+                          <span className="shrink-0 flex items-center justify-center">{Icon}</span>
+                          {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
+                        </button>
+                      ) : (
+                        <Link href={item.url} prefetch={true} className="flex items-center p-3 gap-x-4" onClick={() => isMobile && setOpenMobile(false)}>
+                          <span className="shrink-0 flex items-center justify-center">{Icon}</span>
+                          {!isCollapsed && <span className="font-semibold text-base whitespace-nowrap">{item.title}</span>}
+                        </Link>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -165,24 +178,21 @@ export function AppSidebar() {
       <SidebarFooter className="bg-background pb-8 pl-[1.375rem] pr-6">
         {isCollapsed ? (
           <Button
-            onClick={handleCreatePost}
+            onClick={isGuest ? openLoginModal : handleCreatePost}
             className="size-12 rounded-full bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white flex items-center justify-center p-0 shrink-0"
           >
-            <Plus className="size-5 text-white shrink-0" />
+            {isGuest ? (
+              <span className="text-[10px] font-bold">Login</span>
+            ) : (
+              <Plus className="size-5 text-white shrink-0" />
+            )}
           </Button>
         ) : (
-          // <Button
-          //   onClick={handleCreatePost}
-          //   className="w-full h-12 rounded-full bg-[#094DB5BF] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
-          // >
-          //   New Post
-          // </Button>
-
           <Button
-            onClick={handleCreatePost}
+            onClick={isGuest ? openLoginModal : handleCreatePost}
             className="w-full h-12 rounded-full bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white font-medium flex items-center justify-center gap-2"
           >
-            New Post
+            {isGuest ? "Login" : "New Post"}
           </Button>
         )}
       </SidebarFooter>
