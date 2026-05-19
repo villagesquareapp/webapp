@@ -112,14 +112,26 @@ export const authOptions: NextAuthOptions = {
         try {
           // console.log(`[GoogleSignIn] Attempting to register/login with backend at ${API_BASE_URL}/auth/social-account`);
 
+          const providerId =
+            account.providerAccountId ||
+            (typeof (profile as any)?.sub === "string" ? (profile as any).sub : "");
+
+          const providerToken = account.id_token || account.access_token;
+
+          if (!providerToken || !providerId) {
+            return false;
+          }
+
           const payload = {
             audience: "web",
             auth_type: "google",
+            registration_type: "google",
             device: "browser",
             device_id: null,
             fcm_token: null,
             provider: "google",
-            provider_token: account.id_token || account.access_token,
+            provider_id: providerId,
+            provider_token: providerToken,
             timezone: getTimeZone(),
           };
 
