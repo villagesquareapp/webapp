@@ -6,11 +6,6 @@ import type { Metadata } from "next";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
 
-/**
- * Fetch profile by username or UUID.
- * - No auth header for guests (backend now accepts username without auth)
- * - Auth header for authenticated users (gets personalized data: is_following etc.)
- */
 async function fetchProfile(usernameOrUuid: string, token?: string): Promise<IUserProfileResponse | null> {
     try {
         const headers: HeadersInit = {};
