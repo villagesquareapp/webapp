@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
             });
             const data = await res.json();
             return NextResponse.json(data);
+<<<<<<< HEAD
         } 
+=======
+        }
+>>>>>>> origin/main
 
         // Forward search — use Photon (no rate limits, production-safe)
         if (!q?.trim()) {

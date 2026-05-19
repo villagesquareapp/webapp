@@ -1,4 +1,5 @@
 import DashboardLayout from "components/Layouts/DashboardLayout";
+<<<<<<< HEAD
 import PublicLayout from "components/Layouts/PublicLayout";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
@@ -19,5 +20,14 @@ export default async function UserProfileLayout({
         return <PublicLayout currentPath={currentPath}>{children}</PublicLayout>;
     }
 
+=======
+import React from "react";
+
+export default function UserProfileLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+>>>>>>> origin/main
     return <DashboardLayout>{children}</DashboardLayout>;
 }
