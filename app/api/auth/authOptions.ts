@@ -119,10 +119,18 @@ export const authOptions: NextAuthOptions = {
             device_id: null,
             fcm_token: null,
             provider: "google",
+            provider_id: (profile as any)?.sub ?? null,
+            email: (profile as any)?.email ?? null,
+            name: (profile as any)?.name ?? null,
             provider_token: account.id_token || account.access_token,
+            access_token: account.access_token ?? null,
+            id_token: account.id_token ?? null,
             timezone: getTimeZone(),
           };
 
+          if (!payload.provider_token) {
+            return false;
+          }
 
           const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
             method: "POST",
