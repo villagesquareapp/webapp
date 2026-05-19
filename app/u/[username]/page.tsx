@@ -2,8 +2,25 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
 import ProfilePage from "components/Dashboard/Profile/ProfilePage";
 import ProfileNotFound from "components/Dashboard/Profile/ProfileNotFound";
-import { getProfile, resolveUsernameToUUID } from "api/user";
 import type { Metadata } from "next";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
+
+async function fetchProfile(usernameOrUuid: string, token?: string): Promise<IUserProfileResponse | null> {
+    try {
+        const headers: HeadersInit = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_URL}/users/${usernameOrUuid}/profile`, {
+            headers,
+            cache: "no-store",
+        });
+        const data = await res.json();
+        return data?.status && data?.data ? data.data : null;
+    } catch {
+        return null;
+    }
+}
 
 export async function generateMetadata({
     params,
@@ -11,20 +28,15 @@ export async function generateMetadata({
     params: Promise<{ username: string }>;
 }): Promise<Metadata> {
     const { username } = await params;
-    const resolvedUUID = await resolveUsernameToUUID(username).catch(() => null);
-    if (resolvedUUID) {
-        const res = await getProfile(resolvedUUID).catch(() => null);
-        const profile = res?.data;
-        if (profile) {
-            return {
-                title: `${profile.name} (@${profile.username}) on VS`,
-                description: profile.bio || `View ${profile.name}'s profile on Village Square.`,
-            };
-        }
+    // Fetch without auth for metadata (public)
+    const profile = await fetchProfile(username);
+    if (profile) {
+        return {
+            title: `${profile.name} (@${profile.username}) on Village Square`,
+            description: profile.bio || `View ${profile.name}'s profile on Village Square.`,
+        };
     }
-    return {
-        title: `@${username} on VS`,
-    };
+    return { title: `@${username} on Village Square` };
 }
 
 export default async function UserProfilePage({
@@ -35,34 +47,15 @@ export default async function UserProfilePage({
     const { username } = await params;
 
     const session = await getServerSession(authOptions);
+    const token = session?.user?.token;
     const isOwnProfile = session?.user?.username === username;
 
-    let initialProfile: IUserProfileResponse | null = null;
+    // Fetch with token if authenticated (personalized), without token if guest (public)
+    const initialProfile = await fetchProfile(
+        isOwnProfile && session?.user?.uuid ? session.user.uuid : username,
+        token
+    );
 
-    try {
-        if (isOwnProfile) {
-            const userId = session?.user?.uuid;
-            if (userId) {
-                const response = await getProfile(userId);
-                if (response?.status && response.data) {
-                    initialProfile = response.data;
-                }
-            }
-        } else {
-            // Resolve username → UUID, then fetch profile
-            const resolvedUUID = await resolveUsernameToUUID(username);
-            if (resolvedUUID) {
-                const response = await getProfile(resolvedUUID);
-                if (response?.status && response.data) {
-                    initialProfile = response.data;
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Failed to fetch profile:", error);
-    }
-
-    // Profile not found — show friendly "Profile Not Found" (not a 404)
     if (!initialProfile) {
         return <ProfileNotFound username={username} />;
     }

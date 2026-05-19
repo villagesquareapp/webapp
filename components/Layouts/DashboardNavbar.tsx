@@ -15,6 +15,7 @@ import { SidebarTrigger } from "components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
+import { useGuest } from "context/GuestContext";
 
 const DashboardNavbar = () => {
   const { data: session } = useSession();
@@ -23,6 +24,10 @@ const DashboardNavbar = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { isGuest } = useGuest();
+
+  // Hide search bar for guests on vflix pages (video takes full focus)
+  const hideSearch = isGuest && pathname.startsWith("/vflix/");
 
   function getInitials(name: string) {
     return name
@@ -40,14 +45,17 @@ const DashboardNavbar = () => {
           <SidebarTrigger />
         </div>
 
-        {/* Center Search Bar */}
+        {/* Center Search Bar — hidden for guests on vflix pages */}
+        {!hideSearch && (
         <div
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "flex-1 max-w-[35rem] lg:ml-[17rem] lg:mr-[4rem] mx-4"
-              : pathname.startsWith("/settings")
-                ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
-                : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
+              : pathname.startsWith("/messages")
+                ? "w-[340px] shrink-0 px-4"
+                : pathname.startsWith("/settings")
+                  ? "w-full max-w-[20rem] lg:max-w-[31.25rem] pl-4 pr-6"
+                  : "flex-1 lg:max-w-[64rem] px-4 lg:px-6"
           }
         >
           <div className="relative w-full">
@@ -93,18 +101,21 @@ const DashboardNavbar = () => {
             )} */}
           </div>
         </div>
+        )}
         {/* Right hand side Navbar */}
         <div
           className={
             pathname === "/vflix" || pathname.startsWith("/vflix/")
               ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-[4rem]"
-              : pathname.startsWith("/settings")
-                ? "flex-1 flex items-center justify-end gap-x-4 pr-[4.5rem] lg:pr-[5rem]"
-                : "flex items-center justify-end px-4 lg:pl-6 lg:pr-12 lg:w-[24rem] lg:shrink-0"
+              : pathname.startsWith("/messages")
+                ? "flex-1 flex items-center justify-end gap-x-4 pr-4 lg:pr-12"
+                : pathname.startsWith("/settings")
+                  ? "flex-1 flex items-center justify-end gap-x-4 pr-[4.5rem] lg:pr-[5rem]"
+                  : "flex items-center justify-end px-4 lg:pl-6 lg:pr-12 lg:w-[24rem] lg:shrink-0"
           }
         >
           <div className={
-            pathname === "/vflix" || pathname.startsWith("/vflix/") || pathname.startsWith("/settings")
+            pathname === "/vflix" || pathname.startsWith("/vflix/") || pathname.startsWith("/settings") || pathname.startsWith("/messages")
               ? "contents"
               : "flex-1 flex items-center justify-end gap-x-4"
           }>
@@ -120,9 +131,9 @@ const DashboardNavbar = () => {
               )}
             </button>
 
-            <div className="relative">
+            {isGuest ? null : <div className="relative">
               <Notification />
-            </div>
+            </div>}
 
             {/* Wallet Icon */}
             {/* <button className="text-muted-foreground hover:text-foreground hidden sm:block">
@@ -133,7 +144,16 @@ const DashboardNavbar = () => {
               </svg>
             </button> */}
 
-            {/* Profile */}
+            {/* Profile — disabled for guests */}
+            {isGuest ? (
+              <div className="flex items-center gap-x-2 opacity-50 cursor-not-allowed select-none">
+                <CustomAvatar
+                  src=""
+                  name="?"
+                  className="size-8 md:size-9"
+                />
+              </div>
+            ) : (
             <Popover>
               <PopoverTrigger asChild>
                 <div className="flex items-center gap-x-2 cursor-pointer">
@@ -178,6 +198,7 @@ const DashboardNavbar = () => {
                 </div>
               </PopoverContent>
             </Popover>
+            )}
           </div>
         </div>
       </div>

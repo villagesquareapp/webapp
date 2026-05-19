@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VflixCard from "./VFlixCard";
@@ -211,6 +211,26 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
     }
   };
 
+  // Touch swipe — swipe up = next, swipe down = prev (TikTok/Reels style)
+  const touchStartY = useRef<number | null>(null);
+  const SWIPE_THRESHOLD = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const delta = touchStartY.current - e.changedTouches[0].clientY;
+    touchStartY.current = null;
+    if (Math.abs(delta) < SWIPE_THRESHOLD) return;
+    if (delta > 0) {
+      nextVideo(); 
+    } else {
+      prevVideo(); 
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowUp") {
@@ -235,6 +255,24 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
 
   const currentPost = videos[currentIndex];
 
+  // Extract the best video URL from a vflix item
+  const getVideoUrl = (video: IVflix): string | null => {
+    const mediaItem = Array.isArray(video?.media) ? video?.media[0] : video?.media;
+    if (!mediaItem) return null;
+    return (mediaItem.is_transcode_complete && mediaItem.transcoded_media_url)
+      ? mediaItem.transcoded_media_url
+      : mediaItem.media_url || null;
+  };
+
+  // Preload next 3 + keep prev 2 buffered — hidden video elements
+  const preloadIndices = [
+    currentIndex - 2,
+    currentIndex - 1,
+    currentIndex + 1,
+    currentIndex + 2,
+    currentIndex + 3,
+  ].filter((i) => i >= 0 && i < videos.length && i !== currentIndex);
+
   const variants = {
     enter: (direction: number) => ({
       y: direction > 0 ? 1000 : -1000,
@@ -254,8 +292,12 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
 
   return (
     <div className="flex items-center justify-center lg:justify-start w-full h-full relative lg:pl-[17rem]">
-      <div className="relative flex items-center">
-        <div className="relative aspect-[9/16] h-[calc(100vh-180px)] md:h-[90vh] w-auto max-w-full md:max-w-[500px] rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black">
+      <div className="relative flex items-center w-full lg:w-auto justify-center lg:justify-start">
+        <div
+          className="relative w-full lg:w-auto lg:aspect-[9/16] h-[calc(100dvh-60px)] lg:h-[90vh] lg:max-w-[500px] lg:rounded-3xl shadow-2xl overflow-hidden flex-shrink-0 bg-black"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <AnimatePresence initial={false} custom={direction}>
             {videos[currentIndex] && (
               <motion.div
@@ -317,6 +359,24 @@ export default function VflixFeed({ activeTab, user, onVideosLoaded, selectedVid
         user={user}
         allowComments={videos.find((v) => v.uuid === activePostId)?.allow_comments !== false}
       />
+
+      {/* Hidden preload elements — buffer next 3 and keep prev 2 in memory */}
+      <div className="sr-only" aria-hidden="true">
+        {preloadIndices.map((i) => {
+          const url = getVideoUrl(videos[i]);
+          if (!url) return null;
+          return (
+            <video
+              key={videos[i].uuid}
+              src={url}
+              preload="auto"
+              muted
+              playsInline
+              style={{ width: 1, height: 1, position: "absolute", opacity: 0, pointerEvents: "none" }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }

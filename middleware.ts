@@ -14,10 +14,9 @@ export default withAuth({
 export const config = {
   matcher: [
     "/home/:path*",
-    "/vflix/:path*",
+    // "/vflix/:path*" is intentionally excluded — public vflix share pages live at /vflix/[uuid]
     "/messages/:path*",
     "/live-streams/:path*",
     "/wallet/:path*",
-    "/posts/:path*",
   ],
 }; 

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
             });
             const data = await res.json();
             return NextResponse.json(data);
-        }
+        } 
 
         // Forward search — use Photon (no rate limits, production-safe)
         if (!q?.trim()) {
