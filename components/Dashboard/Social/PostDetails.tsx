@@ -32,6 +32,7 @@ import { BsDot } from "react-icons/bs";
 import { PostText } from "./PostText";
 import { Separator } from "components/ui/separator";
 import { useRouter } from "next/navigation";
+import { useGuest } from "context/GuestContext";
 interface PostDetailsProps {
   post: IPost;
   user: IUser;
@@ -68,6 +69,7 @@ const PostDetails = ({
   newReply,
 }: PostDetailsProps) => {
   const router = useRouter();
+  const { isGuest } = useGuest();
 
   const {
     replyingTo,
@@ -97,15 +99,18 @@ const PostDetails = ({
   }, [post]);
 
   const handleLikeMainPost = (postId: string) => {
-    setLocalPost((prev) => ({
-      ...prev,
-      likes_count: prev.is_liked
-        ? (Number(prev.likes_count) - 1).toString()
-        : (Number(prev.likes_count) + 1).toString(),
-      is_liked: !prev.is_liked,
-    }));
-
+    // Call parent first — if guest, parent opens login modal and returns without state change
     likeUnlikePost(postId);
+    // Only do optimistic update for authenticated users
+    if (!isGuest) {
+      setLocalPost((prev) => ({
+        ...prev,
+        likes_count: prev.is_liked
+          ? (Number(prev.likes_count) - 1).toString()
+          : (Number(prev.likes_count) + 1).toString(),
+        is_liked: !prev.is_liked,
+      }));
+    }
   };
 
   const handleLocalReplySuccess = (newReply: IPostComment) => {

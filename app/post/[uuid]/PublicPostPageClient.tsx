@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGuest } from "context/GuestContext";
 import PostDetails from "components/Dashboard/Social/PostDetails";
@@ -41,49 +41,36 @@ export default function PublicPostPageClient({ initialPost, user, currentPath }:
 
     const effectiveUser = user ?? GUEST_USER;
 
-    // Guard: intercept any interaction for guests
-    const guard = (action: () => void) => {
-        if (isGuest) {
-            openLoginModal();
-            return;
-        }
-        action();
-    };
-
     const handleLike = async (postId: string) => {
-        guard(async () => {
-            const isLiking = !post.is_liked;
-            setPost((prev) => ({
-                ...prev,
-                is_liked: isLiking,
-                likes_count: isLiking
-                    ? String(Number(prev.likes_count) + 1)
-                    : String(Math.max(0, Number(prev.likes_count) - 1)),
-            }));
-            try {
-                await fetch(`/api/posts/${postId}/like`, { method: "POST" });
-            } catch {
-                setPost(initialPost);
-            }
-        });
+        if (isGuest) { openLoginModal(); return; }
+        const isLiking = !post.is_liked;
+        setPost((prev) => ({
+            ...prev,
+            is_liked: isLiking,
+            likes_count: isLiking
+                ? String(Number(prev.likes_count) + 1)
+                : String(Math.max(0, Number(prev.likes_count) - 1)),
+        }));
+        try {
+            await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+        } catch {
+            setPost(initialPost);
+        }
     };
 
     const handleSave = async (postId: string) => {
-        guard(async () => {
-            setPost((prev) => ({ ...prev, is_saved: !prev.is_saved }));
-            try {
-                await fetch(`/api/posts/${postId}/save`, { method: "POST" });
-            } catch {
-                setPost(initialPost);
-            }
-        });
+        if (isGuest) { openLoginModal(); return; }
+        setPost((prev) => ({ ...prev, is_saved: !prev.is_saved }));
+        try {
+            await fetch(`/api/posts/${postId}/save`, { method: "POST" });
+        } catch {
+            setPost(initialPost);
+        }
     };
 
     const handleOpenReplyModal = () => {
-        guard(() => {
-            // Authenticated users: navigate to full post page for commenting
-            router.push(`/posts/${post.uuid}`);
-        });
+        if (isGuest) { openLoginModal(); return; }
+        router.push(`/posts/${post.uuid}`);
     };
 
     return (
