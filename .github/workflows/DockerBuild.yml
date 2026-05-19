@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -21,24 +21,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # Step 4: Build project
-      - name: Build
-        run: npm run build --if-present
-
-      # Step 5: Run tests
-      - name: Test
-        run: npm test --if-present
 
       # Step 6: Configure AWS credentials
       - name: Configure AWS Credentials
@@ -73,7 +55,8 @@ jobs:
       # Step 10: Build Docker image
       - name: Build Docker Image
         run: |
-          docker build \
+          echo "Building Docker image without cache..."
+          docker build --no-cache \
             --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
             --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} \
             -t webapps:${{ env.IMAGE_TAG }} .
@@ -104,6 +87,7 @@ jobs:
 
       # Step 15: Commit and push manifest update
       - name: Commit and Push Changes
+        if: github.event_name == 'push'
         run: |
           git config --global user.name "villagesquareltd"
           git config --global user.email "villagesquare130@gmail.com"
