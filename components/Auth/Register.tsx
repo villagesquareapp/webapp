@@ -184,14 +184,9 @@ export function Register({ className, ...props }: RegisterProps) {
     try {
       setIsGoogleAuthLoading(true);
   
-      const result = await signIn("google", {
-        callbackUrl: "/home", 
-        redirect: false,
+      await signIn("google", {
+        callbackUrl: "/home",
       });
-  
-      if (result?.error) {
-        toast.error(result.error);
-      }
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast.error("Failed to sign in with Google. Please try again.");
