@@ -4,11 +4,12 @@ import { getTimeZone } from "lib/timezone";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
-    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
-    : "https://staging-api.villagesquare.io/v2";
+// const API_BASE_URL =
+//   process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
+//     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
+//     : "https://staging-api.villagesquare.io/v2";
 
+const API_BASE_URL = "https://production-api.villagesquare.io/v2".replace(/\/+$/, "");
 const authSecret = getAuthSecret();
 getAuthUrl();
 
@@ -17,11 +18,11 @@ export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId:
-        process.env.GOOGLE_CLIENT_ID ??
+        // process.env.GOOGLE_CLIENT_ID ??
         "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com",
       clientSecret:
-        process.env.GOOGLE_CLIENT_SECRET ??
-        "",
+        // process.env.GOOGLE_CLIENT_SECRET ??
+        "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",
       issuer: "https://accounts.google.com",
       authorization: {
         params: {
@@ -74,11 +75,11 @@ export const authOptions: NextAuthOptions = {
             const textResponse = await authResponse.text();
             console.error(
               "Non-JSON response received:",
-              textResponse.substring(0, 200)
+              textResponse.substring(0, 200),
             );
             if (authResponse.status >= 500) {
               throw new Error(
-                "Server error. Please try again later or contact support."
+                "Server error. Please try again later or contact support.",
               );
             }
             throw new Error("Invalid server response. Please try again.");
@@ -123,7 +124,6 @@ export const authOptions: NextAuthOptions = {
             timezone: getTimeZone(),
           };
 
-
           const res = await fetch(`${API_BASE_URL}/auth/social-account`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -148,7 +148,7 @@ export const authOptions: NextAuthOptions = {
             //   "[GoogleSignIn] Social account registration/login failed:",
             //   data.message || "Unknown error"
             // );
-            
+
             return false;
           }
 
@@ -192,8 +192,7 @@ export const authOptions: NextAuthOptions = {
             ...token,
             ...essentialData,
           };
-        }
-        else {
+        } else {
           const {
             access_token,
             refresh_token,
