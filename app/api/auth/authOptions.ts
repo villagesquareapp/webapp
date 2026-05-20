@@ -4,12 +4,11 @@ import { getTimeZone } from "lib/timezone";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-// const API_BASE_URL =
-//   process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
-//     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
-//     : "https://staging-api.villagesquare.io/v2";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim().length > 0
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")
+    : "https://staging-api.villagesquare.io/v2";
 
-const API_BASE_URL = "https://production-api.villagesquare.io/v2".replace(/\/+$/, "");
 const authSecret = getAuthSecret();
 getAuthUrl();
 
@@ -18,10 +17,10 @@ export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId:
-        // process.env.GOOGLE_CLIENT_ID ??
+        process.env.GOOGLE_CLIENT_ID ??
         "1076309733425-m53n4od06ojgmfsucj4j8ft6llaskteq.apps.googleusercontent.com",
       clientSecret:
-        // process.env.GOOGLE_CLIENT_SECRET ??
+        process.env.GOOGLE_CLIENT_SECRET ??
         "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",
       issuer: "https://accounts.google.com",
       authorization: {
