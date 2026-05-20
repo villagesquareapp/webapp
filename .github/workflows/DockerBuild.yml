@@ -56,9 +56,9 @@ jobs:
         run: |
           echo "Building Docker image without cache..."
           docker build --no-cache \
-          --build-arg NEXT_PUBLIC_API_URL=https://production-api.villagesquare.io/v2 \
+          --build-arg NEXT_PUBLIC_API_URL=https://staging-api.villagesquare.io/v2 \
           --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
-          --build-arg NEXTAUTH_URL=https://villagesquare.io \
+          --build-arg NEXTAUTH_URL=https://webdev.villagesquare.io \
           -t webapps:${{ env.IMAGE_TAG }} .
 
       # Step 11: Tag Docker image for ECR
