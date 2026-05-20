@@ -59,6 +59,7 @@ jobs:
           docker build --no-cache \
             --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }} \
             --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} \
+            --build-arg NEXTAUTH_URL=https://villagesquare.io \
             -t webapps:${{ env.IMAGE_TAG }} .
         shell: bash
 
