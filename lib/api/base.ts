@@ -1,5 +1,4 @@
-// const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
-const API_URL = "https://production-api.villagesquare.io/v2";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
 
 export interface ApiResponse<T = any> {
   status: boolean;
