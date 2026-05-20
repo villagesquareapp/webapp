@@ -4,6 +4,7 @@ import { getToken } from "lib/getToken";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging-api.villagesquare.io/v2";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 // Supports both authenticated and unauthenticated access
 export async function GET(

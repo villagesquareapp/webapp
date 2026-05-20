@@ -3,6 +3,7 @@ import { apiGet } from "lib/api";
 import { getToken } from "lib/getToken";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export async function GET(
     request: NextRequest,
