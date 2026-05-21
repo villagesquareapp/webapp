@@ -215,10 +215,20 @@ const SocialPost = ({ user }: { user: IUser }) => {
         // Cache current page number
         setCachedData(`social-page-${tab}`, pageNumber);
 
-        const totalPosts = postsData?.total || 0;
-        const currentTotal =
-          (pageNumber - 1) * (postsData?.per_page || 10) + newPosts.length;
-        setHasMore(currentTotal < totalPosts);
+        // Determine if more pages exist
+        const lastPage = postsData?.last_page;
+        const perPage = postsData?.per_page || 10;
+
+        if (lastPage) {
+          // Use last_page if available (most reliable)
+          setHasMore(pageNumber < lastPage);
+        } else if (newPosts.length < perPage) {
+          // Got fewer posts than per_page — no more pages
+          setHasMore(false);
+        } else {
+          // Got a full page — assume more exist
+          setHasMore(true);
+        }
       } else {
         toast.error("Failed to load posts: Invalid data format");
       }
@@ -288,40 +298,23 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, [activeTab]);
 
   const observerTarget = useRef(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // Infinite scroll — use scroll event on the container for reliability
   useEffect(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+    const scrollContainer = document.getElementById("social-main-scroll");
+    if (!scrollContainer) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMore &&
-          !isPostLoading &&
-          !loadingMorePost
-        ) {
-          setPage((prevPage) => prevPage + 1);
-        }
-      },
-      {
-        root: null,
-        rootMargin: "100px",
-        threshold: 0.1,
-      },
-    );
-    observerRef.current = observer;
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-    return () => {
-      observer.disconnect();
-      observerRef.current = null;
+    const handleScroll = () => {
+      if (!hasMore || isPostLoading || loadingMorePost) return;
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      // Trigger when within 300px of the bottom
+      if (scrollHeight - scrollTop - clientHeight < 300) {
+        setPage((prev) => prev + 1);
+      }
     };
+
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [hasMore, isPostLoading, loadingMorePost]);
 
   const videoElementsRef = useRef<Map<string, HTMLElement>>(new Map());
@@ -439,10 +432,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
   };
 
   const handleTabChange = useCallback((tab: TabType) => {
-    setActiveTab(tab);
-    setPage(1);
-    setPosts([]);
-    setHasMore(true);
+    setActiveTab((prev) => {
+      if (prev === tab) return prev; // same tab clicked — no state change, no refetch
+      // Only clear posts when actually switching tabs
+      setPage(1);
+      setPosts([]);
+      setHasMore(true);
+      return tab;
+    });
   }, []);
 
   return (
@@ -506,7 +503,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
               />
             ))}
 
-            <div ref={observerTarget} style={{ height: "10px" }} />
+            <div ref={observerTarget} />
             {loadingMorePost && (
               <div className="py-4 text-center">
                 <LoadingSpinner />

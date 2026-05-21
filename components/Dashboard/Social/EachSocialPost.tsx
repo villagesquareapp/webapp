@@ -1,8 +1,8 @@
 import { Separator } from "components/ui/separator";
-import Image from "next/image";
 import PostHeader from "./PostHeader";
 import PostText from "./PostText";
 import PostVideo from "./PostVideo";
+import PostMediaCarousel from "./PostMediaCarousel";
 import SocialPostActionButtons from "./SocialPostActionButtons";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,8 +38,7 @@ const EachSocialPost = ({
 
   const [isGloballyMuted, setIsGloballyMuted] = useState(true);
 
-  const handlePostClickWithVideoPause = (
-    e: React.MouseEvent,
+  const handlePostClickWithVideoPause = (    e: React.MouseEvent,
     mediaIndex?: number
   ) => {
     e.stopPropagation();
@@ -79,68 +78,14 @@ const EachSocialPost = ({
           <PostText text={post?.caption} mentions={post?.mentions} />
         </div>
         {!!post?.media?.length && (
-          <div
-            className={`md:p-4 ${isSingleMedia ? "w-full" : "grid grid-cols-2 gap-1.5"
-              }`}
-          >
-            {post?.media?.map((media, index, array) => {
-              // For multiple media posts, check if this is a single item in the last row
-              const isLastItem = index === array.length - 1;
-              const isOddCount = array.length % 2 === 1;
-              const shouldSpanFull = !isSingleMedia && isLastItem && isOddCount;
-
-              return (
-                <div
-                  key={`${media?.uuid} - ${index}`}
-                  className={`${shouldSpanFull ? "col-span-2" : ""} ${isSingleMedia ? "w-full" : ""
-                    }`}
-                >
-                  {media?.media_type === "image" && (
-                    <div
-                      onClick={(e) => handlePostClickWithVideoPause(e, index)}
-                      className={`w-full relative rounded-xl md:rounded-2xl overflow-hidden ${isSingleMedia
-                        ? "aspect-[4/5] max-h-[500px]"
-                        : shouldSpanFull
-                          ? "aspect-[16/9] max-h-[250px]"
-                          : "aspect-[4/5]"
-                        }`}
-                    >
-                      <Image
-                        className="object-cover"
-                        src={media?.media_url}
-                        alt="post"
-                        fill
-                        sizes={isSingleMedia ? "100vw" : "500px"}
-                        quality={90}
-                        priority
-                      />
-                    </div>
-                  )}
-                  {media?.media_type === "video" && (
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <PostVideo
-                        media={media}
-                        currentVideoPlaying={currentVideoPlaying}
-                        setCurrentVideoPlaying={setCurrentVideoPlaying}
-                        src={media?.transcoded_media_url}
-                        showEchoButtons={false}
-                        isPlayingVideo={isPlayingVideo}
-                        setIsPlayingVideo={setIsPlayingVideo}
-                        className={
-                          isSingleMedia
-                            ? "aspect-[4/5] max-h-[500px]"
-                            : shouldSpanFull
-                              ? "aspect-[16/9] max-h-[250px]"
-                              : "aspect-[4/5]"
-                        }
-                        isGloballyMuted={isGloballyMuted}
-                        setGlobalMuteState={setIsGloballyMuted}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="md:px-0 mt-2" onClick={(e) => e.stopPropagation()}>
+            <PostMediaCarousel
+              media={post.media}
+              currentVideoPlaying={currentVideoPlaying}
+              setCurrentVideoPlaying={setCurrentVideoPlaying}
+              isPlayingVideo={isPlayingVideo}
+              setIsPlayingVideo={setIsPlayingVideo}
+            />
           </div>
         )}
         <span className="flex flex-row items-center gap-x-1 mt-2">
