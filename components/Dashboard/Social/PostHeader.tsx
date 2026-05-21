@@ -24,14 +24,14 @@ dayjs.updateLocale("en", {
     ss: "%ds",
     m: "1m",
     mm: "%dm",
-    h: "1hr",
-    hh: "%dhrs",
+    h: "1h",
+    hh: "%dh",
     d: "1d",
     dd: "%dd",
-    M: "1mon",
-    MM: "%dmons",
-    y: "1yr",
-    yy: "%dyrs",
+    M: "1m",
+    MM: "%dm",
+    y: "1y",
+    yy: "%dy",
   },
 });
 
@@ -92,7 +92,8 @@ const PostHeader = ({
               <BsDot />
             </span>
             <p className="text-xs text-muted-foreground">
-              {dayjs(post?.created_at).fromNow()}
+              {/* {dayjs(post?.created_at).fromNow()} */}
+              {post.formatted_time}
             </p>
           </span>
           <span
