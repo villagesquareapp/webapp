@@ -67,6 +67,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       // Use cached data if it's less than 5 minutes old
       setPosts(cachedPosts);
       setIsPostLoading(false);
+      setHasMore(true); // Assume more pages exist when restoring from cache
 
       // Also restore page count so infinite scroll continues from right page
       const cachedPage = getCachedData<number>(`social-page-${activeTab}`);
@@ -164,13 +165,13 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
       const params = new URLSearchParams({
         order: "latest",
-        location: "lagos",
-        include: "livestream,echo,post",
         page: pageNumber.toString(),
         type: tab === "explore" ? "foryou" : "following",
       });
 
-      const res = await fetch(`/api/posts/social?${params.toString()}`);
+      const res = await fetch(`/api/posts/social?${params.toString()}`, {
+        cache: "no-store",
+      });
 
       let response: any = null;
       try {
@@ -217,16 +218,15 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
         // Determine if more pages exist
         const lastPage = postsData?.last_page;
-        const perPage = postsData?.per_page || 10;
 
-        if (lastPage) {
-          // Use last_page if available (most reliable)
-          setHasMore(pageNumber < lastPage);
-        } else if (newPosts.length < perPage) {
-          // Got fewer posts than per_page — no more pages
+        if (newPosts.length === 0) {
+          // Got zero posts — definitely no more
+          setHasMore(false);
+        } else if (lastPage && lastPage > 1 && pageNumber >= lastPage) {
+          // Reached the last page according to API
           setHasMore(false);
         } else {
-          // Got a full page — assume more exist
+          // Got posts — assume more exist until proven otherwise
           setHasMore(true);
         }
       } else {
@@ -303,19 +303,27 @@ const SocialPost = ({ user }: { user: IUser }) => {
   useEffect(() => {
     const scrollContainer = document.getElementById("social-main-scroll");
     if (!scrollContainer) return;
+    // Don't attach until posts are loaded
+    if (isPostLoading || posts.length === 0) return;
 
+    let ticking = false;
     const handleScroll = () => {
-      if (!hasMore || isPostLoading || loadingMorePost) return;
-      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-      // Trigger when within 300px of the bottom
-      if (scrollHeight - scrollTop - clientHeight < 300) {
-        setPage((prev) => prev + 1);
-      }
+      if (!hasMore || loadingMorePost) return;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        // Trigger when within 300px of the bottom
+        if (scrollHeight - scrollTop - clientHeight < 300) {
+          setPage((prev) => prev + 1);
+        }
+      });
     };
 
     scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [hasMore, isPostLoading, loadingMorePost]);
+  }, [hasMore, isPostLoading, loadingMorePost, posts.length]);
 
   const videoElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const visibilityMapRef = useRef<Map<string, number>>(new Map());
@@ -518,7 +526,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           />
         )}
 
-        {!isPostLoading && !hasMore && posts?.length > 0 && (
+        {!isPostLoading && !hasMore && posts?.length > 0 && page > 1 && (
           <div className="text-center py-4 text-muted-foreground">
             No more posts to load
           </div>
