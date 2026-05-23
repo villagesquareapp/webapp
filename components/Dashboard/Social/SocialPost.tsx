@@ -67,6 +67,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
       // Use cached data if it's less than 5 minutes old
       setPosts(cachedPosts);
       setIsPostLoading(false);
+      setHasMore(true); // Assume more pages exist when restoring from cache
 
       // Also restore page count so infinite scroll continues from right page
       const cachedPage = getCachedData<number>(`social-page-${activeTab}`);
@@ -164,13 +165,13 @@ const SocialPost = ({ user }: { user: IUser }) => {
 
       const params = new URLSearchParams({
         order: "latest",
-        location: "lagos",
-        include: "livestream,echo,post",
         page: pageNumber.toString(),
         type: tab === "explore" ? "foryou" : "following",
       });
 
-      const res = await fetch(`/api/posts/social?${params.toString()}`);
+      const res = await fetch(`/api/posts/social?${params.toString()}`, {
+        cache: "no-store",
+      });
 
       let response: any = null;
       try {
@@ -215,10 +216,19 @@ const SocialPost = ({ user }: { user: IUser }) => {
         // Cache current page number
         setCachedData(`social-page-${tab}`, pageNumber);
 
-        const totalPosts = postsData?.total || 0;
-        const currentTotal =
-          (pageNumber - 1) * (postsData?.per_page || 10) + newPosts.length;
-        setHasMore(currentTotal < totalPosts);
+        // Determine if more pages exist
+        const lastPage = postsData?.last_page;
+
+        if (newPosts.length === 0) {
+          // Got zero posts — definitely no more
+          setHasMore(false);
+        } else if (lastPage && lastPage > 1 && pageNumber >= lastPage) {
+          // Reached the last page according to API
+          setHasMore(false);
+        } else {
+          // Got posts — assume more exist until proven otherwise
+          setHasMore(true);
+        }
       } else {
         toast.error("Failed to load posts: Invalid data format");
       }
@@ -288,41 +298,32 @@ const SocialPost = ({ user }: { user: IUser }) => {
   }, [activeTab]);
 
   const observerTarget = useRef(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // Infinite scroll — use scroll event on the container for reliability
   useEffect(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+    const scrollContainer = document.getElementById("social-main-scroll");
+    if (!scrollContainer) return;
+    // Don't attach until posts are loaded
+    if (isPostLoading || posts.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMore &&
-          !isPostLoading &&
-          !loadingMorePost
-        ) {
-          setPage((prevPage) => prevPage + 1);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!hasMore || loadingMorePost) return;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        // Trigger when within 300px of the bottom
+        if (scrollHeight - scrollTop - clientHeight < 300) {
+          setPage((prev) => prev + 1);
         }
-      },
-      {
-        root: null,
-        rootMargin: "100px",
-        threshold: 0.1,
-      },
-    );
-    observerRef.current = observer;
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-    return () => {
-      observer.disconnect();
-      observerRef.current = null;
+      });
     };
-  }, [hasMore, isPostLoading, loadingMorePost]);
+
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+  }, [hasMore, isPostLoading, loadingMorePost, posts.length]);
 
   const videoElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const visibilityMapRef = useRef<Map<string, number>>(new Map());
@@ -439,10 +440,14 @@ const SocialPost = ({ user }: { user: IUser }) => {
   };
 
   const handleTabChange = useCallback((tab: TabType) => {
-    setActiveTab(tab);
-    setPage(1);
-    setPosts([]);
-    setHasMore(true);
+    setActiveTab((prev) => {
+      if (prev === tab) return prev; // same tab clicked — no state change, no refetch
+      // Only clear posts when actually switching tabs
+      setPage(1);
+      setPosts([]);
+      setHasMore(true);
+      return tab;
+    });
   }, []);
 
   return (
@@ -506,7 +511,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
               />
             ))}
 
-            <div ref={observerTarget} style={{ height: "10px" }} />
+            <div ref={observerTarget} />
             {loadingMorePost && (
               <div className="py-4 text-center">
                 <LoadingSpinner />
@@ -521,7 +526,7 @@ const SocialPost = ({ user }: { user: IUser }) => {
           />
         )}
 
-        {!isPostLoading && !hasMore && posts?.length > 0 && (
+        {!isPostLoading && !hasMore && posts?.length > 0 && page > 1 && (
           <div className="text-center py-4 text-muted-foreground">
             No more posts to load
           </div>
