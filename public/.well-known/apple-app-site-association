@@ -13,6 +13,9 @@
                     },{
                         "/": "/livestream/*",
                         "comment": "Matches any URL whose path starts with /livestream/"
+                    },{
+                        "/": "/vflix/*",
+                        "comment": "Matches any URL whose path starts with /vflix/"
                     }
                 ]
             },{
@@ -20,7 +23,8 @@
                 "paths": [
                     "/posts/*",
                     "/echo/*",
-                    "/livestream/*"
+                    "/livestream/*",
+                    "/vflix/*"
                 ]
             }
         ]
