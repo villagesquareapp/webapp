@@ -16,7 +16,7 @@ function PaymentVerifyContent() {
       setState('failed');
       return;
     }
-    if (status === 'successful') {
+    if (status === 'successful' || status === 'completed' || status === 'success') {
       setState('success');
     } else if (status === 'cancelled') {
       setState('cancelled');
