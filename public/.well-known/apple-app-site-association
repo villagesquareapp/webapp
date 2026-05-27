@@ -1,0 +1,32 @@
+{
+    "applinks": {
+        "details": [
+            {
+                "appIDs": ["SR87FK374T.io.villagesquare.app"],
+                "components": [
+                    {
+                        "/": "/posts/*",
+                        "comment": "Matches any URL whose path starts with /posts/"
+                    },{
+                        "/": "/echo/*",
+                        "comment": "Matches any URL whose path starts with /echo/"
+                    },{
+                        "/": "/livestream/*",
+                        "comment": "Matches any URL whose path starts with /livestream/"
+                    },{
+                        "/": "/vflix/*",
+                        "comment": "Matches any URL whose path starts with /vflix/"
+                    }
+                ]
+            },{
+                "appIDs": ["SR87FK374T.io.villagesquare.app"],
+                "paths": [
+                    "/posts/*",
+                    "/echo/*",
+                    "/livestream/*",
+                    "/vflix/*"
+                ]
+            }
+        ]
+    }
+}
