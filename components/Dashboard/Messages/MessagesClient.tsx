@@ -55,6 +55,8 @@ export interface IChatMessage {
   created_at: string;
   client_timestamp: string;
   message_timestamp: string;
+  message_date: string;
+  message_time: string;
   media: any[];
   message_type_metadata: any | null;
 }

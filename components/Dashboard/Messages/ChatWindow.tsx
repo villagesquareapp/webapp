@@ -110,6 +110,8 @@ export default function ChatWindow({ conversation, user }: Props) {
             client_timestamp: msgData.client_timestamp || Date.now().toString(),
             message_timestamp:
               msgData.client_timestamp || Date.now().toString(),
+            message_date: msgData.message_date || "Today",
+            message_time: msgData.message_time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(),
             media: msgData.media || [],
             message_type_metadata: null,
           };
@@ -272,6 +274,8 @@ export default function ChatWindow({ conversation, user }: Props) {
       created_at: new Date().toISOString(),
       client_timestamp: now.toString(),
       message_timestamp: now.toString(),
+      message_date: "Today",
+      message_time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(),
       media: [],
       message_type_metadata: null,
     };
@@ -325,7 +329,8 @@ export default function ChatWindow({ conversation, user }: Props) {
   const groupedMessages = messages.reduce<
     { date: string; messages: IChatMessage[] }[]
   >((groups, msg) => {
-    const date = msg.created_at;
+    // Use message_date from API (e.g. "Today", "Yesterday", "Jun 5") or fall back to date from created_at
+    const date = msg.message_date || new Date(msg.created_at).toLocaleDateString();
     const lastGroup = groups[groups.length - 1];
     if (lastGroup && lastGroup.date === date) {
       lastGroup.messages.push(msg);
@@ -334,6 +339,34 @@ export default function ChatWindow({ conversation, user }: Props) {
     }
     return groups;
   }, []);
+
+  // Determine which sent messages should show a receipt (only the LAST of each status)
+  // Walking from the end backwards: the latest sent message gets a receipt, then we 
+  // step backwards while encountering "weaker" statuses to mark their last occurrences too.
+  // Status priority: read > delivered > sent/sending
+  const receiptUuids = (() => {
+    const result = new Set<string>();
+    let lastReadIdx = -1;
+    let lastDeliveredIdx = -1;
+    let lastSentIdx = -1;
+
+    messages.forEach((m, i) => {
+      if (m.message_side !== "sent") return;
+      if (m.status === "read") lastReadIdx = i;
+      else if (m.status === "delivered") lastDeliveredIdx = i;
+      else lastSentIdx = i; // sent or sending
+    });
+
+    if (lastReadIdx >= 0) result.add(messages[lastReadIdx].uuid);
+    // Only show delivered if it's after the last read
+    if (lastDeliveredIdx > lastReadIdx) result.add(messages[lastDeliveredIdx].uuid);
+    // Only show sent if it's after both
+    if (lastSentIdx > lastReadIdx && lastSentIdx > lastDeliveredIdx) {
+      result.add(messages[lastSentIdx].uuid);
+    }
+
+    return result;
+  })();
 
   return (
     <div className="flex flex-col h-full">
@@ -454,7 +487,7 @@ export default function ChatWindow({ conversation, user }: Props) {
                         )}
                         <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/40 rounded-full px-2 py-0.5">
                           {/* <span className="text-[10px] text-white/80">{msg.message_time}</span> */}
-                          {msg.message_side === "sent" && (
+                          {msg.message_side === "sent" && receiptUuids.has(msg.uuid) && (
                             <MessageStatus status={msg.status} />
                           )}
                         </div>
@@ -462,24 +495,26 @@ export default function ChatWindow({ conversation, user }: Props) {
                     ) : (
                       /* Text bubble */
                       <div
-                        className={`max-w-[65%] px-4 py-2.5 rounded-2xl text-[14px] leading-relaxed ${
+                        className={`max-w-[480px] px-5 py-3 rounded-3xl text-[14px] leading-relaxed ${
                           msg.message_side === "sent"
-                            ? "bg-[#0D52D2] text-white rounded-br-sm"
-                            : "bg-accent text-foreground rounded-bl-sm"
+                            ? "bg-[#0D52D2] text-white"
+                            : "bg-[#2A2A2D] text-foreground"
                         }`}
                       >
-                        <p className="whitespace-pre-wrap break-words">
-                          {msg.message}
-                        </p>
-                        <div className="flex items-center gap-1 mt-1 justify-end">
-                          <span
-                            className={`text-[10px] ${msg.message_side === "sent" ? "text-white/60" : "text-muted-foreground"}`}
-                          >
-                            {/* {msg.message_time} */}
-                          </span>
-                          {msg.message_side === "sent" && (
-                            <MessageStatus status={msg.status} />
-                          )}
+                        <div className="flex items-end gap-3 flex-wrap">
+                          <p className="whitespace-pre-wrap break-words flex-1">
+                            {msg.message}
+                          </p>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className={`text-[11px] ${msg.message_side === "sent" ? "text-white/70" : "text-muted-foreground"}`}
+                            >
+                              {msg.message_time}
+                            </span>
+                            {msg.message_side === "sent" && receiptUuids.has(msg.uuid) && (
+                              <MessageStatus status={msg.status} />
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -642,55 +677,60 @@ export default function ChatWindow({ conversation, user }: Props) {
   );
 }
 
-// Message status indicator (single check, double check, blue double check)
+// Message status indicator (sits inside the bubble next to the time)
+// sent: single grey tick
+// delivered: double grey tick
+// read: white circle with grey double tick inside
 function MessageStatus({ status }: { status: string }) {
   if (status === "read") {
     return (
-      <svg className="size-3.5 text-blue-300" viewBox="0 0 20 16" fill="none">
-        <path
-          d="M1 8l4 4 8-8"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M7 8l4 4 8-8"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <div className="size-[15px] rounded-full bg-white flex items-center justify-center">
+        <svg className="size-2.5 text-[#5A6878]" viewBox="0 0 20 16" fill="none">
+          <path
+            d="M1 8l4 4 6-6"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M7 8l4 4 8-8"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
     );
   }
   if (status === "delivered") {
     return (
-      <svg className="size-3.5 text-white/60" viewBox="0 0 20 16" fill="none">
+      <svg className="size-[14px] text-white/70" viewBox="0 0 20 16" fill="none">
         <path
-          d="M1 8l4 4 8-8"
+          d="M1 8l4 4 6-6"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M7 8l4 4 8-8"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
     );
   }
-  // sent or sending
+  // sent or sending — single tick
   return (
-    <svg className="size-3 text-white/60" viewBox="0 0 16 16" fill="none">
+    <svg className="size-[12px] text-white/70" viewBox="0 0 16 16" fill="none">
       <path
-        d="M2 8l4 4 8-8"
+        d="M3 8l3.5 3.5L13 5"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
