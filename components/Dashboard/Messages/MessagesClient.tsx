@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import ConversationList from "./ConversationList";
 import ChatWindow from "./ChatWindow";
 import EmptyChatState from "./EmptyChatState";
@@ -10,35 +10,61 @@ interface MessagesClientProps {
 }
 
 export interface IConversation {
-  id: string;
-  name: string;
-  username: string;
-  avatar: string;
-  lastMessage: string;
-  time: string;
-  isOnline?: boolean;
-  unreadCount?: number;
+  uuid: string;
+  initial_chat_type: string;
+  display_name: string;
+  display_avatar: string;
+  sender_or_receiver: {
+    uuid: string;
+    name: string;
+    username: string;
+    email: string;
+    verified_status: number;
+    checkmark_verification_status: boolean;
+    premium_verification_status: boolean;
+    profile_picture: string;
+    online: boolean;
+    verification_badge: string;
+  };
+  last_message_id: string;
+  last_message: string;
+  last_message_type: string;
+  last_message_status: string;
+  last_message_at: string;
+  message_sent_at: string;
+  message_timestamp: string;
+  unread: boolean;
+  unread_count: number;
+  is_pinned: boolean;
+  is_archived: boolean;
 }
 
-export interface IMessage {
-  id: string;
-  text: string;
-  time: string;
-  isMine: boolean;
-  mediaUrl?: string;
-  mediaType?: "image" | "video";
+export interface IChatMessage {
+  uuid: string;
+  chat_id: string;
+  sender_id: string;
+  unique_id: string;
+  message: string;
+  message_type: string;
+  message_type_id: string | null;
+  reply_to_message_id: string | null;
+  status: string;
+  message_side: "sent" | "received";
+  is_pinned: boolean;
+  is_flagged: boolean;
+  created_at: string;
+  client_timestamp: string;
+  message_timestamp: string;
+  media: any[];
+  message_type_metadata: any | null;
 }
 
 export default function MessagesClient({ user }: MessagesClientProps) {
   const [activeConversation, setActiveConversation] = useState<IConversation | null>(null);
-  // Per-conversation message store — keyed by conversation id
-  const [messagesByConv, setMessagesByConv] = useState<Record<string, IMessage[]>>({});
 
-  const addMessage = (conversationId: string, msg: IMessage) => {    setMessagesByConv((prev) => ({
-      ...prev,
-      [conversationId]: [...(prev[conversationId] ?? []), msg],
-    }));
-  };
+  const handleSelectConversation = useCallback((conv: IConversation) => {
+    setActiveConversation(conv);
+  }, []);
 
   return (
     <div className="flex w-full h-full overflow-hidden">
@@ -46,8 +72,8 @@ export default function MessagesClient({ user }: MessagesClientProps) {
       <div className="w-[340px] shrink-0 border-r border-border h-full flex flex-col">
         <ConversationList
           user={user}
-          activeId={activeConversation?.id ?? null}
-          onSelect={setActiveConversation}
+          activeId={activeConversation?.uuid ?? null}
+          onSelect={handleSelectConversation}
         />
       </div>
 
@@ -57,8 +83,6 @@ export default function MessagesClient({ user }: MessagesClientProps) {
           <ChatWindow
             conversation={activeConversation}
             user={user}
-            messages={messagesByConv[activeConversation.id] ?? []}
-            onSendMessage={(msg) => addMessage(activeConversation.id, msg)}
           />
         ) : (
           <EmptyChatState />

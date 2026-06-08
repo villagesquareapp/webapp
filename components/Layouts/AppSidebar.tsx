@@ -53,12 +53,12 @@ const items = [
     icon: <VFlixOutline className="!size-6" />,
     activeIcon: <VFlixFill className="fill-background text-background !size-6 " />,
   },
-  //  {
-  //   title: "Messages",
-  //   url: "/messages",
-  //   icon: <MdMailOutline className="!size-6" />,
-  //   activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
-  // },
+   {
+    title: "Messages",
+    url: "/messages",
+    icon: <MdMailOutline className="!size-6" />,
+    activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
+  },
   {
     title: "Settings",
     url: "/settings",
