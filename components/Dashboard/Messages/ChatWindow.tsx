@@ -7,6 +7,8 @@ import { Phone, Video, MoreHorizontal, Paperclip, X } from "lucide-react";
 import { IoSend } from "react-icons/io5";
 import { Skeleton } from "components/ui/skeleton";
 import { useMessageWebSocket } from "context/MessageWebSocketContext";
+import Link from "next/link";
+import { Button } from "components/ui/button";
 
 interface Props {
   conversation: IConversation;
@@ -405,6 +407,14 @@ export default function ChatWindow({ conversation, user }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link href={`/u/${conversation.sender_or_receiver?.username || ""}`}>
+            <Button
+              size="sm"
+              className={`bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white h-8 rounded-full px-5 text-xs font-semibold`}
+            >
+              View Profile
+            </Button>
+          </Link>
           <button className="p-2 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground">
             <Phone className="size-4" />
           </button>

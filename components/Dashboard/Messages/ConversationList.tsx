@@ -41,18 +41,17 @@ export default function ConversationList({ user, activeId, onSelect }: Props) {
   // Listen for incoming messages to update conversation list
   useEffect(() => {
     const unsubscribe = subscribe((data) => {
-      let matched = false;
 
       if (data.event === "received-message" && data.message_data) {
         const msgData = data.message_data;
         setConversations((prev) => {
+          let found = false;
           const updated = prev.map((conv) => {
             const matches = conv.uuid === msgData.chat_id || 
                             conv.sender_or_receiver?.uuid === msgData.sender_id || 
-                            conv.sender_or_receiver?.uuid === msgData.receiver_id ||
-                            conv.last_message_id === msgData.reply_to_message_id; // Just in case
+                            conv.sender_or_receiver?.uuid === msgData.receiver_id;
             if (matches) {
-              matched = true;
+              found = true;
               return {
                 ...conv,
                 last_message: msgData.message,
@@ -60,13 +59,13 @@ export default function ConversationList({ user, activeId, onSelect }: Props) {
                 last_message_at: "Just now",
                 message_sent_at: new Date().toISOString(),
                 unread: conv.uuid !== activeId && conv.sender_or_receiver?.uuid !== activeId,
-                unread_count: conv.uuid !== activeId && conv.sender_or_receiver?.uuid !== activeId ? conv.unread_count + 1 : 0,
+                unread_count: conv.uuid !== activeId && conv.sender_or_receiver?.uuid !== activeId ? (conv.unread_count || 0) + 1 : 0,
               };
             }
             return conv;
           });
           
-          if (matched) {
+          if (found) {
             const chatIndex = updated.findIndex((c) => c.uuid === msgData.chat_id || c.sender_or_receiver?.uuid === msgData.sender_id || c.sender_or_receiver?.uuid === msgData.receiver_id);
             if (chatIndex > 0) {
               const [chat] = updated.splice(chatIndex, 1);
@@ -77,20 +76,20 @@ export default function ConversationList({ user, activeId, onSelect }: Props) {
           return prev;
         });
 
-        if (!matched) {
-          setTimeout(() => fetchChats(""), 500); // Silent re-fetch if chat not in memory
-        }
+        // Always do a silent re-fetch to catch new conversations not yet in memory
+        setTimeout(() => fetchChats(""), 800);
       }
 
       if (data.event === "sent-message-v2" && data.message_data) {
         const msgData = data.message_data;
         setConversations((prev) => {
+          let found = false;
           const updated = prev.map((conv) => {
             const matches = conv.uuid === msgData.chat_id || 
                             conv.sender_or_receiver?.uuid === msgData.sender_id || 
                             conv.sender_or_receiver?.uuid === msgData.receiver_id;
             if (matches) {
-              matched = true;
+              found = true;
               return {
                 ...conv,
                 last_message: msgData.message,
@@ -102,7 +101,7 @@ export default function ConversationList({ user, activeId, onSelect }: Props) {
             return conv;
           });
           
-          if (matched) {
+          if (found) {
             const chatIndex = updated.findIndex((c) => c.uuid === msgData.chat_id || c.sender_or_receiver?.uuid === msgData.sender_id || c.sender_or_receiver?.uuid === msgData.receiver_id);
             if (chatIndex > 0) {
               const [chat] = updated.splice(chatIndex, 1);
@@ -113,9 +112,8 @@ export default function ConversationList({ user, activeId, onSelect }: Props) {
           return prev;
         });
 
-        if (!matched) {
-          setTimeout(() => fetchChats(""), 500);
-        }
+        // Silent re-fetch to sync ordering + last_message from DB
+        setTimeout(() => fetchChats(""), 800);
       }
 
       if (data.event === "mark-chat-as-read" && data.chatId) {
@@ -131,7 +129,7 @@ export default function ConversationList({ user, activeId, onSelect }: Props) {
     });
 
     return unsubscribe;
-  }, [subscribe, activeId]);
+  }, [subscribe, activeId, fetchChats]);
 
   // Debounced search
   useEffect(() => {

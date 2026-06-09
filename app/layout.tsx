@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   },
 };
 
+import MessageNotificationListener from "components/Layouts/MessageNotificationListener";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -42,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             <div className="">{children}</div>
             <CustomToaster />
+            <MessageNotificationListener />
           </ThemeProvider>
         </Providers>
       </body>
