@@ -19,6 +19,7 @@ export default function ChatWindow({ conversation, user }: Props) {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatId, setChatId] = useState<string>(conversation.uuid); // internal chat UUID from extras.chat_data.uuid
+  const [chatUser, setChatUser] = useState<{ name: string; username: string; profile_picture: string; online: boolean } | null>(null);
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState<string | null>(
@@ -51,6 +52,17 @@ export default function ChatWindow({ conversation, user }: Props) {
         // Store the real internal chat UUID from extras
         const realChatId = data.data.extras?.chat_data?.uuid;
         if (realChatId) setChatId(realChatId);
+
+        // Extract the other user's info from extras
+        const otherUser = data.data.extras?.user || data.data.extras?.chat_data?.user;
+        if (otherUser) {
+          setChatUser({
+            name: otherUser.name || "",
+            username: otherUser.username || "",
+            profile_picture: otherUser.profile_picture || "",
+            online: otherUser.online || false,
+          });
+        }
 
         // API returns messages in reverse chronological order, reverse for display
         const msgs: IChatMessage[] = data.data.data || [];
@@ -377,25 +389,25 @@ export default function ChatWindow({ conversation, user }: Props) {
         <div className="flex items-center gap-3">
           <div className="relative">
             <CustomAvatar
-              src={conversation.display_avatar}
-              name={conversation.display_name}
+              src={chatUser?.profile_picture || conversation.display_avatar || conversation.sender_or_receiver?.profile_picture}
+              name={chatUser?.name || conversation.display_name || conversation.sender_or_receiver?.name}
               className="size-10"
             />
-            {conversation.sender_or_receiver?.online && (
+            {(chatUser?.online || conversation.sender_or_receiver?.online) && (
               <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-green-500 border-2 border-background" />
             )}
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-[14px] font-bold text-foreground">
-              {conversation.display_name}
+              {chatUser?.name || conversation.display_name || conversation.sender_or_receiver?.name}
             </span>
             <span className="text-[12px] text-muted-foreground flex items-center gap-1">
               {isConnected ? (
                 <>
                   <span className="size-1.5 rounded-full bg-green-500 inline-block" />{" "}
-                  {conversation.sender_or_receiver?.online
+                  {(chatUser?.online || conversation.sender_or_receiver?.online)
                     ? "Online"
-                    : `@${conversation.sender_or_receiver?.username}`}
+                    : `@${chatUser?.username || conversation.sender_or_receiver?.username}`}
                 </>
               ) : (
                 <>
@@ -407,7 +419,7 @@ export default function ChatWindow({ conversation, user }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/u/${conversation.sender_or_receiver?.username || ""}`}>
+          <Link href={`/u/${chatUser?.username || conversation.sender_or_receiver?.username || ""}`}>
             <Button
               size="sm"
               className={`bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white h-8 rounded-full px-5 text-xs font-semibold`}
@@ -450,7 +462,7 @@ export default function ChatWindow({ conversation, user }: Props) {
             <p className="text-[15px] font-semibold text-foreground text-center">
               Start a new conversation
               <br />
-              with {conversation.display_name}
+              with {chatUser?.name || conversation.display_name || "this user"}
             </p>
             <span
               className="text-6xl select-none"

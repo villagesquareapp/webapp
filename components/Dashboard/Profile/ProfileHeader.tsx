@@ -139,6 +139,22 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={async (e) => {
+                    const btn = e.currentTarget;
+                    btn.disabled = true;
+                    btn.textContent = "...";
+                    try {
+                      const res = await fetch(`/api/messages/conversations/check/${profile.uuid}`);
+                      const data = await res.json();
+                      if (data?.status && data?.data?.chat_id) {
+                        router.push(`/messages/${data.data.chat_id}`);
+                      } else {
+                        router.push(`/messages?user=${profile.uuid}`);
+                      }
+                    } catch {
+                      router.push(`/messages?user=${profile.uuid}`);
+                    }
+                  }}
                   className="rounded-full h-8 px-4 md:px-6 text-xs font-semibold flex-1 md:flex-none"
                 >
                   Message
