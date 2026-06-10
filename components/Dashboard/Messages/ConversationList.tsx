@@ -67,6 +67,8 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
     const unsubscribe = subscribe((data) => {
       if (data.event === "received-message" && data.message_data) {
         const msgData = data.message_data;
+
+        // Update main conversation list
         setConversations((prev) => {
           const updated = prev.map((conv) => {
             const matches = conv.uuid === msgData.chat_id ||
@@ -83,17 +85,42 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
             }
             return conv;
           });
+          // Move to top of unpinned section only (pinned chats stay at the top)
           const idx = updated.findIndex((c) => c.uuid === msgData.chat_id || c.sender_or_receiver?.uuid === msgData.sender_id);
-          if (idx > 0) {
+          if (idx > -1 && !updated[idx].is_pinned) {
             const [chat] = updated.splice(idx, 1);
-            updated.unshift(chat);
+            const lastPinnedIdx = updated.reduce((acc, c, i) => c.is_pinned ? i : acc, -1);
+            updated.splice(lastPinnedIdx + 1, 0, chat);
           }
           return updated;
         });
+
+        // Also update archived chats in real-time
+        setArchivedChats((prev) =>
+          prev.map((conv) => {
+            const matches = conv.uuid === msgData.chat_id ||
+              conv.sender_or_receiver?.uuid === msgData.sender_id;
+            if (matches) {
+              // Don't mark as unread if this archived chat is currently being viewed
+              const isViewing = conv.uuid === activeId;
+              return {
+                ...conv,
+                last_message: msgData.message,
+                last_message_type: "received",
+                last_message_at: "Just now",
+                unread: isViewing ? false : true,
+                unread_count: isViewing ? 0 : (conv.unread_count || 0) + 1,
+              };
+            }
+            return conv;
+          })
+        );
       }
 
       if (data.event === "sent-message-v2" && data.message_data) {
         const msgData = data.message_data;
+
+        // Update main conversation list
         setConversations((prev) => {
           const updated = prev.map((conv) => {
             const matches = conv.uuid === msgData.chat_id ||
@@ -103,17 +130,36 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
             }
             return conv;
           });
+          // Move to top of unpinned section only
           const idx = updated.findIndex((c) => c.uuid === msgData.chat_id || c.sender_or_receiver?.uuid === msgData.receiver_id);
-          if (idx > 0) {
+          if (idx > -1 && !updated[idx].is_pinned) {
             const [chat] = updated.splice(idx, 1);
-            updated.unshift(chat);
+            const lastPinnedIdx = updated.reduce((acc, c, i) => c.is_pinned ? i : acc, -1);
+            updated.splice(lastPinnedIdx + 1, 0, chat);
           }
           return updated;
         });
+
+        // Also update archived chats
+        setArchivedChats((prev) =>
+          prev.map((conv) => {
+            const matches = conv.uuid === msgData.chat_id ||
+              conv.sender_or_receiver?.uuid === msgData.receiver_id;
+            if (matches) {
+              return { ...conv, last_message: msgData.message, last_message_type: "sent", last_message_at: "Just now" };
+            }
+            return conv;
+          })
+        );
       }
 
       if (data.event === "mark-chat-as-read" && data.chatId) {
         setConversations((prev) =>
+          prev.map((conv) =>
+            conv.uuid === data.chatId ? { ...conv, unread: false, unread_count: 0 } : conv
+          )
+        );
+        setArchivedChats((prev) =>
           prev.map((conv) =>
             conv.uuid === data.chatId ? { ...conv, unread: false, unread_count: 0 } : conv
           )
@@ -131,7 +177,21 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
   const handleSelectChat = (conv: IConversation) => {
     onSelect(conv);
     window.history.pushState(null, "", `/messages/${conv.uuid}`);
+    // Clear unread locally on both lists immediately
+    const clearUnread = (c: IConversation) =>
+      c.uuid === conv.uuid ? { ...c, unread: false, unread_count: 0 } : c;
+    setConversations((prev) => prev.map(clearUnread));
+    setArchivedChats((prev) => prev.map(clearUnread));
   };
+
+  // Also clear unread when activeId changes (covers edge cases)
+  useEffect(() => {
+    if (!activeId) return;
+    const clearUnread = (c: IConversation) =>
+      c.uuid === activeId ? { ...c, unread: false, unread_count: 0 } : c;
+    setConversations((prev) => prev.map(clearUnread));
+    setArchivedChats((prev) => prev.map(clearUnread));
+  }, [activeId]);
 
   // Render skeleton loaders
   const renderSkeletons = (count: number) => (
