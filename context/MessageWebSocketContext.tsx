@@ -125,8 +125,15 @@ function connectWs(token: string, uuid: string) {
       g.ws = null;
       g.connected = false;
       g.subscribed = false;
-      g.userId = null;
       notify();
+      // Always reconnect after 1s
+      const savedUuid = g.userId;
+      if (savedUuid && token) {
+        setTimeout(() => {
+          console.log("[WS] Reconnecting...");
+          connectWs(token, savedUuid);
+        }, 1000);
+      }
     }
   };
 }
