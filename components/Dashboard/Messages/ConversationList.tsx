@@ -121,17 +121,29 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
 
       if (data.event === "sent-message-v2" && data.message_data) {
         const msgData = data.message_data;
+        // Determine display message — show media type if no text
+        const displayMessage = msgData.message || (msgData.media?.length > 0
+          ? (msgData.media[0]?.mime_type?.startsWith("video") ? "🎥 Video" : "📷 Image")
+          : "");
 
         // Update main conversation list
         setConversations((prev) => {
+          let found = false;
           const updated = prev.map((conv) => {
             const matches = conv.uuid === msgData.chat_id ||
               conv.sender_or_receiver?.uuid === msgData.receiver_id;
             if (matches) {
-              return { ...conv, last_message: msgData.message, last_message_type: "sent", last_message_at: "Just now" };
+              found = true;
+              return { ...conv, last_message: displayMessage, last_message_type: "sent", last_message_at: "Just now" };
             }
             return conv;
           });
+
+          // If not found — this is a new conversation. Refetch to get it.
+          if (!found) {
+            setTimeout(() => fetchChats(""), 500);
+          }
+
           // Move to top of unpinned section only
           const idx = updated.findIndex((c) => c.uuid === msgData.chat_id || c.sender_or_receiver?.uuid === msgData.receiver_id);
           if (idx > -1 && !updated[idx].is_pinned) {
@@ -148,7 +160,7 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
             const matches = conv.uuid === msgData.chat_id ||
               conv.sender_or_receiver?.uuid === msgData.receiver_id;
             if (matches) {
-              return { ...conv, last_message: msgData.message, last_message_type: "sent", last_message_at: "Just now" };
+              return { ...conv, last_message: displayMessage, last_message_type: "sent", last_message_at: "Just now" };
             }
             return conv;
           })
@@ -181,6 +193,48 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
     setShowArchived(true);
     fetchArchivedChats();
   };
+
+  // Listen for message-sent events from ChatWindow (handles media display + new conversations)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail) return;
+
+      const displayMessage = detail.message || (detail.media?.length > 0
+        ? (detail.media[0]?.mime_type?.startsWith("video") ? "🎥 Video" : "📷 Image")
+        : "");
+
+      setConversations((prev) => {
+        let found = false;
+        const updated = prev.map((conv) => {
+          const matches = conv.uuid === detail.chat_id ||
+            conv.sender_or_receiver?.uuid === detail.receiver_id;
+          if (matches) {
+            found = true;
+            return { ...conv, last_message: displayMessage, last_message_type: "sent", last_message_at: "Just now" };
+          }
+          return conv;
+        });
+
+        if (!found) {
+          // New conversation — refetch the list
+          setTimeout(() => fetchChats(""), 300);
+        }
+
+        // Move to top of unpinned section
+        const idx = updated.findIndex((c) => c.uuid === detail.chat_id || c.sender_or_receiver?.uuid === detail.receiver_id);
+        if (idx > -1 && !updated[idx].is_pinned) {
+          const [chat] = updated.splice(idx, 1);
+          const lastPinnedIdx = updated.reduce((acc, c, i) => c.is_pinned ? i : acc, -1);
+          updated.splice(lastPinnedIdx + 1, 0, chat);
+        }
+        return updated;
+      });
+    };
+
+    window.addEventListener("message-sent", handler);
+    return () => window.removeEventListener("message-sent", handler);
+  }, [fetchChats]);
 
   const handleSelectChat = (conv: IConversation) => {
     onSelect(conv);

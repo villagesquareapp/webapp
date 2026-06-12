@@ -7,6 +7,7 @@ import { Phone, Video, MoreHorizontal, Paperclip, X } from "lucide-react";
 import { IoSend } from "react-icons/io5";
 import { Skeleton } from "components/ui/skeleton";
 import { useMessageWebSocket } from "context/MessageWebSocketContext";
+import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "components/ui/button";
 
@@ -26,6 +27,21 @@ export default function ChatWindow({ conversation, user }: Props) {
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({}); // msgUuid -> progress 0-100
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [mediaViewerSrc, setMediaViewerSrc] = useState<{ url: string; type: string } | null>(null);
+
+  // Warn user before leaving page during active uploads
+  useEffect(() => {
+    const hasActiveUploads = Object.keys(uploadProgress).length > 0;
+    const handler = (e: BeforeUnloadEvent) => {
+      if (hasActiveUploads) {
+        e.preventDefault();
+        toast.error("Upload interrupted. Please resend the media.", { duration: 5000 });
+      }
+    };
+    if (hasActiveUploads) {
+      window.addEventListener("beforeunload", handler);
+      return () => window.removeEventListener("beforeunload", handler);
+    }
+  }, [uploadProgress]);
   const [showMoreModal, setShowMoreModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -247,13 +263,13 @@ export default function ChatWindow({ conversation, user }: Props) {
   };
 
   const clearSelectedFile = () => {
-    selectedPreviews.forEach((p) => URL.revokeObjectURL(p.url));
+    // Don't revoke URLs here — they're used by optimistic messages during upload
+    // They'll be garbage collected when the blob references are gone
     setSelectedFiles([]);
     setSelectedPreviews([]);
   };
 
   const removeFile = (index: number) => {
-    URL.revokeObjectURL(selectedPreviews[index].url);
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setSelectedPreviews((prev) => prev.filter((_, i) => i !== index));
   };
@@ -269,6 +285,34 @@ export default function ChatWindow({ conversation, user }: Props) {
       });
     }
   }, [isConnected, chatId, wsSend, user.uuid]);
+
+  // Network-aware upload helper with retry on reconnection
+  const uploadWithRetry = async (url: string, body: Blob | File, maxRetries = 3): Promise<Response> => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      // Wait for network if offline
+      if (!navigator.onLine) {
+        toast.error("You lost your network connection. Upload paused...", { id: "network-lost" });
+        await new Promise<void>((resolve) => {
+          const handler = () => { window.removeEventListener("online", handler); resolve(); };
+          window.addEventListener("online", handler);
+        });
+        toast.success("Connection restored. Resuming upload...", { id: "network-lost" });
+      }
+
+      try {
+        const res = await fetch(url, { method: "PUT", body });
+        if (res.ok) return res;
+        throw new Error(`Upload failed with status ${res.status}`);
+      } catch (e) {
+        attempt++;
+        if (attempt >= maxRetries) throw e;
+        // Wait before retry
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+      }
+    }
+    throw new Error("Upload failed after max retries");
+  };
 
   const handleSend = async () => {
     const text = input.trim();
@@ -342,7 +386,7 @@ export default function ChatWindow({ conversation, user }: Props) {
           const { type, upload_id, s3_key, part_size, parts } = presignData.data;
 
           if (type === "single") {
-            await fetch(parts[0].upload_url, { method: "PUT", body: mediaFile });
+            await uploadWithRetry(parts[0].upload_url, mediaFile);
           } else if (type === "multipart") {
             const uploadedParts: { part_number: number; e_tag: string }[] = [];
             const totalParts = parts.length;
@@ -353,8 +397,7 @@ export default function ChatWindow({ conversation, user }: Props) {
               const end = Math.min(start + part_size, fileSize);
               const chunk = mediaFile.slice(start, end);
 
-              const uploadRes = await fetch(part.upload_url, { method: "PUT", body: chunk });
-              if (!uploadRes.ok) throw new Error(`Failed to upload part ${part.part_number}`);
+              const uploadRes = await uploadWithRetry(part.upload_url, chunk);
 
               const etag = uploadRes.headers.get("ETag") || "";
               uploadedParts.push({ part_number: part.part_number, e_tag: etag });
@@ -414,6 +457,15 @@ export default function ChatWindow({ conversation, user }: Props) {
               : m
           )
         );
+        // Dispatch a custom event so ConversationList can update immediately
+        window.dispatchEvent(new CustomEvent("message-sent", {
+          detail: {
+            chat_id: chatId,
+            receiver_id: conversation.sender_or_receiver?.uuid,
+            message: text || (mediaPayload.length > 0 ? "📷 Media" : ""),
+            media: mediaPayload,
+          },
+        }));
       } else {
         setMessages((prev) => prev.map((m) => m.unique_id === msgUuid ? { ...m, status: "failed" } : m));
       }
@@ -487,7 +539,7 @@ export default function ChatWindow({ conversation, user }: Props) {
               className="size-10"
             />
             {(chatUser?.online || conversation.sender_or_receiver?.online) && (
-              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-green-500 border-2 border-background" />
+              <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-background" />
             )}
           </div>
           <div className="flex flex-col leading-tight">
@@ -497,10 +549,11 @@ export default function ChatWindow({ conversation, user }: Props) {
             <span className="text-[12px] text-muted-foreground flex items-center gap-1">
               {isConnected ? (
                 <>
-                  <span className="size-1.5 rounded-full bg-green-500 inline-block" />{" "}
-                  {(chatUser?.online || conversation.sender_or_receiver?.online)
+                  {/* <span className="size-1.5 rounded-full bg-green-500 inline-block" />{" "} */}
+                  {/* {(chatUser?.online || conversation.sender_or_receiver?.online)
                     ? "Online"
-                    : `@${chatUser?.username || conversation.sender_or_receiver?.username}`}
+                    : `@${chatUser?.username || conversation.sender_or_receiver?.username}`} */}
+                    {`@${chatUser?.username}`}
                 </>
               ) : (
                 <>
@@ -586,11 +639,19 @@ export default function ChatWindow({ conversation, user }: Props) {
                       <div className={`flex flex-col gap-1 ${msg.message_side === "sent" ? "items-end" : "items-start"}`}>
                         <div className={`relative rounded-2xl overflow-hidden ${msg.media.length > 1 ? "grid grid-cols-2 gap-1 w-64" : "w-48"}`}>
                           {msg.media.map((m: any, idx: number) => (
-                            <div key={idx} className="relative cursor-pointer" onClick={() => { setMediaViewerSrc({ url: m.media_url || m.transcoded_media_url, type: m.media_type }); setMediaViewerOpen(true); }}>
+                            <div key={idx} className="relative cursor-pointer" onClick={() => { if (msg.status !== "sending") { setMediaViewerSrc({ url: m.media_url || m.transcoded_media_url, type: m.media_type }); setMediaViewerOpen(true); } }}>
                               {m.media_type === "video" ? (
-                                <video src={m.media_url || m.transcoded_media_url} className="w-full h-36 object-cover rounded-xl" />
+                                <>
+                                  <video src={m.media_url || m.transcoded_media_url} className="w-full h-36 object-cover rounded-xl bg-black" preload="metadata" />
+                                  {/* Play icon overlay for videos */}
+                                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="size-8 rounded-full bg-black/60 flex items-center justify-center">
+                                      <svg className="size-4 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                  </div>
+                                </>
                               ) : (
-                                <img src={m.media_url || m.transcoded_media_url} alt="media" className="w-full h-36 object-cover rounded-xl" />
+                                <img src={m.media_url || m.transcoded_media_url} alt="" className="w-full h-36 object-cover rounded-xl bg-black/20" loading="eager" />
                               )}
                             </div>
                           ))}
@@ -668,7 +729,7 @@ export default function ChatWindow({ conversation, user }: Props) {
 
       {/* Selected file previews */}
       {selectedPreviews.length > 0 && (
-        <div className="px-4 pb-2 shrink-0 flex gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-4 pb-2 shrink-0 flex gap-2 overflow-x-auto no-scrollbar bg-gray-700">
           {selectedPreviews.map((preview, idx) => (
             <div key={idx} className="relative shrink-0">
               {preview.type === "video" ? (
