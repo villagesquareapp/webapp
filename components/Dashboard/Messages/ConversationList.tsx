@@ -5,7 +5,7 @@ import CustomAvatar from "components/ui/custom/custom-avatar";
 import { IConversation } from "./MessagesClient";
 import { Skeleton } from "components/ui/skeleton";
 import { useMessageWebSocket } from "context/MessageWebSocketContext";
-import { Archive, ArrowLeft, ChevronDown, Pin, Plus } from "lucide-react";
+import { Archive, ArrowLeft, ChevronDown, Image as ImageIcon, Pin, Plus, Video } from "lucide-react";
 import NewChatModal from "./NewChatModal";
 
 interface Props {
@@ -74,9 +74,11 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
             const matches = conv.uuid === msgData.chat_id ||
               conv.sender_or_receiver?.uuid === msgData.sender_id;
             if (matches) {
+              // Determine display message — use text or show media type
+              const displayMessage = msgData.message || (msgData.media?.length > 0 ? "📷 Image" : "");
               return {
                 ...conv,
-                last_message: msgData.message,
+                last_message: displayMessage,
                 last_message_type: "received",
                 last_message_at: "Just now",
                 unread: conv.uuid !== activeId,
@@ -101,11 +103,11 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
             const matches = conv.uuid === msgData.chat_id ||
               conv.sender_or_receiver?.uuid === msgData.sender_id;
             if (matches) {
-              // Don't mark as unread if this archived chat is currently being viewed
+              const displayMessage = msgData.message || (msgData.media?.length > 0 ? "📷 Image" : "");
               const isViewing = conv.uuid === activeId;
               return {
                 ...conv,
-                last_message: msgData.message,
+                last_message: displayMessage,
                 last_message_type: "received",
                 last_message_at: "Just now",
                 unread: isViewing ? false : true,
@@ -168,6 +170,12 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
     });
     return unsubscribe;
   }, [subscribe, activeId]);
+
+  // Format last message preview — show media type icon if no text
+  const formatLastMessage = (conv: IConversation) => {
+    if (conv.last_message) return conv.last_message;
+    return "No messages yet";
+  };
 
   const handleShowArchived = () => {
     setShowArchived(true);
@@ -239,9 +247,9 @@ export default function ConversationList({ user, activeId, onSelect, onConversat
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <p className={`text-[13px] truncate ${conv.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+          <p className={`text-[13px] truncate flex items-center gap-1 ${conv.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
             {conv.last_message_type === "sent" && "You: "}
-            {conv.last_message || "No messages yet"}
+            {conv.last_message ? conv.last_message : "No messages yet"}
           </p>
           {conv.unread_count > 0 && (
             <span className="ml-2 shrink-0 size-5 rounded-full bg-[#0D52D2] text-white text-[10px] font-bold flex items-center justify-center">

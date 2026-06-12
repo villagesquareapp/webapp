@@ -58,7 +58,7 @@ export default function NewChatModal({ open, onClose, onSelectUser }: Props) {
       }
     } catch {
       setResults([]);
-    } finally {
+    } finally { 
       setLoading(false);
     }
   };
