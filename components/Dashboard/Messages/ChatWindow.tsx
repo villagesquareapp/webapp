@@ -20,13 +20,29 @@ export default function ChatWindow({ conversation, user }: Props) {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatId, setChatId] = useState<string>(conversation.uuid);
-  const [chatUser, setChatUser] = useState<{ name: string; username: string; profile_picture: string; online: boolean } | null>(null);
+  const [chatUser, setChatUser] = useState<{
+    name: string;
+    username: string;
+    profile_picture: string;
+    online: boolean;
+  } | null>(null);
   const [input, setInput] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedPreviews, setSelectedPreviews] = useState<{ url: string; type: "image" | "video" }[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({}); // msgUuid -> progress 0-100
+  const [selectedPreviews, setSelectedPreviews] = useState<
+    { url: string; type: "image" | "video" }[]
+  >([]);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  ); // msgUuid -> progress 0-100
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
-  const [mediaViewerSrc, setMediaViewerSrc] = useState<{ url: string; type: string } | null>(null);
+  const [mediaViewerSrc, setMediaViewerSrc] = useState<{
+    url: string;
+    type: string;
+  } | null>(null);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const otherTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Warn user before leaving page during active uploads
   useEffect(() => {
@@ -34,7 +50,9 @@ export default function ChatWindow({ conversation, user }: Props) {
     const handler = (e: BeforeUnloadEvent) => {
       if (hasActiveUploads) {
         e.preventDefault();
-        toast.error("Upload interrupted. Please resend the media.", { duration: 5000 });
+        toast.error("Upload interrupted. Please resend the media.", {
+          duration: 5000,
+        });
       }
     };
     if (hasActiveUploads) {
@@ -68,7 +86,8 @@ export default function ChatWindow({ conversation, user }: Props) {
         if (realChatId) setChatId(realChatId);
 
         // Extract the other user's info from extras
-        const otherUser = data.data.extras?.user || data.data.extras?.chat_data?.user;
+        const otherUser =
+          data.data.extras?.user || data.data.extras?.chat_data?.user;
         if (otherUser) {
           setChatUser({
             name: otherUser.name || "",
@@ -139,7 +158,15 @@ export default function ChatWindow({ conversation, user }: Props) {
             message_timestamp:
               msgData.client_timestamp || Date.now().toString(),
             message_date: msgData.message_date || "Today",
-            message_time: msgData.message_time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(),
+            message_time:
+              msgData.message_time ||
+              new Date()
+                .toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+                .toLowerCase(),
             media: msgData.media || [],
             message_type_metadata: null,
           };
@@ -254,7 +281,9 @@ export default function ChatWindow({ conversation, user }: Props) {
       ...selectedPreviews,
       ...files.map((f) => ({
         url: URL.createObjectURL(f),
-        type: (f.type.startsWith("video/") ? "video" : "image") as "image" | "video",
+        type: (f.type.startsWith("video/") ? "video" : "image") as
+          | "image"
+          | "video",
       })),
     ];
     setSelectedFiles(newFiles);
@@ -287,17 +316,28 @@ export default function ChatWindow({ conversation, user }: Props) {
   }, [isConnected, chatId, wsSend, user.uuid]);
 
   // Network-aware upload helper with retry on reconnection
-  const uploadWithRetry = async (url: string, body: Blob | File, maxRetries = 3): Promise<Response> => {
+  const uploadWithRetry = async (
+    url: string,
+    body: Blob | File,
+    maxRetries = 3,
+  ): Promise<Response> => {
     let attempt = 0;
     while (attempt < maxRetries) {
       // Wait for network if offline
       if (!navigator.onLine) {
-        toast.error("You lost your network connection. Upload paused...", { id: "network-lost" });
+        toast.error("You lost your network connection. Upload paused...", {
+          id: "network-lost",
+        });
         await new Promise<void>((resolve) => {
-          const handler = () => { window.removeEventListener("online", handler); resolve(); };
+          const handler = () => {
+            window.removeEventListener("online", handler);
+            resolve();
+          };
           window.addEventListener("online", handler);
         });
-        toast.success("Connection restored. Resuming upload...", { id: "network-lost" });
+        toast.success("Connection restored. Resuming upload...", {
+          id: "network-lost",
+        });
       }
 
       try {
@@ -314,9 +354,115 @@ export default function ChatWindow({ conversation, user }: Props) {
     throw new Error("Upload failed after max retries");
   };
 
+  // ─── Typing indicator logic ───
+  const sendTypingEvent = useCallback(() => {
+    // console.log("[Typing] Sending is-typing event");
+    wsSend({
+      action: "publish",
+      channel: "message",
+      event: "is-typing",
+      channelId: `message_${conversation.sender_or_receiver?.uuid}`,
+      userId: user.uuid,
+      chatId: chatId,
+    });
+  }, [wsSend, conversation.sender_or_receiver?.uuid, user.uuid, chatId]);
+
+  // const startTyping = useCallback(() => {
+  //   // Send immediately on first character
+  //   sendTypingEvent();
+  //   // Then every 5s while still typing
+  //   if (!typingIntervalRef.current) {
+  //     typingIntervalRef.current = setInterval(sendTypingEvent, 5000);
+  //   }
+  //   // Reset the stop-typing timer
+  //   if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+  //   typingTimerRef.current = setTimeout(() => {
+  //     // User stopped typing (no input for 3s)
+  //     if (typingIntervalRef.current) {
+  //       clearInterval(typingIntervalRef.current);
+  //       typingIntervalRef.current = null;
+  //     }
+  //   }, 3000);
+  // }, [sendTypingEvent]);
+
+  const stopTyping = useCallback(() => {
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  }, []);
+
+  const startTyping = useCallback(() => {
+    if (!typingIntervalRef.current) {
+      sendTypingEvent();
+
+      typingIntervalRef.current = setInterval(() => {
+        sendTypingEvent();
+      }, 5000);
+    }
+
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+
+    typingTimerRef.current = setTimeout(() => {
+      stopTyping();
+    }, 3000);
+  }, [sendTypingEvent, stopTyping]);
+
+  // Clean up typing timers on unmount
+  useEffect(() => {
+    return () => {
+      stopTyping();
+    };
+  }, [stopTyping]);
+
+  // Listen for incoming is-typing events from the other user
+  useEffect(() => {
+    const unsub = subscribe((data: any) => {
+      if (data.event === "is-typing") {
+        console.log("[Typing] Received is-typing event:", data);
+        if (data.chatId === chatId && data.userId !== user.uuid) {
+          setIsOtherTyping(true);
+          if (otherTypingTimeoutRef.current)
+            clearTimeout(otherTypingTimeoutRef.current);
+          otherTypingTimeoutRef.current = setTimeout(
+            () => setIsOtherTyping(false),
+            6000,
+          );
+        }
+      }
+      // Also clear typing when a message arrives from that user
+      if (
+        data.event === "received-message" &&
+        data.message_data?.chat_id === chatId
+      ) {
+        setIsOtherTyping(false);
+      }
+    });
+    return unsub;
+  }, [subscribe, chatId, user.uuid]);
+
+  const handleInputChange = (val: string) => {
+    // console.log("[Input] Changed:", val.length, "chars");
+    setInput(val);
+    if (val.trim()) {
+      startTyping();
+    } else {
+      stopTyping();
+    }
+  };
+
   const handleSend = async () => {
     const text = input.trim();
     if (!text && selectedFiles.length === 0) return;
+
+    // Stop typing indicator
+    stopTyping();
 
     const msgUuid =
       typeof crypto !== "undefined" && crypto.randomUUID
@@ -346,8 +492,18 @@ export default function ChatWindow({ conversation, user }: Props) {
       client_timestamp: now.toString(),
       message_timestamp: now.toString(),
       message_date: "Today",
-      message_time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(),
-      media: mediaPreviews.map((p) => ({ media_url: p.url, media_type: p.type, transcoded_media_url: p.url })),
+      message_time: new Date()
+        .toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+        .toLowerCase(),
+      media: mediaPreviews.map((p) => ({
+        media_url: p.url,
+        media_type: p.type,
+        transcoded_media_url: p.url,
+      })),
       message_type_metadata: null,
     };
 
@@ -375,7 +531,11 @@ export default function ChatWindow({ conversation, user }: Props) {
           const presignRes = await fetch("/api/media/presign", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ file_size: fileSize, filename: fileName, mime_type: mimeType }),
+            body: JSON.stringify({
+              file_size: fileSize,
+              filename: fileName,
+              mime_type: mimeType,
+            }),
           });
           const presignData = await presignRes.json();
 
@@ -383,7 +543,8 @@ export default function ChatWindow({ conversation, user }: Props) {
             throw new Error("Failed to get presigned URL");
           }
 
-          const { type, upload_id, s3_key, part_size, parts } = presignData.data;
+          const { type, upload_id, s3_key, part_size, parts } =
+            presignData.data;
 
           if (type === "single") {
             await uploadWithRetry(parts[0].upload_url, mediaFile);
@@ -400,11 +561,20 @@ export default function ChatWindow({ conversation, user }: Props) {
               const uploadRes = await uploadWithRetry(part.upload_url, chunk);
 
               const etag = uploadRes.headers.get("ETag") || "";
-              uploadedParts.push({ part_number: part.part_number, e_tag: etag });
+              uploadedParts.push({
+                part_number: part.part_number,
+                e_tag: etag,
+              });
 
               // Update progress based on parts completed across all files
-              const partProgress = ((filesCompleted * totalParts + (i + 1)) / (totalFiles * totalParts)) * 100;
-              setUploadProgress((prev) => ({ ...prev, [msgUuid]: Math.round(partProgress) }));
+              const partProgress =
+                ((filesCompleted * totalParts + (i + 1)) /
+                  (totalFiles * totalParts)) *
+                100;
+              setUploadProgress((prev) => ({
+                ...prev,
+                [msgUuid]: Math.round(partProgress),
+              }));
             }
 
             const completeRes = await fetch("/api/media/presign/complete", {
@@ -413,16 +583,23 @@ export default function ChatWindow({ conversation, user }: Props) {
               body: JSON.stringify({ upload_id, s3_key, parts: uploadedParts }),
             });
             const completeData = await completeRes.json();
-            if (!completeData?.status) throw new Error("Failed to complete multipart upload");
+            if (!completeData?.status)
+              throw new Error("Failed to complete multipart upload");
           } else {
             // Single upload progress
             const partProgress = ((filesCompleted + 1) / totalFiles) * 100;
-            setUploadProgress((prev) => ({ ...prev, [msgUuid]: Math.round(partProgress) }));
+            setUploadProgress((prev) => ({
+              ...prev,
+              [msgUuid]: Math.round(partProgress),
+            }));
           }
 
           mediaPayload.push({ key: s3_key, mime_type: mimeType });
           filesCompleted++;
-          setUploadProgress((prev) => ({ ...prev, [msgUuid]: Math.round((filesCompleted / totalFiles) * 100) }));
+          setUploadProgress((prev) => ({
+            ...prev,
+            [msgUuid]: Math.round((filesCompleted / totalFiles) * 100),
+          }));
         }
       }
 
@@ -453,27 +630,47 @@ export default function ChatWindow({ conversation, user }: Props) {
         setMessages((prev) =>
           prev.map((m) =>
             m.unique_id === msgUuid
-              ? { ...m, uuid: sentMsg?.uuid || m.uuid, status: "sent", media: sentMsg?.media || m.media, message_time: sentMsg?.message_time || m.message_time }
-              : m
-          )
+              ? {
+                  ...m,
+                  uuid: sentMsg?.uuid || m.uuid,
+                  status: "sent",
+                  media: sentMsg?.media || m.media,
+                  message_time: sentMsg?.message_time || m.message_time,
+                }
+              : m,
+          ),
         );
         // Dispatch a custom event so ConversationList can update immediately
-        window.dispatchEvent(new CustomEvent("message-sent", {
-          detail: {
-            chat_id: chatId,
-            receiver_id: conversation.sender_or_receiver?.uuid,
-            message: text || (mediaPayload.length > 0 ? "📷 Media" : ""),
-            media: mediaPayload,
-          },
-        }));
+        window.dispatchEvent(
+          new CustomEvent("message-sent", {
+            detail: {
+              chat_id: chatId,
+              receiver_id: conversation.sender_or_receiver?.uuid,
+              message: text || (mediaPayload.length > 0 ? "📷 Media" : ""),
+              media: mediaPayload,
+            },
+          }),
+        );
       } else {
-        setMessages((prev) => prev.map((m) => m.unique_id === msgUuid ? { ...m, status: "failed" } : m));
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.unique_id === msgUuid ? { ...m, status: "failed" } : m,
+          ),
+        );
       }
     } catch (e) {
       console.error("Send message error:", e);
-      setMessages((prev) => prev.map((m) => m.unique_id === msgUuid ? { ...m, status: "failed" } : m));
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.unique_id === msgUuid ? { ...m, status: "failed" } : m,
+        ),
+      );
     } finally {
-      setUploadProgress((prev) => { const n = { ...prev }; delete n[msgUuid]; return n; });
+      setUploadProgress((prev) => {
+        const n = { ...prev };
+        delete n[msgUuid];
+        return n;
+      });
     }
   };
 
@@ -489,7 +686,8 @@ export default function ChatWindow({ conversation, user }: Props) {
     { date: string; messages: IChatMessage[] }[]
   >((groups, msg) => {
     // Use message_date from API (e.g. "Today", "Yesterday", "Jun 5") or fall back to date from created_at
-    const date = msg.message_date || new Date(msg.created_at).toLocaleDateString();
+    const date =
+      msg.message_date || new Date(msg.created_at).toLocaleDateString();
     const lastGroup = groups[groups.length - 1];
     if (lastGroup && lastGroup.date === date) {
       lastGroup.messages.push(msg);
@@ -500,7 +698,7 @@ export default function ChatWindow({ conversation, user }: Props) {
   }, []);
 
   // Determine which sent messages should show a receipt (only the LAST of each status)
-  // Walking from the end backwards: the latest sent message gets a receipt, then we 
+  // Walking from the end backwards: the latest sent message gets a receipt, then we
   // step backwards while encountering "weaker" statuses to mark their last occurrences too.
   // Status priority: read > delivered > sent/sending
   const receiptUuids = (() => {
@@ -518,7 +716,8 @@ export default function ChatWindow({ conversation, user }: Props) {
 
     if (lastReadIdx >= 0) result.add(messages[lastReadIdx].uuid);
     // Only show delivered if it's after the last read
-    if (lastDeliveredIdx > lastReadIdx) result.add(messages[lastDeliveredIdx].uuid);
+    if (lastDeliveredIdx > lastReadIdx)
+      result.add(messages[lastDeliveredIdx].uuid);
     // Only show sent if it's after both
     if (lastSentIdx > lastReadIdx && lastSentIdx > lastDeliveredIdx) {
       result.add(messages[lastSentIdx].uuid);
@@ -534,8 +733,16 @@ export default function ChatWindow({ conversation, user }: Props) {
         <div className="flex items-center gap-3">
           <div className="relative">
             <CustomAvatar
-              src={chatUser?.profile_picture || conversation.display_avatar || conversation.sender_or_receiver?.profile_picture}
-              name={chatUser?.name || conversation.display_name || conversation.sender_or_receiver?.name}
+              src={
+                chatUser?.profile_picture ||
+                conversation.display_avatar ||
+                conversation.sender_or_receiver?.profile_picture
+              }
+              name={
+                chatUser?.name ||
+                conversation.display_name ||
+                conversation.sender_or_receiver?.name
+              }
               className="size-10"
             />
             {(chatUser?.online || conversation.sender_or_receiver?.online) && (
@@ -544,7 +751,9 @@ export default function ChatWindow({ conversation, user }: Props) {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-[14px] font-bold text-foreground">
-              {chatUser?.name || conversation.display_name || conversation.sender_or_receiver?.name}
+              {chatUser?.name ||
+                conversation.display_name ||
+                conversation.sender_or_receiver?.name}
             </span>
             <span className="text-[12px] text-muted-foreground flex items-center gap-1">
               {isConnected ? (
@@ -553,7 +762,7 @@ export default function ChatWindow({ conversation, user }: Props) {
                   {/* {(chatUser?.online || conversation.sender_or_receiver?.online)
                     ? "Online"
                     : `@${chatUser?.username || conversation.sender_or_receiver?.username}`} */}
-                    {`@${chatUser?.username}`}
+                  {`@${chatUser?.username}`}
                 </>
               ) : (
                 <>
@@ -565,7 +774,9 @@ export default function ChatWindow({ conversation, user }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/u/${chatUser?.username || conversation.sender_or_receiver?.username || ""}`}>
+          <Link
+            href={`/u/${chatUser?.username || conversation.sender_or_receiver?.username || ""}`}
+          >
             <Button
               size="sm"
               className={`bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white h-8 rounded-full px-5 text-xs font-semibold`}
@@ -636,22 +847,53 @@ export default function ChatWindow({ conversation, user }: Props) {
                   >
                     {msg.media && msg.media.length > 0 ? (
                       /* Media bubble — with optional text caption below */
-                      <div className={`flex flex-col gap-1 ${msg.message_side === "sent" ? "items-end" : "items-start"}`}>
-                        <div className={`relative rounded-2xl overflow-hidden ${msg.media.length > 1 ? "grid grid-cols-2 gap-1 w-64" : "w-48"}`}>
+                      <div
+                        className={`flex flex-col gap-1 ${msg.message_side === "sent" ? "items-end" : "items-start"}`}
+                      >
+                        <div
+                          className={`relative rounded-2xl overflow-hidden ${msg.media.length > 1 ? "grid grid-cols-2 gap-1 w-64" : "w-48"}`}
+                        >
                           {msg.media.map((m: any, idx: number) => (
-                            <div key={idx} className="relative cursor-pointer" onClick={() => { if (msg.status !== "sending") { setMediaViewerSrc({ url: m.media_url || m.transcoded_media_url, type: m.media_type }); setMediaViewerOpen(true); } }}>
+                            <div
+                              key={idx}
+                              className="relative cursor-pointer"
+                              onClick={() => {
+                                if (msg.status !== "sending") {
+                                  setMediaViewerSrc({
+                                    url: m.media_url || m.transcoded_media_url,
+                                    type: m.media_type,
+                                  });
+                                  setMediaViewerOpen(true);
+                                }
+                              }}
+                            >
                               {m.media_type === "video" ? (
                                 <>
-                                  <video src={m.media_url || m.transcoded_media_url} className="w-full h-36 object-cover rounded-xl bg-black" preload="metadata" />
+                                  <video
+                                    src={m.media_url || m.transcoded_media_url}
+                                    className="w-full h-36 object-cover rounded-xl bg-black"
+                                    preload="metadata"
+                                  />
                                   {/* Play icon overlay for videos */}
                                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div className="size-8 rounded-full bg-black/60 flex items-center justify-center">
-                                      <svg className="size-4 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                      <svg
+                                        className="size-4 text-white ml-0.5"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                      >
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
                                     </div>
                                   </div>
                                 </>
                               ) : (
-                                <img src={m.media_url || m.transcoded_media_url} alt="" className="w-full h-36 object-cover rounded-xl bg-black/20" loading="eager" />
+                                <img
+                                  src={m.media_url || m.transcoded_media_url}
+                                  alt=""
+                                  className="w-full h-36 object-cover rounded-xl bg-black/20"
+                                  loading="eager"
+                                />
                               )}
                             </div>
                           ))}
@@ -659,9 +901,22 @@ export default function ChatWindow({ conversation, user }: Props) {
                           {msg.status === "sending" && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl">
                               <svg className="size-12" viewBox="0 0 50 50">
-                                <circle cx="25" cy="25" r="20" fill="none" stroke="white" strokeWidth="3" strokeOpacity="0.3" />
                                 <circle
-                                  cx="25" cy="25" r="20" fill="none" stroke="white" strokeWidth="3"
+                                  cx="25"
+                                  cy="25"
+                                  r="20"
+                                  fill="none"
+                                  stroke="white"
+                                  strokeWidth="3"
+                                  strokeOpacity="0.3"
+                                />
+                                <circle
+                                  cx="25"
+                                  cy="25"
+                                  r="20"
+                                  fill="none"
+                                  stroke="white"
+                                  strokeWidth="3"
                                   strokeDasharray={`${2 * Math.PI * 20}`}
                                   strokeDashoffset={`${2 * Math.PI * 20 * (1 - (uploadProgress[msg.unique_id] || 0) / 100)}`}
                                   strokeLinecap="round"
@@ -676,18 +931,33 @@ export default function ChatWindow({ conversation, user }: Props) {
                           )}
                           {!msg.message && msg.status !== "sending" && (
                             <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/40 rounded-full px-2 py-0.5">
-                              <span className="text-[10px] text-white/80">{msg.message_time}</span>
-                              {msg.message_side === "sent" && <MessageStatus status={msg.status} />}
+                              <span className="text-[10px] text-white/80">
+                                {msg.message_time}
+                              </span>
+                              {msg.message_side === "sent" && (
+                                <MessageStatus status={msg.status} />
+                              )}
                             </div>
                           )}
                         </div>
                         {/* Text caption below media */}
                         {msg.message && (
-                          <div className={`max-w-[256px] px-4 py-2 rounded-2xl text-[14px] leading-relaxed ${msg.message_side === "sent" ? "bg-[#0D52D2] text-white" : "bg-[#2A2A2D] text-foreground"}`}>
+                          <div
+                            className={`max-w-[256px] px-4 py-2 rounded-2xl text-[14px] leading-relaxed ${msg.message_side === "sent" ? "bg-[#0D52D2] text-white" : "bg-[#2A2A2D] text-foreground"}`}
+                          >
                             <div className="flex items-end gap-2 flex-wrap">
-                              <p className="whitespace-pre-wrap break-words flex-1">{msg.message}</p>
-                              <span className={`text-[10px] shrink-0 ${msg.message_side === "sent" ? "text-white/50" : "text-muted-foreground"}`}>{msg.message_time}</span>
-                              {msg.message_side === "sent" && msg.status !== "sending" && <MessageStatus status={msg.status} />}
+                              <p className="whitespace-pre-wrap break-words flex-1">
+                                {msg.message}
+                              </p>
+                              <span
+                                className={`text-[10px] shrink-0 ${msg.message_side === "sent" ? "text-white/50" : "text-muted-foreground"}`}
+                              >
+                                {msg.message_time}
+                              </span>
+                              {msg.message_side === "sent" &&
+                                msg.status !== "sending" && (
+                                  <MessageStatus status={msg.status} />
+                                )}
                             </div>
                           </div>
                         )}
@@ -711,9 +981,10 @@ export default function ChatWindow({ conversation, user }: Props) {
                             >
                               {msg.message_time}
                             </span>
-                            {msg.message_side === "sent" && receiptUuids.has(msg.uuid) && (
-                              <MessageStatus status={msg.status} />
-                            )}
+                            {msg.message_side === "sent" &&
+                              receiptUuids.has(msg.uuid) && (
+                                <MessageStatus status={msg.status} />
+                              )}
                           </div>
                         </div>
                       </div>
@@ -722,6 +993,27 @@ export default function ChatWindow({ conversation, user }: Props) {
                 ))}
               </React.Fragment>
             ))}
+            {/* Typing indicator */}
+            {isOtherTyping && (
+              <div className="flex justify-start">
+                <div className="bg-[#2A2A2D] text-foreground px-4 py-2.5 rounded-2xl rounded-bl-sm">
+                  <div className="flex items-center gap-1">
+                    <span
+                      className="size-1.5 rounded-full bg-muted-foreground animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="size-1.5 rounded-full bg-muted-foreground animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="size-1.5 rounded-full bg-muted-foreground animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </>
         )}
@@ -733,9 +1025,16 @@ export default function ChatWindow({ conversation, user }: Props) {
           {selectedPreviews.map((preview, idx) => (
             <div key={idx} className="relative shrink-0">
               {preview.type === "video" ? (
-                <video src={preview.url} className="h-20 w-20 rounded-lg object-cover" />
+                <video
+                  src={preview.url}
+                  className="h-20 w-20 rounded-lg object-cover"
+                />
               ) : (
-                <img src={preview.url} alt="preview" className="h-20 w-20 rounded-lg object-cover" />
+                <img
+                  src={preview.url}
+                  alt="preview"
+                  className="h-20 w-20 rounded-lg object-cover"
+                />
               )}
               <button
                 onClick={() => removeFile(idx)}
@@ -768,7 +1067,7 @@ export default function ChatWindow({ conversation, user }: Props) {
           <textarea
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             rows={1}
@@ -872,14 +1171,20 @@ export default function ChatWindow({ conversation, user }: Props) {
 
       {/* Media Viewer Modal */}
       {mediaViewerOpen && mediaViewerSrc && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center" onClick={() => setMediaViewerOpen(false)}>
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          onClick={() => setMediaViewerOpen(false)}
+        >
           <button
             onClick={() => setMediaViewerOpen(false)}
             className="absolute top-6 right-6 size-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
           >
             <X className="size-5 text-white" />
           </button>
-          <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="max-w-[90vw] max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
             {mediaViewerSrc.type === "video" ? (
               <video
                 src={mediaViewerSrc.url}
@@ -909,7 +1214,11 @@ function MessageStatus({ status }: { status: string }) {
   if (status === "read") {
     return (
       <div className="size-[15px] rounded-full bg-white flex items-center justify-center">
-        <svg className="size-2.5 text-[#5A6878]" viewBox="0 0 20 16" fill="none">
+        <svg
+          className="size-2.5 text-[#5A6878]"
+          viewBox="0 0 20 16"
+          fill="none"
+        >
           <path
             d="M1 8l4 4 6-6"
             stroke="currentColor"
@@ -930,7 +1239,11 @@ function MessageStatus({ status }: { status: string }) {
   }
   if (status === "delivered") {
     return (
-      <svg className="size-[14px] text-white/70" viewBox="0 0 20 16" fill="none">
+      <svg
+        className="size-[14px] text-white/70"
+        viewBox="0 0 20 16"
+        fill="none"
+      >
         <path
           d="M1 8l4 4 6-6"
           stroke="currentColor"
