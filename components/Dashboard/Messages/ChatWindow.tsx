@@ -784,10 +784,10 @@ export default function ChatWindow({ conversation, user }: Props) {
               View Profile
             </Button>
           </Link>
-          <button className="p-2 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground">
+          <button disabled className="p-2 rounded-full text-muted-foreground/40 cursor-not-allowed opacity-40" title="Audio call not available">
             <Phone className="size-4" />
           </button>
-          <button className="p-2 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground">
+          <button disabled className="p-2 rounded-full text-muted-foreground/40 cursor-not-allowed opacity-40" title="Video call not available">
             <Video className="size-4" />
           </button>
           <button
@@ -995,9 +995,9 @@ export default function ChatWindow({ conversation, user }: Props) {
             ))}
             {/* Typing indicator */}
             {isOtherTyping && (
-              <div className="flex justify-start">
+              <div className="flex justify-start mb-2 mt-1">
                 <div className="bg-[#2A2A2D] text-foreground px-4 py-2.5 rounded-2xl rounded-bl-sm">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5 h-5">
                     <span
                       className="size-1.5 rounded-full bg-muted-foreground animate-bounce"
                       style={{ animationDelay: "0ms" }}
@@ -1021,19 +1021,19 @@ export default function ChatWindow({ conversation, user }: Props) {
 
       {/* Selected file previews */}
       {selectedPreviews.length > 0 && (
-        <div className="px-4 pb-2 shrink-0 flex gap-2 overflow-x-auto no-scrollbar bg-gray-700">
+        <div className="px-4 py-2 shrink-0 flex gap-2 overflow-x-auto no-scrollbar bg-gray-700">
           {selectedPreviews.map((preview, idx) => (
             <div key={idx} className="relative shrink-0">
               {preview.type === "video" ? (
                 <video
                   src={preview.url}
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-24 w-24 rounded-lg object-cover"
                 />
               ) : (
                 <img
                   src={preview.url}
                   alt="preview"
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-24 w-24 rounded-lg object-cover"
                 />
               )}
               <button

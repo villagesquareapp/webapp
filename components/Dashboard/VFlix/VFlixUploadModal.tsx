@@ -394,6 +394,12 @@ const VFlixUploadModal = ({ user }: { user: any }) => {
     ${step === 1 ? "max-w-[550px]" : "max-w-[800px]"} w-full
   `}
       >
+        {/* Modal title */}
+        {step === 1 && (
+          <div className="px-6 pt-5 pb-0 text-center">
+            <h2 className="text-[16px] font-bold text-foreground">Add a new Vflix post</h2>
+          </div>
+        )}
         {step === 1 && (
           <div
             className="flex flex-col items-center justify-center p-12 min-h-[400px] bg-background"
