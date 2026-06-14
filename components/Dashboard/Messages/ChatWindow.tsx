@@ -267,7 +267,7 @@ export default function ChatWindow({ conversation, user }: Props) {
     if (!loading) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, loading]);
+  }, [messages, loading, isOtherTyping]);
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -943,7 +943,7 @@ export default function ChatWindow({ conversation, user }: Props) {
                         {/* Text caption below media */}
                         {msg.message && (
                           <div
-                            className={`max-w-[256px] px-4 py-2 rounded-2xl text-[14px] leading-relaxed ${msg.message_side === "sent" ? "bg-[#0D52D2] text-white" : "bg-[#2A2A2D] text-foreground"}`}
+                            className={`max-w-[256px] px-4 py-2 rounded-2xl text-[14px] leading-relaxed ${msg.message_side === "sent" ? "bg-[#0D52D2] text-white" : "bg-[#2A2A2D] text-white"}`}
                           >
                             <div className="flex items-end gap-2 flex-wrap">
                               <p className="whitespace-pre-wrap break-words flex-1">
@@ -968,7 +968,7 @@ export default function ChatWindow({ conversation, user }: Props) {
                         className={`max-w-[480px] px-5 py-3 rounded-3xl text-[14px] leading-relaxed ${
                           msg.message_side === "sent"
                             ? "bg-[#0D52D2] text-white"
-                            : "bg-[#2A2A2D] text-foreground"
+                            : "bg-[#2A2A2D] text-white"
                         }`}
                       >
                         <div className="flex items-end gap-3 flex-wrap">
@@ -996,7 +996,7 @@ export default function ChatWindow({ conversation, user }: Props) {
             {/* Typing indicator */}
             {isOtherTyping && (
               <div className="flex justify-start mb-2 mt-1">
-                <div className="bg-[#2A2A2D] text-foreground px-4 py-2.5 rounded-2xl rounded-bl-sm">
+                <div className="bg-[#2A2A2D] text-white px-4 py-2.5 rounded-2xl rounded-bl-sm">
                   <div className="flex items-center gap-1.5 h-5">
                     <span
                       className="size-1.5 rounded-full bg-muted-foreground animate-bounce"
