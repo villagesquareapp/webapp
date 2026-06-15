@@ -33,6 +33,7 @@ function getG() {
       connected: false,
       subscribed: false,
       userId: null as string | null,
+      wsUrl: null as string | null,
       listeners: new Set<() => void>(),
     };
   }
@@ -42,6 +43,7 @@ function getG() {
     connected: boolean;
     subscribed: boolean;
     userId: string | null;
+    wsUrl: string | null;
     listeners: Set<() => void>;
   };
 }
@@ -67,8 +69,10 @@ function processMsg(raw: string) {
   }
 }
 
-function connectWs(token: string, uuid: string) {
+function connectWs(token: string, uuid: string, websocketUrl?: string) {
   const g = getG();
+
+  if (websocketUrl) g.wsUrl = websocketUrl;
 
   // Already connected for this user
   if (g.ws && g.userId === uuid) {
@@ -88,8 +92,14 @@ function connectWs(token: string, uuid: string) {
   notify();
 
   console.log("[WS] Connecting...");
-  const ws = new WebSocket(`wss://secure-wss-server.villagesquare.io/?token=${token}`);
+  const wsUrl = g.wsUrl;
+  if (!wsUrl) {
+    console.error("[WS] No websocket_url available. Cannot connect.");
+    return;
+  }
+  const ws = new WebSocket(`wss://${wsUrl}/?token=${token}`);
   g.ws = ws;
+  console.log('websocket url', wsUrl);
 
   ws.onopen = () => {
     if (g.ws !== ws) return;
@@ -141,6 +151,7 @@ function connectWs(token: string, uuid: string) {
 export const MessageWebSocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession();
   const user = session?.user;
+  // console.log('Token', user?.token);
 
   const [isConnected, setIsConnected] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -160,7 +171,8 @@ export const MessageWebSocketProvider = ({ children }: { children: React.ReactNo
   // Connect when user available
   useEffect(() => {
     if (user?.token && user?.uuid) {
-      connectWs(user.token, user.uuid);
+      console.log('[WS] websocket_url:', user.websocket_url);
+      connectWs(user.token, user.uuid, user.websocket_url);
     }
   }, [user?.token, user?.uuid]);
 
