@@ -50,17 +50,19 @@ export function Login({ className, ...props }: LoginProps) {
     setIsLoading(true);
 
     try {
+      // Generate a stable device ID for this browser tab
+      let deviceId = sessionStorage.getItem("vs_device_id");
+      if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        sessionStorage.setItem("vs_device_id", deviceId);
+      }
+
       const result = await signIn("credentials", {
         email_or_username: values.email_or_username,
         password: values.password,
         timezone: getTimeZone(),
         login_type: "password",
-        // provider: "default",
-        // provider_token: null,
-        // device_id: null,
-        // device: null,
-        // fcm_token: null,
-        // audience: "web",
+        device_id: deviceId,
         redirect: false,
         callbackUrl: "/home",
       });

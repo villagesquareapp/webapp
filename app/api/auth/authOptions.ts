@@ -38,17 +38,21 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
         login_type: { label: "Login Type", type: "text" },
         provider: { label: "Provider", type: "text" },
+        device_id: { label: "Device ID", type: "text" },
       },
       async authorize(credentials, _req) {
         try {
+          // Generate or retrieve a stable web device ID
+          const webDeviceId = credentials?.device_id || "web-default";
+
           const requestBody = JSON.stringify({
             email_or_username: credentials?.email_or_username,
             password: credentials?.password,
             login_type: credentials?.login_type,
             provider: credentials?.provider,
             provider_token: null,
-            device_id: null,
-            device: null,
+            device_id: webDeviceId,
+            device: "web-browser",
             fcm_token: null,
             timezone: getTimeZone(),
             audience: "web",
