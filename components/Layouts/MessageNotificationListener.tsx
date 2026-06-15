@@ -4,13 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMessageWebSocket } from "context/MessageWebSocketContext";
 
-/**
- * Global listener that shows a toast-style notification when a new message
- * arrives and the user is NOT on the /messages page.
- * 
- * This component renders nothing visible by default — it only renders the
- * floating notification when triggered.
- */
+
 export default function MessageNotificationListener() {
   const pathname = usePathname();
   const router = useRouter();
@@ -52,12 +46,21 @@ export default function MessageNotificationListener() {
         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;" data-action="navigate">
           ${avatarHtml}
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:14px;color:var(--foreground, #111);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${senderName || "New Message"}</div>
-            <div style="font-size:13px;color:var(--muted-foreground, #888);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${truncMsg}</div>
+            <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="notif-title">${senderName || "New Message"}</div>
+            <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;" class="notif-subtitle">${truncMsg}</div>
           </div>
         </div>
-        <button data-action="dismiss" style="background:none;border:none;padding:4px;cursor:pointer;color:var(--muted-foreground, #888);flex-shrink:0;font-size:18px;line-height:1;" aria-label="Dismiss">✕</button>
+        <button data-action="dismiss" style="background:none;border:none;padding:4px;cursor:pointer;flex-shrink:0;font-size:18px;line-height:1;" class="notif-dismiss" aria-label="Dismiss">✕</button>
       `;
+
+      // Apply theme-aware text colors
+      const isDark = document.documentElement.classList.contains("dark");
+      const titleEl = el.querySelector(".notif-title") as HTMLElement;
+      const subtitleEl = el.querySelector(".notif-subtitle") as HTMLElement;
+      const dismissEl = el.querySelector(".notif-dismiss") as HTMLElement;
+      if (titleEl) titleEl.style.color = isDark ? "#fff" : "#111";
+      if (subtitleEl) subtitleEl.style.color = isDark ? "#a1a1aa" : "#666";
+      if (dismissEl) dismissEl.style.color = isDark ? "#a1a1aa" : "#999";
 
       // Show with animation
       el.style.display = "flex";
@@ -103,15 +106,29 @@ export default function MessageNotificationListener() {
         max-width: 380px;
         width: calc(100vw - 40px);
         padding: 14px 16px;
-        background: var(--background, #fff);
-        border: 1px solid var(--border, #e5e5e5);
         border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
         transform: translateX(120%);
         opacity: 0;
         transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
         font-family: inherit;
       `;
+
+      // Theme-aware styling
+      const applyTheme = () => {
+        const isDark = document.documentElement.classList.contains("dark");
+        if (isDark) {
+          el.style.background = "#1c1c1e";
+          el.style.border = "1px solid #333";
+          el.style.boxShadow = "0 10px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08)";
+        } else {
+          el.style.background = "#ffffff";
+          el.style.border = "1px solid #e0e0e0";
+          el.style.boxShadow = "0 10px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)";
+        }
+      };
+      applyTheme();
+      const observer = new MutationObserver(applyTheme);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       el.addEventListener("click", (e) => {
         const target = (e.target as HTMLElement).closest("[data-action]");
         if (!target) return;
