@@ -155,7 +155,7 @@ export default function SearchResultsClient({ user }: { user: IUser }) {
     };
 
     return (
-        <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar px-4 lg:px-6 pt-4 pb-8">
+        <div className="flex flex-col w-full max-w-[700px] h-full overflow-y-auto no-scrollbar px-4 lg:px-6 pt-4 pb-8 border-r border-border">
             {/* Query display */}
             {query && (
                 <p className="text-muted-foreground text-sm mb-4">
@@ -197,7 +197,7 @@ export default function SearchResultsClient({ user }: { user: IUser }) {
                             ))}
                         </div>
                     ) : posts.length > 0 ? (
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col">
                             {posts.map((post) => (
                                 <EachSocialPost
                                     key={post.uuid}

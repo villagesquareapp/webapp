@@ -11,6 +11,7 @@ import { Popover, PopoverTrigger } from "components/ui/popover";
 import { PopoverContent } from "@radix-ui/react-popover";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "components/ui/button";
+import { Skeleton } from "components/ui/skeleton";
 import { SidebarTrigger } from "components/ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -294,12 +295,21 @@ const DashboardNavbar = () => {
                     className="size-8 md:size-9"
                   />
                   <div className="hidden lg:flex flex-col items-start">
-                    <span className="text-sm font-bold uppercase">
-                      {user?.name.split(" ")[0]}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      @{user?.username || ""}
-                    </span>
+                    {user?.name ? (
+                      <>
+                        <span className="text-sm font-bold uppercase">
+                          {user.name.split(" ")[0]}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          @{user.username || ""}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Skeleton className="h-3.5 w-20 mb-1" />
+                        <Skeleton className="h-3 w-14" />
+                      </>
+                    )}
                   </div>
                 </div>
               </PopoverTrigger>
