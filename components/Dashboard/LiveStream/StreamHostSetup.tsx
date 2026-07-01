@@ -1202,7 +1202,7 @@ const StreamHostSetup = ({
   // Confirm discard
   const handleConfirmDiscard = () => {
     setShowDiscardDialog(false);
-    router.push("/live-streams");
+    router.push("/livestream");
   };
 
   // Save to posts
@@ -1226,7 +1226,7 @@ const StreamHostSetup = ({
   // After success dialog
   const handleSuccessOkay = () => {
     setShowSuccessDialog(false);
-    router.push("/live-streams");
+    router.push("/livestream");
   };
 
   // Chat functions

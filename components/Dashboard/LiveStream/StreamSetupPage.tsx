@@ -43,11 +43,11 @@ const StreamSetupPage = ({
       setPendingLivestreamData(JSON.parse(storedData));
     } else {
       // No pending data, redirect back
-      router.push("/live-streams");
+      router.push("/");
     }
   }, [router]);
 
-  // Initialize media stream
+  // Initialize media streamlive-streams
   useEffect(() => {
     const startLocalStream = async () => {
       try {
@@ -180,7 +180,7 @@ const StreamSetupPage = ({
 
         // Redirect to the actual stream page
         // toast.success("Redirecting to live stream...");
-        router.push(`/live-streams/${response.data.uuid}`);
+        router.push(`/livestream/${response.data.uuid}`);
       } else {
         toast.error(response.message || "Failed to start livestream");
       }

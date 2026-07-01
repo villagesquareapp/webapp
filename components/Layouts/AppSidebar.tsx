@@ -25,7 +25,7 @@ import { GoHome, GoHomeFill } from "react-icons/go";
 import { IoMdSettings } from "react-icons/io";
 import { IoSettingsOutline } from "react-icons/io5";
 import { HiOutlineVideoCamera } from "react-icons/hi";
-import { MdMailOutline } from "react-icons/md";
+import { MdMailOutline, MdLiveTv } from "react-icons/md";
 import { BiWorld } from "react-icons/bi";
 import { FaHeartCircleCheck } from "react-icons/fa6";
 import { AiFillShopping } from "react-icons/ai";
@@ -59,6 +59,12 @@ const items = [
     icon: <MdMailOutline className="!size-6" />,
     activeIcon: <VSMailFill className="fill-background text-background !size-6" />,
   },
+    {
+    title: "Livestream",
+    url: "/livestream",
+    icon: <MdLiveTv className="!size-6" />,
+    activeIcon: <MdLiveTv className="!size-6" />,
+  },
   {
     title: "Settings",
     url: "/settings",
@@ -77,12 +83,6 @@ const items = [
   //   url: "#",
   //   icon: <BsMic className="!size-5 ml-0.5" />,
   //   activeIcon: <BsMicFill className="fill-background text-background !size-5 ml-0.5" />,
-  // },
-  // {
-  //   title: "Livestream",
-  //   url: "/dashboard/live-streams",
-  //   icon: <HiOutlineVideoCamera className="!size-6" />,
-  //   activeIcon: <VSCameraFill className="fill-background text-background !size-6" />,
   // },
   // {
   //   title: "Marketsquare",
@@ -112,7 +112,7 @@ export function AppSidebar() {
   const { isGuest, openLoginModal } = useGuest();
 
   React.useEffect(() => {
-    if (pathname.includes("/vflix") || pathname.includes("/messages")) {
+    if (pathname.includes("/vflix") || pathname.includes("/messages") || pathname.includes("/livestream")) {
       setOpen(false);
     } else {
       setOpen(true);
