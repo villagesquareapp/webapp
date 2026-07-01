@@ -33,11 +33,11 @@ const EARNINGS = [
 ];
 
 const TOP_GIFTERS = [
-  { name: "Ohyinn Art", rank: "Top 1", avatar: "", gifts: "x 10" },
-  { name: "Dame Lovelyn", rank: "Top 2", avatar: "", gifts: "x 1" },
-  { name: "L.Bradson", rank: "Top 3", avatar: "", gifts: "x 3" },
-  { name: "OladeBeauty", rank: "", avatar: "", gifts: "x 5" },
-  { name: "VegasofVegas", rank: "", avatar: "", gifts: "x 2" },
+  { name: "Ohyinn Art", rank: "Top 1", avatar: "", gifts: "1,500" },
+  { name: "Dame Lovelyn", rank: "Top 2", avatar: "", gifts: "300" },
+  { name: "L.Bradson", rank: "Top 3", avatar: "", gifts: "850" },
+  { name: "OladeBeauty", rank: "", avatar: "", gifts: "1,200" },
+  { name: "VegasofVegas", rank: "", avatar: "", gifts: "450" },
 ];
 
 const GIFTS = [
@@ -128,7 +128,7 @@ export default function LiveSummaryPage() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-4 text-center border border-white/10 rounded-lg py-2.5 text-[#8E8E93] text-sm hover:bg-white/5 transition-colors">
+            <button className="w-full mt-5 text-center border border-white/10 rounded-xl py-3 text-[#8E8E93] text-sm hover:bg-white/5 transition-colors">
               View Earnings Details
             </button>
           </div>
@@ -151,10 +151,8 @@ export default function LiveSummaryPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="size-7 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
-                      <Image src="/images/gifts/baobab-tree.png" alt="gift" width={18} height={18} />
-                    </div>
-                    <span className="text-[#094DB5CC] text-xs font-medium">{gifter.gifts}</span>
+                    <BiDiamond className="size-4 text-yellow-500" />
+                    <span className="text-green-400 text-xs font-medium">{gifter.gifts}</span>
                   </div>
                 </div>
               ))}

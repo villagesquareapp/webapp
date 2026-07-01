@@ -33,11 +33,11 @@ const EARNINGS = [
 ];
 
 const TOP_GIFTERS = [
-  { name: "Ohyinn Art", rank: "Top 1", avatar: "", gifts: "x 10" },
-  { name: "Dame Lovelyn", rank: "Top 2", avatar: "", gifts: "x 1" },
-  { name: "L.Bradson", rank: "Top 3", avatar: "", gifts: "x 3" },
-  { name: "OladeBeauty", rank: "", avatar: "", gifts: "x 5" },
-  { name: "VegasofVegas", rank: "", avatar: "", gifts: "x 2" },
+  { name: "Ohyinn Art", rank: "Top 1", avatar: "", gifts: "1,500" },
+  { name: "Dame Lovelyn", rank: "Top 2", avatar: "", gifts: "300" },
+  { name: "L.Bradson", rank: "Top 3", avatar: "", gifts: "850" },
+  { name: "OladeBeauty", rank: "", avatar: "", gifts: "1,200" },
+  { name: "VegasofVegas", rank: "", avatar: "", gifts: "450" },
 ];
 
 const GIFTS = [
@@ -90,7 +90,7 @@ export default function LiveSummary2Page() {
         {/* Engagement + Earnings Summary side by side */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Engagement */}
-          <div className="bg-[#232325] rounded-xl p-5 h-[300px] flex flex-col">
+          <div className="bg-[#232325] rounded-xl p-5 h-[330px] flex flex-col">
             <h3 className="text-white font-semibold text-sm mb-3">Engagement</h3>
             <div className="flex flex-col flex-1 justify-between">
               {ENGAGEMENT.map((item, i) => (
@@ -112,7 +112,7 @@ export default function LiveSummary2Page() {
           </div>
 
           {/* Earnings Summary */}
-          <div className="bg-[#232325] rounded-xl p-5 h-[300px] flex flex-col">
+          <div className="bg-[#232325] rounded-xl p-5 h-[330px] flex flex-col">
             <h3 className="text-white font-semibold text-sm mb-4">Earnings Summary</h3>
             <div className="flex flex-col gap-3 flex-1">
               {EARNINGS.map((item, i) => (
@@ -127,7 +127,7 @@ export default function LiveSummary2Page() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-auto text-center border border-white/10 rounded-lg py-2.5 text-[#8E8E93] text-sm hover:bg-white/5 transition-colors">
+            <button className="w-full mt-4 text-center border border-white/10 rounded-xl py-3 text-[#8E8E93] text-sm hover:bg-white/5 transition-colors">
               View Earnings Details
             </button>
           </div>
@@ -181,9 +181,7 @@ export default function LiveSummary2Page() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="size-7 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
-                    <Image src="/images/gifts/baobab-tree.png" alt="gift" width={18} height={18} />
-                  </div>
+                  <Image src={"/images/gifts/villagesquare_coin.svg"} alt="VS_coin" width={25} height={25} />
                   <span className="text-green-400 text-xs font-medium">{gifter.gifts}</span>
                 </div>
               </div>
