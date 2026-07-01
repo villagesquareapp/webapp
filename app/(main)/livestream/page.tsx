@@ -103,7 +103,7 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "api/auth/authOptions";
-import LivestreamPage from "components/Dashboard/LiveStream/LivestreamPage";
+import NewLivestreamPage from "components/Dashboard/LiveStream/NewLivestreamPage";
 
 export const metadata: Metadata = {
   title: "Live Streams | Village Square Dashboard",
@@ -115,7 +115,7 @@ const Page = async () => {
 
   if (!user) return null;
 
-  return <LivestreamPage />;
+  return <NewLivestreamPage />;
 };
 
 export default Page;

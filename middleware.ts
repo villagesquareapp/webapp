@@ -16,7 +16,7 @@ export const config = {
     "/home/:path*",
     // "/vflix/:path*" is intentionally excluded — public vflix share pages live at /vflix/[uuid]
     "/messages/:path*",
-    "/live-streams/:path*",
+    "/livestream/:path*",
     "/wallet/:path*",
   ],
 }; 

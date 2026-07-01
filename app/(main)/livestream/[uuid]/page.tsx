@@ -161,7 +161,7 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "api/auth/authOptions";
 import { getFeaturedLivestreams, getLivestreamDetails } from "api/livestreams";
-import StreamHostSetup from "components/Dashboard/LiveStream/StreamHostSetup";
+import HostLiveView from "components/Dashboard/LiveStream/HostLiveView";
 import LivestreamViewer from "components/Dashboard/LiveStream/LivestreamViewer";
 
 export const metadata: Metadata = {
@@ -252,10 +252,8 @@ const LiveStreamDetailPage = async ({
   console.log('Is current user the host?', isHost);
   if (isHost) {
     return (
-      <StreamHostSetup
+      <HostLiveView
         streamData={streamData}
-        featuredLivestreams={featuredLivestreams}
-        isHost={true}
         user={user}
       />
     );

@@ -140,8 +140,8 @@ const StreamSetupModal = () => {
   setGiftingEnabled(false);
 
   // Redirect to setup page (without uuid since we haven't created it yet)
-  router.push("/live-streams/setup");
-  
+  router.push("/livestream/setup");
+
   // toast.success("Ready to go live! Click 'Start Live Stream' when ready.");
 }, [
   titleInput,
