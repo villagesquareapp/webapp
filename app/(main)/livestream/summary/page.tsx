@@ -151,7 +151,7 @@ export default function LiveSummaryPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <BiDiamond className="size-4 text-yellow-500" />
+                    <Image src={"/images/gifts/villagesquare_coin.svg"} alt="VS_coin" width={25} height={25} />
                     <span className="text-green-400 text-xs font-medium">{gifter.gifts}</span>
                   </div>
                 </div>
