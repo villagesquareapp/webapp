@@ -92,6 +92,13 @@ const NewLivestreamPage = () => {
             View Summary
           </Button>
           <Button
+            onClick={() => window.location.href = "/livestream/summary2"}
+            variant="outline"
+            className="border-white/10 text-white/70 rounded-full px-4 h-9 text-sm font-medium"
+          >
+            View Summary 2
+          </Button>
+          <Button
             onClick={() => setIsGoLiveOpen(true)}
             className="bg-[#0D52D2] hover:bg-[#0D52D2]/90 text-white rounded-full px-5 h-9 text-sm font-medium flex items-center gap-2"
           >
